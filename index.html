@@ -297,9 +297,9 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: flex-end;
-      max-width: min(94vw, 560px);
+      max-width: min(96vw, 980px);
     }
 
     .trade-game-inner {
@@ -368,6 +368,8 @@
       opacity: 0;
       transition: opacity 300ms ease;
       white-space: nowrap;
+      min-width: 140px;
+      text-align: center;
     }
 
     .trade-result.is-visible {
@@ -1589,19 +1591,6 @@
       return candles;
     }
 
-    const PATTERN_OUTCOME = {
-      doubleTopBear: "sell",
-      headShouldersBear: "sell",
-      risingWedgeBear: "sell",
-      expandingTriangleBear: "sell",
-      tripleTopBear: "sell",
-      doubleBottomBull: "buy",
-      inverseHeadShouldersBull: "buy",
-      fallingWedgeBull: "buy",
-      expandingTriangleBull: "buy",
-      tripleBottomBull: "buy"
-    };
-
     const tradeBuyBtn = document.getElementById("tradeBuy");
     const tradeSellBtn = document.getElementById("tradeSell");
     const tradeLotInput = document.getElementById("tradeLot");
@@ -1610,12 +1599,12 @@
     const tradeScoreEl = document.getElementById("tradeScore");
     let gameWins = 0;
     let gameTotal = 0;
-    let gameBet = null; // locked "buy" | "sell" | null
-    let pendingBet = null; // preview "buy" | "sell" | null
+    let openTrades = []; // [{direction, idx, entryPrice, lot}]
+    let pendingBet = null; // {direction, idx, entryPrice, lot} | null
     let gameLocked = false;
     let gameResultShown = false;
     let gameBalance = 100;
-    let entryMarker = null; // { direction, idx }
+    let currentVisibleIdx = 0;
 
     function getLotSize() {
       const value = Number(tradeLotInput?.value || "0.1");
@@ -1629,35 +1618,52 @@
     }
 
     function resetGameUI() {
-      gameBet = null;
+      openTrades = [];
       pendingBet = null;
       gameLocked = false;
       gameResultShown = false;
-      entryMarker = null;
       if (tradeBuyBtn) { tradeBuyBtn.disabled = false; tradeBuyBtn.style.outline = "none"; }
       if (tradeSellBtn) { tradeSellBtn.disabled = false; tradeSellBtn.style.outline = "none"; }
       if (tradeResultEl) { tradeResultEl.className = "trade-result"; tradeResultEl.textContent = ""; }
     }
 
+    function getCurrentSnapshot() {
+      if (!chartState || !chartState.candles?.length) return null;
+      const idx = Math.max(0, Math.min(chartState.candles.length - 1, currentVisibleIdx));
+      const candle = chartState.candles[idx];
+      return { idx, entryPrice: candle.close };
+    }
+
     function previewOrLockBet(direction) {
       if (gameLocked) return;
       if (!chartState || !chartState.candles?.length) return;
+      const snap = getCurrentSnapshot();
+      if (!snap) return;
 
-      if (pendingBet === direction) {
-        gameBet = direction;
-        gameLocked = true;
-        if (tradeBuyBtn) tradeBuyBtn.disabled = true;
-        if (tradeSellBtn) tradeSellBtn.disabled = true;
+      if (pendingBet && pendingBet.direction === direction) {
+        // Second click on same side locks a new trade.
+        openTrades.push({
+          direction,
+          idx: pendingBet.idx,
+          entryPrice: pendingBet.entryPrice,
+          lot: pendingBet.lot
+        });
+        pendingBet = null;
         if (tradeResultEl) {
           tradeResultEl.className = "trade-result is-visible";
-          tradeResultEl.textContent = "Trade locked";
+          tradeResultEl.textContent = "Trade locked (" + openTrades.length + ")";
         }
+        if (tradeBuyBtn) tradeBuyBtn.style.outline = "none";
+        if (tradeSellBtn) tradeSellBtn.style.outline = "none";
         return;
       }
 
-      pendingBet = direction;
-      const previewIdx = Math.max(0, Math.min(chartState.candles.length - 1, Math.floor((Date.now() - chartState.patternStart) / DRAW_MS * chartState.candles.length)));
-      entryMarker = { direction, idx: previewIdx };
+      pendingBet = {
+        direction,
+        idx: snap.idx,
+        entryPrice: snap.entryPrice,
+        lot: getLotSize()
+      };
 
       if (tradeBuyBtn) {
         tradeBuyBtn.style.outline = direction === "buy" ? "2px solid #26a69a" : "none";
@@ -1671,20 +1677,32 @@
       }
     }
 
-    function showGameResult(patternKey) {
-      if (gameResultShown || !gameBet) return;
+    function showGameResult() {
+      if (gameResultShown) return;
       gameResultShown = true;
-      const correct = PATTERN_OUTCOME[patternKey];
-      const won = gameBet === correct;
-      const lot = getLotSize();
-      const pnl = won ? lot * 18 : -(lot * 12);
+      const closeCandle = chartState?.candles?.[chartState.candles.length - 1];
+      if (!closeCandle) return;
+      const closePrice = closeCandle.close;
+      let pnl = 0;
+      let winsThisRound = 0;
+
+      for (const t of openTrades) {
+        const diff = t.direction === "buy"
+          ? (t.entryPrice - closePrice)   // up move => close y smaller
+          : (closePrice - t.entryPrice);  // down move => close y larger
+        const tradePnl = diff * t.lot * 0.45;
+        pnl += tradePnl;
+        if (tradePnl >= 0) winsThisRound += 1;
+      }
+
       gameBalance = Math.max(0, gameBalance + pnl);
-      gameTotal++;
-      if (won) gameWins++;
+      gameTotal += openTrades.length;
+      gameWins += winsThisRound;
       if (tradeResultEl) {
         const sign = pnl >= 0 ? "+" : "";
-        tradeResultEl.textContent = (won ? "✓ Correct " : "✗ Wrong ") + "(" + sign + pnl.toFixed(2) + ")";
-        tradeResultEl.className = "trade-result is-visible " + (won ? "trade-result--win" : "trade-result--lose");
+        const win = pnl >= 0;
+        tradeResultEl.textContent = (win ? "✓ " : "✗ ") + sign + pnl.toFixed(2) + " USD";
+        tradeResultEl.className = "trade-result is-visible " + (win ? "trade-result--win" : "trade-result--lose");
       }
       if (tradeScoreEl) {
         tradeScoreEl.textContent = gameWins + " / " + gameTotal;
@@ -1751,13 +1769,14 @@
         cCtx.fillRect(c.x - c.w / 2, top, c.w, bH);
       }
 
-      if (entryMarker && chartState.candles[entryMarker.idx]) {
-        const m = chartState.candles[entryMarker.idx];
-        const isBuy = entryMarker.direction === "buy";
+      function drawMarker(marker, preview) {
+        if (!marker || !chartState.candles[marker.idx]) return;
+        const m = chartState.candles[marker.idx];
+        const isBuy = marker.direction === "buy";
         const arrowColor = isBuy ? GREEN : RED;
         const baseY = isBuy ? (m.low + 10) : (m.high - 10);
         const dir = isBuy ? -1 : 1;
-        cCtx.globalAlpha = alpha;
+        cCtx.globalAlpha = alpha * (preview ? 0.75 : 1);
         cCtx.strokeStyle = arrowColor;
         cCtx.fillStyle = arrowColor;
         cCtx.lineWidth = 1.2;
@@ -1772,6 +1791,8 @@
         cCtx.closePath();
         cCtx.fill();
       }
+      for (const t of openTrades) drawMarker(t, false);
+      if (pendingBet) drawMarker(pendingBet, true);
 
       cCtx.restore();
     }
@@ -1792,13 +1813,13 @@
         if (t <= DRAW_MS) {
           progress = t / DRAW_MS;
           upto = Math.floor(progress * chartState.candles.length);
+          currentVisibleIdx = Math.max(0, upto - 1);
 
           if (progress >= BET_CUTOFF && !gameLocked) {
             if (tradeBuyBtn) tradeBuyBtn.disabled = true;
             if (tradeSellBtn) tradeSellBtn.disabled = true;
-            if (!gameBet) {
-              pendingBet = null;
-              entryMarker = null;
+            pendingBet = null;
+            if (openTrades.length === 0) {
               if (tradeResultEl) {
                 tradeResultEl.className = "trade-result is-visible";
                 tradeResultEl.textContent = "Entry window closed";
@@ -1809,7 +1830,8 @@
         } else {
           progress = 1;
           upto = chartState.candles.length;
-          showGameResult(chartState.patternKey);
+          currentVisibleIdx = chartState.candles.length - 1;
+          showGameResult();
           if (t > DRAW_MS + HOLD_MS) {
             chartState.done = true;
             chartState.fading = true;
