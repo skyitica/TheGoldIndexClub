@@ -167,7 +167,8 @@
 
     .video-start-btn {
       pointer-events: none;
-      border: 1px solid rgba(255, 215, 0, 0.4);
+      position: relative;
+      border: 1px solid rgba(255, 215, 0, 0.72);
       background: rgba(255, 215, 0, 0.03);
       color: rgba(232, 201, 122, 0.92);
       border-radius: 10px;
@@ -178,7 +179,22 @@
       display: inline-flex;
       align-items: center;
       gap: 0.55rem;
-      transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+      transition: border-color 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+      animation: promptPulse 2s ease-in-out infinite, promptBob 2.2s ease-in-out infinite;
+    }
+
+    .video-start-btn::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 215, 0, 0.6);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.24);
+      transform: scale(0.95);
+      opacity: 0;
+      animation: promptPing 2s ease-out infinite;
+      pointer-events: none;
     }
 
     .video-start-overlay:hover .video-start-btn {
@@ -206,17 +222,52 @@
 
     .tap-ring {
       transform-origin: center;
-      animation: tapPulse 1.5s ease-out infinite;
+      animation: tapPulse 1.4s ease-out infinite;
     }
 
     .tap-ring.delay {
-      animation-delay: 0.35s;
+      animation-delay: 0.45s;
     }
 
     @keyframes tapPulse {
-      0% { opacity: 0.9; transform: scale(0.7); }
-      85% { opacity: 0; transform: scale(1.4); }
-      100% { opacity: 0; transform: scale(1.4); }
+      0% { opacity: 0.96; transform: scale(0.55); }
+      72% { opacity: 0.22; transform: scale(1.45); }
+      100% { opacity: 0; transform: scale(1.65); }
+    }
+
+    @keyframes promptPulse {
+      0%, 100% {
+        border-color: rgba(255, 215, 0, 0.58);
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.26);
+        background: rgba(255, 215, 0, 0.02);
+      }
+      50% {
+        border-color: rgba(255, 215, 0, 0.92);
+        box-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
+        background: rgba(255, 215, 0, 0.08);
+      }
+    }
+
+    @keyframes promptPing {
+      0% {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      16% {
+        opacity: 0.8;
+      }
+      70% {
+        opacity: 0.12;
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.42);
+      }
+    }
+
+    @keyframes promptBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
     }
 
     .hero-title {
