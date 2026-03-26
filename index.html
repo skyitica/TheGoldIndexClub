@@ -189,15 +189,21 @@
 
     .ticker-track {
       display: flex;
-      gap: 2.5rem;
       white-space: nowrap;
-      padding: 0.6rem 0;
       width: max-content;
       animation: tickerMove 22s linear infinite;
       color: #cbb071;
       font-size: 0.8rem;
       letter-spacing: 0.13em;
       text-transform: uppercase;
+    }
+
+    .ticker-group {
+      display: inline-flex;
+      gap: 2.5rem;
+      align-items: center;
+      padding: 0.6rem 2.5rem 0.6rem 0;
+      flex-shrink: 0;
     }
 
     @keyframes tickerMove {
@@ -532,16 +538,20 @@
 
     <div class="ticker-wrap" aria-label="market ticker">
       <div class="ticker-track">
-        <span>XAUUSD +1.2%</span>
-        <span>US30 +0.8%</span>
-        <span>GOLD $2,341</span>
-        <span>DOW 39,420</span>
-        <span>XAUUSD +0.4%</span>
-        <span>XAUUSD +1.2%</span>
-        <span>US30 +0.8%</span>
-        <span>GOLD $2,341</span>
-        <span>DOW 39,420</span>
-        <span>XAUUSD +0.4%</span>
+        <div class="ticker-group">
+          <span>XAUUSD +1.2%</span>
+          <span>US30 +0.8%</span>
+          <span>GOLD $2,341</span>
+          <span>DOW 39,420</span>
+          <span>XAUUSD +0.4%</span>
+        </div>
+        <div class="ticker-group" aria-hidden="true">
+          <span>XAUUSD +1.2%</span>
+          <span>US30 +0.8%</span>
+          <span>GOLD $2,341</span>
+          <span>DOW 39,420</span>
+          <span>XAUUSD +0.4%</span>
+        </div>
       </div>
     </div>
   </header>
