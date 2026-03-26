@@ -78,6 +78,7 @@
       isolation: isolate;
       border-bottom: 1px solid var(--border);
       overflow: hidden;
+      background: #000;
     }
 
     .hero-video {
@@ -172,6 +173,17 @@
     .hero-timed.is-visible {
       opacity: 1;
       transform: translateY(0);
+    }
+
+    .hero-timed.is-hidden-now {
+      opacity: 0 !important;
+      transform: translateY(0) !important;
+      transition: none !important;
+    }
+
+    .hero.video-ended .hero-video {
+      opacity: 0;
+      visibility: hidden;
     }
 
     @keyframes heroReveal {
@@ -775,17 +787,35 @@
 
   <script>
     const heroVideo = document.querySelector(".hero-video");
+    const heroSection = document.querySelector(".hero");
     const timedHeroElements = document.querySelectorAll(".hero-timed");
     const videoStartOverlay = document.getElementById("videoStartOverlay");
     const videoStartBtn = document.getElementById("videoStartBtn");
     const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
     let heroContentShown = false;
     let heroStarted = false;
+    let heroHiddenAtCut = false;
 
     function revealHeroContent() {
       if (heroContentShown) return;
       heroContentShown = true;
+      timedHeroElements.forEach((el) => el.classList.remove("is-hidden-now"));
       timedHeroElements.forEach((el) => el.classList.add("is-visible"));
+    }
+
+    function hideHeroContentNow() {
+      if (heroHiddenAtCut) return;
+      heroHiddenAtCut = true;
+      heroContentShown = false;
+      timedHeroElements.forEach((el) => {
+        el.classList.remove("is-visible");
+        el.classList.add("is-hidden-now");
+      });
+    }
+
+    function setEndedBlackScreenState() {
+      heroSection?.classList.add("video-ended");
+      revealHeroContent();
     }
 
     if (heroVideo) {
@@ -797,6 +827,9 @@
         if (!heroStarted) return;
         if (heroVideo.currentTime >= 9) {
           revealHeroContent();
+        }
+        if (heroVideo.currentTime >= 27.8) {
+          hideHeroContentNow();
         }
       });
 
@@ -813,13 +846,13 @@
 
       heroVideo.addEventListener("ended", () => {
         sessionStorage.setItem(HERO_VIDEO_ENDED_KEY, "1");
-        revealHeroContent();
+        setEndedBlackScreenState();
       });
 
       if (sessionStorage.getItem(HERO_VIDEO_ENDED_KEY) === "1") {
         heroStarted = true;
         videoStartOverlay?.classList.add("is-hidden");
-        revealHeroContent();
+        setEndedBlackScreenState();
         heroVideo.addEventListener("loadedmetadata", () => {
           heroVideo.currentTime = Math.max(heroVideo.duration - 0.08, 0);
           heroVideo.pause();
