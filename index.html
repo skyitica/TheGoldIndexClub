@@ -152,7 +152,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: flex-start;
-      padding: 0 1.2rem 3.2rem;
+      padding: 0 1.2rem 4.4rem;
       z-index: 4;
       pointer-events: auto;
       cursor: pointer;
@@ -300,6 +300,8 @@
       flex-wrap: nowrap;
       justify-content: flex-end;
       max-width: min(96vw, 980px);
+      opacity: 0;
+      pointer-events: none;
     }
 
     .trade-game-inner {
@@ -474,15 +476,15 @@
       }
     }
 
-    .hero.video-playing .trade-game {
-      opacity: 0;
-      pointer-events: none;
+    .hero.video-ended .trade-game {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .skip-video-btn {
       position: absolute;
       right: 1.2rem;
-      bottom: 3.2rem;
+      bottom: 4.4rem;
       z-index: 6;
       border: 1px solid rgba(255, 215, 0, 0.4);
       background: rgba(255, 215, 0, 0.02);
@@ -942,7 +944,7 @@
       <span class="trade-meta">
         <span class="trade-help" aria-label="How to play">
           i
-          <span class="trade-help-tip">Click Buy or Sell once to place a preview. Click the same side again to lock before cutoff. Win or lose is based on the detected pattern direction. Lot size scales P/L.</span>
+          <span class="trade-help-tip">Click Buy or Sell once to place a preview. Click the same side again to lock before cutoff. Entry window closes at 75% of each chart run. Win or lose is based on where price closes versus your entry. Lot size scales P/L.</span>
         </span>
       </span>
     </div>
@@ -1423,7 +1425,7 @@
     const DRAW_MS = 12000;
     const HOLD_MS = 1800;
     const FADE_MS = 900;
-    const BET_CUTOFF = 0.55;
+    const BET_CUTOFF = 0.75;
     const GAP_PX = 1;
 
     let chartState = null;
