@@ -1308,7 +1308,9 @@
         skipVideoBtn.classList.add("is-hidden");
         heroSection?.classList.add("skip-fade");
         setTimeout(() => {
-          document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          videoStartOverlay?.classList.add("is-hidden");
+          stopTimelineLoop();
+          setEndedBlackScreenState();
           heroSection?.classList.remove("skip-fade");
         }, 420);
       });
@@ -1721,30 +1723,6 @@
       };
     }
 
-    function drawPatternGuides(progress, alpha) {
-      if (!chartState || !cCtx) return;
-      const def = PATTERN_DEFS[chartState.patternKey];
-      if (!def || !def.guides) return;
-      const cw = chartCanvas.width / devicePixelRatio;
-      const ch = chartCanvas.height / devicePixelRatio;
-      const appear = clamp((progress - 0.28) / 0.22, 0, 1);
-      if (appear <= 0) return;
-
-      cCtx.save();
-      cCtx.globalAlpha = alpha * appear * 0.9;
-      cCtx.strokeStyle = "#2e6bff";
-      cCtx.lineWidth = 2;
-      cCtx.lineCap = "round";
-      for (const seg of def.guides) {
-        const [a, b] = seg;
-        cCtx.beginPath();
-        cCtx.moveTo(a[0] * cw, a[1] * ch);
-        cCtx.lineTo(b[0] * cw, b[1] * ch);
-        cCtx.stroke();
-      }
-      cCtx.restore();
-    }
-
     function drawCandles(alpha, upto, progress) {
       if (!cCtx) return;
       const cw = chartCanvas.width / devicePixelRatio;
@@ -1772,8 +1750,6 @@
         cCtx.fillStyle = color;
         cCtx.fillRect(c.x - c.w / 2, top, c.w, bH);
       }
-
-      drawPatternGuides(progress, alpha);
 
       if (entryMarker && chartState.candles[entryMarker.idx]) {
         const m = chartState.candles[entryMarker.idx];
