@@ -1294,14 +1294,11 @@
 
     const GREEN = "#26a69a";
     const RED = "#ef5350";
-    const WICK = "rgba(232, 201, 122, 0.7)";
-    const BODY_ALPHA = 0.95;
-
-    const CANDLE_COUNT = 88;
     const DRAW_MS = 12000;
     const HOLD_MS = 1800;
     const FADE_MS = 900;
     const BET_CUTOFF = 0.55;
+    const GAP_PX = 1;
 
     let chartState = null;
 
@@ -1313,181 +1310,76 @@
       if (cCtx) cCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
     }
 
-    function rand(min, max) {
-      return min + Math.random() * (max - min);
-    }
+    function rand(a, b) { return a + Math.random() * (b - a); }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function smoothstep(t) { const x = clamp(t, 0, 1); return x * x * (3 - 2 * x); }
 
-    function clamp(v, a, b) {
-      return Math.max(a, Math.min(b, v));
-    }
-
-    function lerp(a, b, t) {
-      return a + (b - a) * t;
-    }
-
-    function smoothstep(t) {
-      const x = clamp(t, 0, 1);
-      return x * x * (3 - 2 * x);
-    }
-
-    function sampleFromKeypoints(keypoints, n) {
-      // keypoints: [{x:0..1, y:0..1}, ...] sorted by x
+    function sampleCurve(kp, n) {
       const out = new Array(n);
       for (let i = 0; i < n; i++) {
         const t = i / (n - 1);
-        // find segment
         let j = 0;
-        while (j < keypoints.length - 2 && t > keypoints[j + 1].x) j++;
-        const k0 = keypoints[j];
-        const k1 = keypoints[j + 1];
-        const segT = (t - k0.x) / Math.max(1e-6, k1.x - k0.x);
-        const st = smoothstep(segT);
-        out[i] = lerp(k0.y, k1.y, st);
+        while (j < kp.length - 2 && t > kp[j + 1][0]) j++;
+        const seg = (t - kp[j][0]) / Math.max(1e-6, kp[j + 1][0] - kp[j][0]);
+        out[i] = lerp(kp[j][1], kp[j + 1][1], smoothstep(seg));
       }
       return out;
     }
 
-    function generateCloseY(patternKey, n, ch) {
-      // return y pixels (0..ch), where smaller y => higher price
-      const top = ch * 0.12;
-      const bottom = ch * 0.88;
-      const height = bottom - top;
-
-      let yNorm = new Array(n);
-      const tEnd = n - 1;
-
-      const keys = (arr) => arr.map((p) => ({ x: p.x, y: p.y }));
-      if (patternKey === "headShoulders") {
-        yNorm = sampleFromKeypoints(keys([
-          { x: 0.0, y: 0.52 },
-          { x: 0.18, y: 0.44 },
-          { x: 0.34, y: 0.22 }, // head peak
-          { x: 0.50, y: 0.42 }, // right shoulder
-          { x: 0.66, y: 0.54 }, // neckline
-          { x: 0.84, y: 0.72 }, // breakdown
-          { x: 1.0, y: 0.80 }
-        ]), n);
-      } else if (patternKey === "inverseHeadShoulders") {
-        yNorm = sampleFromKeypoints(keys([
-          { x: 0.0, y: 0.50 },
-          { x: 0.18, y: 0.62 },
-          { x: 0.34, y: 0.78 }, // head valley
-          { x: 0.50, y: 0.64 },
-          { x: 0.66, y: 0.52 },
-          { x: 0.84, y: 0.30 }, // breakout up
-          { x: 1.0, y: 0.26 }
-        ]), n);
-      } else if (patternKey === "doubleTop") {
-        yNorm = sampleFromKeypoints(keys([
-          { x: 0.0, y: 0.50 },
-          { x: 0.18, y: 0.36 },
-          { x: 0.34, y: 0.52 },
-          { x: 0.50, y: 0.37 },
-          { x: 0.66, y: 0.60 },
-          { x: 1.0, y: 0.80 }
-        ]), n);
-      } else if (patternKey === "tripleTop") {
-        yNorm = sampleFromKeypoints(keys([
-          { x: 0.0, y: 0.50 },
-          { x: 0.14, y: 0.34 },
-          { x: 0.26, y: 0.52 },
-          { x: 0.40, y: 0.33 },
-          { x: 0.52, y: 0.54 },
-          { x: 0.66, y: 0.35 },
-          { x: 0.78, y: 0.62 },
-          { x: 1.0, y: 0.80 }
-        ]), n);
-      } else if (patternKey === "doubleBottom") {
-        yNorm = sampleFromKeypoints(keys([
-          { x: 0.0, y: 0.48 },
-          { x: 0.18, y: 0.68 },
-          { x: 0.34, y: 0.58 },
-          { x: 0.50, y: 0.69 },
-          { x: 0.66, y: 0.54 },
-          { x: 1.0, y: 0.28 }
-        ]), n);
-      } else if (patternKey === "tripleBottom") {
-        yNorm = sampleFromKeypoints(keys([
-          { x: 0.0, y: 0.50 },
-          { x: 0.14, y: 0.70 },
-          { x: 0.28, y: 0.58 },
-          { x: 0.42, y: 0.72 },
-          { x: 0.56, y: 0.60 },
-          { x: 0.70, y: 0.71 },
-          { x: 0.84, y: 0.52 },
-          { x: 1.0, y: 0.30 }
-        ]), n);
-      } else if (patternKey === "risingWedge") {
-        // bearish wedge: rising with shrinking amplitude, then breakdown
-        for (let i = 0; i < n; i++) {
-          const t = i / tEnd;
-          const center = lerp(0.64, 0.44, t); // upward drift
-          const range = lerp(0.20, 0.08, t); // converging
-          const wave = Math.sin(t * Math.PI * 7);
-          let v = center - wave * range * 0.35;
-          if (t > 0.82) {
-            v += ((t - 0.82) / 0.18) * 0.28; // breakdown
-          }
-          yNorm[i] = v;
-        }
-      } else if (patternKey === "fallingWedge") {
-        // bullish wedge: falling with shrinking amplitude, then breakout up
-        for (let i = 0; i < n; i++) {
-          const t = i / tEnd;
-          const center = lerp(0.42, 0.60, t); // downward drift
-          const range = lerp(0.20, 0.08, t);
-          const wave = Math.sin(t * Math.PI * 7);
-          let v = center + wave * range * 0.35;
-          if (t > 0.82) {
-            v -= ((t - 0.82) / 0.18) * 0.28; // breakout up
-          }
-          yNorm[i] = v;
-        }
-      }
-
-      // add small smoothing/noise to feel "market"
-      for (let i = 0; i < n; i++) {
-        yNorm[i] = clamp(yNorm[i] + rand(-0.012, 0.012), 0.06, 0.94);
-      }
-
-      const out = new Array(n);
-      for (let i = 0; i < n; i++) {
-        out[i] = top + yNorm[i] * height;
-      }
-      return out;
+    function patternCurve(key, n) {
+      const P = {
+        headShoulders:        [[0,.52],[.12,.48],[.22,.38],[.34,.22],[.44,.40],[.52,.50],[.62,.38],[.72,.50],[.80,.56],[.90,.70],[1,.80]],
+        inverseHeadShoulders: [[0,.48],[.12,.54],[.22,.62],[.34,.78],[.44,.62],[.52,.50],[.62,.60],[.72,.50],[.80,.42],[.90,.30],[1,.22]],
+        doubleTop:            [[0,.55],[.10,.48],[.20,.36],[.30,.48],[.38,.52],[.48,.36],[.58,.50],[.68,.58],[.80,.68],[1,.80]],
+        tripleTop:            [[0,.54],[.10,.42],[.18,.34],[.26,.46],[.34,.52],[.42,.35],[.50,.48],[.58,.52],[.66,.36],[.74,.50],[.82,.60],[1,.78]],
+        doubleBottom:         [[0,.45],[.10,.52],[.20,.66],[.30,.54],[.38,.48],[.48,.67],[.58,.52],[.68,.42],[.80,.32],[1,.22]],
+        tripleBottom:         [[0,.46],[.10,.56],[.18,.68],[.26,.56],[.34,.48],[.42,.70],[.50,.55],[.58,.48],[.66,.69],[.74,.52],[.82,.40],[1,.24]],
+        risingWedge:          [[0,.62],[.08,.56],[.16,.50],[.24,.46],[.32,.42],[.40,.39],[.48,.36],[.56,.34],[.64,.32],[.72,.30],[.80,.30],[.88,.42],[.94,.56],[1,.68]],
+        fallingWedge:         [[0,.38],[.08,.44],[.16,.50],[.24,.54],[.32,.58],[.40,.61],[.48,.64],[.56,.66],[.64,.68],[.72,.70],[.80,.70],[.88,.58],[.94,.44],[1,.32]]
+      };
+      return sampleCurve(P[key] || P.headShoulders, n);
     }
 
-    function generateCandles(patternKey, cw, ch) {
-      const step = cw / CANDLE_COUNT;
-      const candleW = Math.max(2, step * 0.55);
-      const closeY = generateCloseY(patternKey, CANDLE_COUNT, ch);
+    function generateCandles(key, cw, ch) {
+      const bodyW = 5;
+      const slot = bodyW + GAP_PX;
+      const count = Math.floor(cw / slot);
+      const pad = ch * 0.10;
+      const priceH = ch - pad * 2;
 
-      const candles = new Array(CANDLE_COUNT);
-      for (let i = 0; i < CANDLE_COUNT; i++) {
-        const close = closeY[i];
-        const open = i === 0 ? close + rand(-4, 4) : candles[i - 1].closeY + rand(-2, 2);
-        const isBull = close < open;
+      const curve = patternCurve(key, count);
 
-        const bodyTop = Math.min(open, close);
-        const bodyBot = Math.max(open, close);
-        const bodyH = Math.max(2, bodyBot - bodyTop);
+      const candles = [];
+      let prevClose = pad + curve[0] * priceH;
 
-        const upWick = rand(1, bodyH * 0.5 + 3);
-        const dnWick = rand(1, bodyH * 0.5 + 3);
-        const high = Math.max(0, bodyTop - upWick);
-        const low = Math.min(ch, bodyBot + dnWick);
+      for (let i = 0; i < count; i++) {
+        const target = pad + curve[i] * priceH;
+        const noise = rand(-priceH * 0.018, priceH * 0.018);
+        const close = clamp(target + noise, pad, ch - pad);
+        const open = prevClose;
+        prevClose = close;
 
-        candles[i] = {
-          x: step * 0.5 + i * step,
-          w: candleW,
-          highY: high,
-          lowY: low,
-          openY: open,
-          closeY: close,
-          bull: isBull
-        };
+        const bull = close < open;
+        const top = Math.min(open, close);
+        const bot = Math.max(open, close);
+        const bH = Math.max(1.5, bot - top);
+
+        const wickUp = rand(0.5, bH * 0.7 + 2);
+        const wickDn = rand(0.5, bH * 0.7 + 2);
+        const high = Math.max(pad * 0.5, top - wickUp);
+        const low = Math.min(ch - pad * 0.5, bot + wickDn);
+
+        candles.push({
+          x: slot * 0.5 + i * slot,
+          w: bodyW,
+          high: high,
+          low: low,
+          open: open,
+          close: close,
+          bull: bull
+        });
       }
-
       return candles;
     }
 
@@ -1587,29 +1479,24 @@
       if (!chartState) return;
 
       cCtx.save();
-      cCtx.globalAlpha = alpha;
-
       const count = Math.min(upto, chartState.candles.length);
       for (let i = 0; i < count; i++) {
-        const cd = chartState.candles[i];
-        const color = cd.bull ? GREEN : RED;
+        const c = chartState.candles[i];
+        const color = c.bull ? GREEN : RED;
 
-        // wick
-        cCtx.globalAlpha = alpha;
-        cCtx.strokeStyle = WICK;
-        cCtx.lineWidth = 1.4;
+        cCtx.globalAlpha = alpha * 0.85;
+        cCtx.strokeStyle = color;
+        cCtx.lineWidth = 1;
         cCtx.beginPath();
-        cCtx.moveTo(cd.x, cd.highY);
-        cCtx.lineTo(cd.x, cd.lowY);
+        cCtx.moveTo(c.x, c.high);
+        cCtx.lineTo(c.x, c.low);
         cCtx.stroke();
 
-        // body
-        const top = Math.min(cd.openY, cd.closeY);
-        const bot = Math.max(cd.openY, cd.closeY);
-        const bodyH = Math.max(2, bot - top);
+        const top = Math.min(c.open, c.close);
+        const bH = Math.max(1.5, Math.abs(c.open - c.close));
+        cCtx.globalAlpha = alpha;
         cCtx.fillStyle = color;
-        cCtx.globalAlpha = alpha * BODY_ALPHA;
-        cCtx.fillRect(cd.x - cd.w / 2, top, cd.w, bodyH);
+        cCtx.fillRect(c.x - c.w / 2, top, c.w, bH);
       }
 
       cCtx.restore();
