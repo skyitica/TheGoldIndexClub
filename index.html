@@ -37,7 +37,6 @@
       color: var(--text-primary);
       font-family: "DM Mono", monospace;
       line-height: 1.55;
-      cursor: none;
       overflow-x: hidden;
     }
 
@@ -69,42 +68,6 @@
 
     .muted {
       color: var(--text-muted);
-    }
-
-    .site-cursor {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 20px;
-      height: 20px;
-      pointer-events: none;
-      z-index: 10000;
-      mix-blend-mode: screen;
-      transform: translate(-50%, -50%);
-    }
-
-    .site-cursor::before,
-    .site-cursor::after {
-      content: "";
-      position: absolute;
-      background: var(--gold);
-      box-shadow: 0 0 10px rgba(201, 168, 76, 0.75);
-    }
-
-    .site-cursor::before {
-      left: 50%;
-      top: 0;
-      width: 1px;
-      height: 100%;
-      transform: translateX(-50%);
-    }
-
-    .site-cursor::after {
-      left: 0;
-      top: 50%;
-      height: 1px;
-      width: 100%;
-      transform: translateY(-50%);
     }
 
     .hero {
@@ -546,8 +509,6 @@
     }
 
     @media (max-width: 768px) {
-      body { cursor: auto; }
-      .site-cursor { display: none; }
       .stats-grid,
       .features-grid,
       .testimonials-grid,
@@ -570,11 +531,9 @@
   </style>
 </head>
 <body>
-  <div class="site-cursor" aria-hidden="true"></div>
-
   <header class="hero" id="top">
     <video class="hero-video" autoplay muted loop playsinline>
-      <source src="/Users/danteking/Downloads/14003933-uhd_3840_2160_60fps.mp4" type="video/mp4" />
+      <source src="assets/hero.mp4" type="video/mp4" />
     </video>
     <svg class="chart-bg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
       <defs>
@@ -790,27 +749,6 @@
   </footer>
 
   <script>
-    const cursor = document.querySelector(".site-cursor");
-    let cursorX = window.innerWidth / 2;
-    let cursorY = window.innerHeight / 2;
-    let renderX = cursorX;
-    let renderY = cursorY;
-
-    window.addEventListener("mousemove", (event) => {
-      cursorX = event.clientX;
-      cursorY = event.clientY;
-    });
-
-    function animateCursor() {
-      renderX += (cursorX - renderX) * 0.18;
-      renderY += (cursorY - renderY) * 0.18;
-      if (cursor) {
-        cursor.style.transform = "translate(" + renderX + "px, " + renderY + "px) translate(-50%, -50%)";
-      }
-      requestAnimationFrame(animateCursor);
-    }
-    animateCursor();
-
     const statElements = document.querySelectorAll(".stat-value");
     const statsObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
