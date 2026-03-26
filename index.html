@@ -253,8 +253,10 @@
       display: inline-flex;
       gap: 2.5rem;
       align-items: center;
-      padding: 0.6rem 2.5rem 0.6rem 0;
+      padding: 0.6rem 2.5rem;
       flex-shrink: 0;
+      min-width: 100vw;
+      justify-content: space-around;
     }
 
     @keyframes tickerMove {
@@ -567,7 +569,7 @@
 </head>
 <body>
   <header class="hero" id="top">
-    <video class="hero-video" playsinline preload="auto">
+    <video class="hero-video" playsinline preload="metadata">
       <source src="assets/hero.mp4" type="video/mp4" />
     </video>
     <div class="video-start-overlay" id="videoStartOverlay">
@@ -793,9 +795,12 @@
     const videoStartOverlay = document.getElementById("videoStartOverlay");
     const videoStartBtn = document.getElementById("videoStartBtn");
     const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
+    const HERO_REVEAL_TIME = 9;
+    const HERO_HIDE_TIME = 27.8;
     let heroContentShown = false;
     let heroStarted = false;
     let heroHiddenAtCut = false;
+    let heroTimelineRaf = null;
 
     function revealHeroContent() {
       if (heroContentShown) return;
@@ -819,59 +824,80 @@
       revealHeroContent();
     }
 
+    function syncHeroTimelineToVideo() {
+      if (!heroVideo || !heroStarted) return;
+      const t = heroVideo.currentTime;
+      if (t >= HERO_HIDE_TIME) {
+        hideHeroContentNow();
+        return;
+      }
+      if (t >= HERO_REVEAL_TIME) {
+        revealHeroContent();
+      }
+    }
+
+    function stopTimelineLoop() {
+      if (heroTimelineRaf) {
+        cancelAnimationFrame(heroTimelineRaf);
+        heroTimelineRaf = null;
+      }
+    }
+
+    function startTimelineLoop() {
+      stopTimelineLoop();
+      const tick = () => {
+        syncHeroTimelineToVideo();
+        if (!heroVideo.paused && !heroVideo.ended) {
+          heroTimelineRaf = requestAnimationFrame(tick);
+        }
+      };
+      heroTimelineRaf = requestAnimationFrame(tick);
+    }
+
     if (heroVideo) {
       heroVideo.muted = false;
       heroVideo.volume = 1;
       heroVideo.loop = false;
 
-      heroVideo.addEventListener("timeupdate", () => {
-        if (!heroStarted) return;
-        if (heroVideo.currentTime >= 9) {
-          revealHeroContent();
-        }
-        if (heroVideo.currentTime >= 27.8) {
-          hideHeroContentNow();
-        }
-      });
+      heroVideo.addEventListener("timeupdate", syncHeroTimelineToVideo);
+      heroVideo.addEventListener("seeking", syncHeroTimelineToVideo);
+      heroVideo.addEventListener("seeked", syncHeroTimelineToVideo);
+      heroVideo.addEventListener("play", startTimelineLoop);
+      heroVideo.addEventListener("pause", stopTimelineLoop);
 
       async function startHeroVideo() {
         if (heroStarted) return;
         heroStarted = true;
+        heroHiddenAtCut = false;
         heroVideo.muted = false;
         if (videoStartBtn) {
           videoStartBtn.textContent = "Buffering video...";
           videoStartBtn.disabled = true;
         }
 
-        let playbackStarted = false;
-        const startPlayback = () => {
-          if (playbackStarted) return;
-          playbackStarted = true;
+        const onPlaying = () => {
           videoStartOverlay?.classList.add("is-hidden");
-          heroVideo.play().catch(() => {
-            heroStarted = false;
-            if (videoStartBtn) {
-              videoStartBtn.textContent = "Click to start video with sound";
-              videoStartBtn.disabled = false;
-            }
-            videoStartOverlay?.classList.remove("is-hidden");
-          });
+          if (videoStartBtn) {
+            videoStartBtn.textContent = "Playing";
+          }
         };
+        heroVideo.addEventListener("playing", onPlaying, { once: true });
 
-        if (heroVideo.readyState >= 3) {
-          startPlayback();
-          return;
-        }
-
-        heroVideo.addEventListener("canplaythrough", startPlayback, { once: true });
-        heroVideo.addEventListener("canplay", startPlayback, { once: true });
-        setTimeout(startPlayback, 1600);
+        heroVideo.play().catch(() => {
+          heroStarted = false;
+          if (videoStartBtn) {
+            videoStartBtn.textContent = "Click to start video with sound";
+            videoStartBtn.disabled = false;
+          }
+          videoStartOverlay?.classList.remove("is-hidden");
+        });
       }
 
       videoStartBtn?.addEventListener("click", startHeroVideo);
       heroVideo.addEventListener("click", startHeroVideo);
 
       heroVideo.addEventListener("ended", () => {
+        stopTimelineLoop();
         sessionStorage.setItem(HERO_VIDEO_ENDED_KEY, "1");
         setEndedBlackScreenState();
       });
@@ -885,6 +911,9 @@
           heroVideo.pause();
         }, { once: true });
       }
+
+      // Warm metadata early so first frame/playback starts faster.
+      heroVideo.load();
 
       // Warm the video cache as early as possible for smoother playback.
       const shouldPrefetch = !navigator.connection || (!navigator.connection.saveData && navigator.connection.effectiveType !== "2g");
