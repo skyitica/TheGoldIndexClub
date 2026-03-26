@@ -110,6 +110,42 @@
       z-index: 2;
     }
 
+    .video-start-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 4;
+      pointer-events: none;
+      transition: opacity 260ms ease;
+    }
+
+    .video-start-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .video-start-btn {
+      pointer-events: auto;
+      border: 1px solid var(--gold);
+      background: rgba(8, 8, 8, 0.58);
+      color: var(--gold-light);
+      border-radius: 999px;
+      padding: 0.62rem 1rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      cursor: pointer;
+      backdrop-filter: blur(1px);
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .video-start-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--gold-light);
+      box-shadow: 0 0 16px rgba(201, 168, 76, 0.35);
+    }
+
     .hero-title {
       font-family: "Cormorant Garamond", serif;
       font-size: clamp(2.6rem, 7vw, 5.1rem);
@@ -518,9 +554,12 @@
 </head>
 <body>
   <header class="hero" id="top">
-    <video class="hero-video" autoplay loop playsinline>
+    <video class="hero-video" playsinline preload="metadata">
       <source src="assets/hero.mp4" type="video/mp4" />
     </video>
+    <div class="video-start-overlay" id="videoStartOverlay">
+      <button class="video-start-btn" id="videoStartBtn" type="button">Click to start video with sound</button>
+    </div>
     <svg class="chart-bg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <style>
@@ -737,7 +776,11 @@
   <script>
     const heroVideo = document.querySelector(".hero-video");
     const timedHeroElements = document.querySelectorAll(".hero-timed");
+    const videoStartOverlay = document.getElementById("videoStartOverlay");
+    const videoStartBtn = document.getElementById("videoStartBtn");
+    const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
     let heroContentShown = false;
+    let heroStarted = false;
 
     function revealHeroContent() {
       if (heroContentShown) return;
@@ -748,24 +791,40 @@
     if (heroVideo) {
       heroVideo.muted = false;
       heroVideo.volume = 1;
+      heroVideo.loop = false;
 
       heroVideo.addEventListener("timeupdate", () => {
+        if (!heroStarted) return;
         if (heroVideo.currentTime >= 9) {
           revealHeroContent();
         }
       });
 
-      // Fallback in case timeupdate is delayed or autoplay is blocked.
-      setTimeout(revealHeroContent, 9500);
-
-      // Most browsers block autoplay with audio; unmute playback on first user gesture.
-      function enableAudioPlayback() {
+      function startHeroVideo() {
+        if (heroStarted) return;
+        heroStarted = true;
         heroVideo.muted = false;
+        videoStartOverlay?.classList.add("is-hidden");
         heroVideo.play().catch(() => {});
       }
 
-      document.addEventListener("click", enableAudioPlayback, { once: true });
-      document.addEventListener("touchstart", enableAudioPlayback, { once: true });
+      videoStartBtn?.addEventListener("click", startHeroVideo);
+      heroVideo.addEventListener("click", startHeroVideo);
+
+      heroVideo.addEventListener("ended", () => {
+        sessionStorage.setItem(HERO_VIDEO_ENDED_KEY, "1");
+        revealHeroContent();
+      });
+
+      if (sessionStorage.getItem(HERO_VIDEO_ENDED_KEY) === "1") {
+        heroStarted = true;
+        videoStartOverlay?.classList.add("is-hidden");
+        revealHeroContent();
+        heroVideo.addEventListener("loadedmetadata", () => {
+          heroVideo.currentTime = Math.max(heroVideo.duration - 0.08, 0);
+          heroVideo.pause();
+        }, { once: true });
+      }
     }
 
     const statElements = document.querySelectorAll(".stat-value");
