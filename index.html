@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/hero.mp4" as="video" type="video/mp4">
   <style>
     :root {
       --bg: #0a0a0a;
@@ -566,7 +567,7 @@
 </head>
 <body>
   <header class="hero" id="top">
-    <video class="hero-video" playsinline preload="metadata">
+    <video class="hero-video" playsinline preload="auto">
       <source src="assets/hero.mp4" type="video/mp4" />
     </video>
     <div class="video-start-overlay" id="videoStartOverlay">
@@ -833,12 +834,38 @@
         }
       });
 
-      function startHeroVideo() {
+      async function startHeroVideo() {
         if (heroStarted) return;
         heroStarted = true;
         heroVideo.muted = false;
-        videoStartOverlay?.classList.add("is-hidden");
-        heroVideo.play().catch(() => {});
+        if (videoStartBtn) {
+          videoStartBtn.textContent = "Buffering video...";
+          videoStartBtn.disabled = true;
+        }
+
+        let playbackStarted = false;
+        const startPlayback = () => {
+          if (playbackStarted) return;
+          playbackStarted = true;
+          videoStartOverlay?.classList.add("is-hidden");
+          heroVideo.play().catch(() => {
+            heroStarted = false;
+            if (videoStartBtn) {
+              videoStartBtn.textContent = "Click to start video with sound";
+              videoStartBtn.disabled = false;
+            }
+            videoStartOverlay?.classList.remove("is-hidden");
+          });
+        };
+
+        if (heroVideo.readyState >= 3) {
+          startPlayback();
+          return;
+        }
+
+        heroVideo.addEventListener("canplaythrough", startPlayback, { once: true });
+        heroVideo.addEventListener("canplay", startPlayback, { once: true });
+        setTimeout(startPlayback, 1600);
       }
 
       videoStartBtn?.addEventListener("click", startHeroVideo);
@@ -857,6 +884,13 @@
           heroVideo.currentTime = Math.max(heroVideo.duration - 0.08, 0);
           heroVideo.pause();
         }, { once: true });
+      }
+
+      // Warm the video cache as early as possible for smoother playback.
+      const shouldPrefetch = !navigator.connection || (!navigator.connection.saveData && navigator.connection.effectiveType !== "2g");
+      if (shouldPrefetch) {
+        const videoSource = heroVideo.currentSrc || heroVideo.querySelector("source")?.src || "assets/hero.mp4";
+        fetch(videoSource, { cache: "force-cache" }).catch(() => {});
       }
     }
 
