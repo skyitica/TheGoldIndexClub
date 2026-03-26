@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Gold Index Club | Premium US30 & Gold Signals</title>
+  <meta name="description" content="Trade smarter with Percival's premium US30 and XAUUSD trading signals. Join The Gold Index Club." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --border: #1e1e1e;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --green-candle: #26a69a;
+      --red-candle: #ef5350;
+      --text-primary: #f0f0f0;
+      --text-muted: #666666;
+      --container: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: "DM Mono", monospace;
+      line-height: 1.55;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(100% - 2rem, var(--container));
+      margin-inline: auto;
+    }
+
+    .section-label {
+      display: inline-block;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 0.72rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      letter-spacing: 0.02em;
+      margin-bottom: 1.25rem;
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+
+    .site-cursor {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 10000;
+      mix-blend-mode: screen;
+      transform: translate(-50%, -50%);
+    }
+
+    .site-cursor::before,
+    .site-cursor::after {
+      content: "";
+      position: absolute;
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.75);
+    }
+
+    .site-cursor::before {
+      left: 50%;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      transform: translateX(-50%);
+    }
+
+    .site-cursor::after {
+      left: 0;
+      top: 50%;
+      height: 1px;
+      width: 100%;
+      transform: translateY(-50%);
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      align-items: center;
+      position: relative;
+      isolation: isolate;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .hero-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.13;
+      filter: saturate(0.4) contrast(1.1) brightness(0.45);
+      z-index: -4;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(201, 168, 76, 0.09), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(201, 168, 76, 0.06), transparent 45%),
+        linear-gradient(180deg, rgba(10, 10, 10, 0.56), rgba(10, 10, 10, 0.9));
+      z-index: -3;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      opacity: 0.23;
+      background-image:
+        radial-gradient(rgba(201, 168, 76, 0.28) 0.8px, transparent 0.8px),
+        radial-gradient(rgba(201, 168, 76, 0.16) 0.8px, transparent 0.8px);
+      background-size: 3px 3px, 5px 5px;
+      background-position: 0 0, 1px 1px;
+      mix-blend-mode: screen;
+    }
+
+    .chart-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.18;
+      z-index: -1;
+    }
+
+    .hero-content {
+      padding-block: 6rem 5rem;
+      max-width: 780px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.6rem, 7vw, 5.1rem);
+      line-height: 1.05;
+      margin-bottom: 1.1rem;
+      letter-spacing: 0.02em;
+      text-wrap: balance;
+    }
+
+    .hero-subtitle {
+      color: #c7c7c7;
+      max-width: 62ch;
+      margin-bottom: 2rem;
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+    }
+
+    .hero-animate {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: heroReveal 700ms ease forwards;
+    }
+
+    .hero-animate:nth-child(1) { animation-delay: 120ms; }
+    .hero-animate:nth-child(2) { animation-delay: 320ms; }
+    .hero-animate:nth-child(3) { animation-delay: 520ms; }
+
+    @keyframes heroReveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.85rem 1.35rem;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      background: #0d0d0d;
+      color: var(--gold-light);
+      font-size: 0.88rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: transform 200ms ease, box-shadow 220ms ease, border-color 220ms ease;
+      box-shadow: 0 0 0 rgba(201, 168, 76, 0.3);
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--gold-light);
+      box-shadow: 0 0 26px rgba(201, 168, 76, 0.28), inset 0 0 16px rgba(201, 168, 76, 0.11);
+    }
+
+    .cta-pulse {
+      animation: pulseGold 3.2s ease-in-out infinite;
+    }
+
+    @keyframes pulseGold {
+      0%, 100% { box-shadow: 0 0 0 rgba(201, 168, 76, 0.15); }
+      50% { box-shadow: 0 0 22px rgba(201, 168, 76, 0.35), inset 0 0 10px rgba(201, 168, 76, 0.14); }
+    }
+
+    .ticker-wrap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0.7rem;
+      overflow: hidden;
+      border-top: 1px solid rgba(201, 168, 76, 0.17);
+      border-bottom: 1px solid rgba(201, 168, 76, 0.17);
+      background: rgba(7, 7, 7, 0.62);
+      backdrop-filter: blur(2px);
+      z-index: 3;
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 2.5rem;
+      white-space: nowrap;
+      padding: 0.6rem 0;
+      width: max-content;
+      animation: tickerMove 22s linear infinite;
+      color: #cbb071;
+      font-size: 0.8rem;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    @keyframes tickerMove {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .stats-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: #0d0d0d;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    .stat {
+      padding: 1.6rem 0.6rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .stat:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .stat-value {
+      font-family: "Cormorant Garamond", serif;
+      color: var(--gold-light);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    section {
+      padding-block: 5rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1.4rem;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-top: 2px solid rgba(201, 168, 76, 0.45);
+      background: linear-gradient(180deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.95));
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201, 168, 76, 0.5);
+      box-shadow: 0 0 26px rgba(201, 168, 76, 0.12);
+    }
+
+    .card h3 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.5rem;
+      margin: 0.7rem 0 0.45rem;
+      letter-spacing: 0.01em;
+    }
+
+    .card p {
+      color: #b6b6b6;
+      font-size: 0.9rem;
+    }
+
+    .icon-svg {
+      width: 54px;
+      height: 54px;
+      stroke: var(--gold);
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .how-grid {
+      margin-top: 1.2rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.9rem;
+      position: relative;
+    }
+
+    .how-grid::before {
+      content: "";
+      position: absolute;
+      left: 16%;
+      right: 16%;
+      top: 34%;
+      border-top: 2px dotted rgba(201, 168, 76, 0.45);
+      animation: dashFloat 2.7s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes dashFloat {
+      to { transform: translateX(10px); }
+    }
+
+    .how-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-number {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      border-radius: 999px;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      margin-bottom: 0.7rem;
+    }
+
+    .how-step h4 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.35rem;
+      margin: 0.4rem 0;
+    }
+
+    .testimonials-grid {
+      margin-top: 1.2rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .testimonial {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem;
+    }
+
+    .stars {
+      color: var(--gold-light);
+      letter-spacing: 0.12em;
+      margin-bottom: 0.7rem;
+      font-size: 0.9rem;
+    }
+
+    .quote {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.25rem;
+      line-height: 1.35;
+      color: #e4e4e4;
+      margin-bottom: 0.8rem;
+    }
+
+    .pricing-wrap {
+      text-align: center;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(18, 18, 18, 0.95), rgba(11, 11, 11, 0.96));
+      border-radius: 16px;
+      max-width: 760px;
+      margin-inline: auto;
+      padding: 2rem 1.2rem;
+      box-shadow: inset 0 0 30px rgba(201, 168, 76, 0.06);
+    }
+
+    .pricing-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin-bottom: 0.3rem;
+    }
+
+    .price {
+      color: var(--gold-light);
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      font-family: "Cormorant Garamond", serif;
+      margin-bottom: 1rem;
+    }
+
+    .benefits {
+      list-style: none;
+      margin: 0 auto 1.5rem;
+      max-width: 520px;
+      text-align: left;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .benefits li {
+      color: #c7c7c7;
+      padding-left: 1.4rem;
+      position: relative;
+    }
+
+    .benefits li::before {
+      content: "◆";
+      color: var(--gold);
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.3rem 0 1.8rem;
+      background: #090909;
+    }
+
+    .footer-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.7rem;
+      font-size: 0.8rem;
+      color: #8e8e8e;
+    }
+
+    .footer-logo {
+      font-family: "Cormorant Garamond", serif;
+      color: var(--gold-light);
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+    }
+
+    .footer-nav {
+      display: inline-flex;
+      gap: 1rem;
+      color: #a2a2a2;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.68rem;
+    }
+
+    .footer-copy {
+      text-align: right;
+    }
+
+    .risk {
+      margin-top: 0.6rem;
+      color: #666;
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
+    @media (max-width: 920px) {
+      .stats-grid,
+      .features-grid,
+      .testimonials-grid,
+      .how-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .how-grid::before {
+        display: none;
+      }
+
+      .footer-row {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .footer-copy {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+      .site-cursor { display: none; }
+      .stats-grid,
+      .features-grid,
+      .testimonials-grid,
+      .how-grid {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding-block: 3.9rem;
+      }
+
+      .hero-content {
+        padding-block: 5.3rem 5.8rem;
+      }
+
+      .ticker-track {
+        font-size: 0.72rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="site-cursor" aria-hidden="true"></div>
+
+  <header class="hero" id="top">
+    <video class="hero-video" autoplay muted loop playsinline>
+      <source src="/Users/danteking/Downloads/14003933-uhd_3840_2160_60fps.mp4" type="video/mp4" />
+    </video>
+    <svg class="chart-bg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <style>
+          .wick { stroke-width: 3; }
+          .body { opacity: 0.85; }
+        </style>
+      </defs>
+      <g id="candles"></g>
+    </svg>
+
+    <div class="container hero-content">
+      <span class="section-label hero-animate">Premium Signal Desk</span>
+      <h1 class="hero-title hero-animate">Trade Smarter. Follow Percival.</h1>
+      <p class="hero-subtitle hero-animate">Precision signals on US30 &amp; Gold - delivered before the move.</p>
+      <a href="#payment" class="cta-btn hero-animate">Join The Club &rarr;</a>
+    </div>
+
+    <div class="ticker-wrap" aria-label="market ticker">
+      <div class="ticker-track">
+        <span>XAUUSD +1.2%</span>
+        <span>US30 +0.8%</span>
+        <span>GOLD $2,341</span>
+        <span>DOW 39,420</span>
+        <span>XAUUSD +0.4%</span>
+        <span>XAUUSD +1.2%</span>
+        <span>US30 +0.8%</span>
+        <span>GOLD $2,341</span>
+        <span>DOW 39,420</span>
+        <span>XAUUSD +0.4%</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats-bar">
+    <div class="container stats-grid">
+      <article class="stat">
+        <div class="stat-value" data-target="847" data-suffix="+">0</div>
+        <div class="stat-label">Members</div>
+      </article>
+      <article class="stat">
+        <div class="stat-value" data-target="92" data-suffix="%">0</div>
+        <div class="stat-label">Signal Accuracy</div>
+      </article>
+      <article class="stat">
+        <div class="stat-value" data-target="3" data-suffix=" Years">0</div>
+        <div class="stat-label">Active</div>
+      </article>
+      <article class="stat">
+        <div class="stat-value" data-target="2" data-suffix="">0</div>
+        <div class="stat-label">Instruments</div>
+      </article>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="container">
+      <span class="section-label">What You Get</span>
+      <h2 class="section-title">Professional Precision, Delivered Daily</h2>
+      <p class="muted">Built for disciplined traders who want timely entries, controlled risk, and clear execution.</p>
+
+      <div class="features-grid">
+        <article class="card">
+          <svg class="icon-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M8 54H56" />
+            <line x1="16" y1="45" x2="16" y2="25"/>
+            <rect x="12" y="30" width="8" height="12"/>
+            <line x1="30" y1="39" x2="30" y2="14"/>
+            <rect x="26" y="18" width="8" height="16"/>
+            <line x1="44" y1="47" x2="44" y2="22"/>
+            <rect x="40" y="28" width="8" height="15"/>
+            <polyline points="10,18 23,12 35,16 50,8"/>
+            <polyline points="46,7 50,8 49,12"/>
+          </svg>
+          <h3>Daily Signals</h3>
+          <p>High-conviction setups on US30 and XAUUSD with entries aligned to current market structure.</p>
+        </article>
+
+        <article class="card">
+          <svg class="icon-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="8" y="12" width="48" height="38" rx="3"/>
+            <line x1="8" y1="24" x2="56" y2="24"/>
+            <line x1="8" y1="38" x2="56" y2="38"/>
+            <path d="M16 44L28 31L36 35L48 22"/>
+          </svg>
+          <h3>Entry &amp; Exit Zones</h3>
+          <p>Every signal includes mapped support/resistance zones to improve timing and trade management.</p>
+        </article>
+
+        <article class="card">
+          <svg class="icon-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M10 14H54V42H28L18 50V42H10Z"/>
+            <line x1="18" y1="24" x2="28" y2="24"/>
+            <line x1="18" y1="30" x2="34" y2="30"/>
+            <polyline points="38,34 43,29 48,33 53,22"/>
+          </svg>
+          <h3>Private Group Access</h3>
+          <p>Direct access to Percival's private trading desk with fast updates and execution-focused discussion.</p>
+        </article>
+
+        <article class="card">
+          <svg class="icon-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <line x1="10" y1="54" x2="54" y2="54"/>
+            <rect x="14" y="31" width="8" height="23"/>
+            <rect x="28" y="24" width="8" height="30"/>
+            <rect x="42" y="16" width="8" height="38"/>
+            <polyline points="14,18 25,14 34,16 45,10 50,12"/>
+          </svg>
+          <h3>Weekly Market Breakdown</h3>
+          <p>A tactical overview of bias, key levels, and expected volatility for the coming sessions.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="container">
+      <span class="section-label">How It Works</span>
+      <h2 class="section-title">Three Steps to Trading with Edge</h2>
+      <div class="how-grid">
+        <article class="how-step">
+          <span class="step-number">1</span>
+          <svg class="icon-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="20" r="8"/>
+            <path d="M16 50C16 42 23 36 32 36C41 36 48 42 48 50"/>
+            <path d="M48 18h8m-4-4v8"/>
+          </svg>
+          <h4>Join</h4>
+          <p class="muted">Secure your membership and get instant access to the private channel.</p>
+        </article>
+        <article class="how-step">
+          <span class="step-number">2</span>
+          <svg class="icon-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="10" y="12" width="44" height="36" rx="4"/>
+            <path d="M18 40L28 30L35 34L46 22"/>
+            <line x1="10" y1="22" x2="54" y2="22"/>
+          </svg>
+          <h4>Get Signals</h4>
+          <p class="muted">Receive clear entries, exits, and risk guidance before momentum unfolds.</p>
+        </article>
+        <article class="how-step">
+          <span class="step-number">3</span>
+          <svg class="icon-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <line x1="10" y1="52" x2="54" y2="52"/>
+            <rect x="14" y="35" width="8" height="17"/>
+            <rect x="28" y="26" width="8" height="26"/>
+            <rect x="42" y="14" width="8" height="38"/>
+            <polyline points="14,24 23,20 32,24 42,12 50,8"/>
+          </svg>
+          <h4>Execute &amp; Profit</h4>
+          <p class="muted">Deploy with discipline and capture high-probability market swings.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials">
+    <div class="container">
+      <span class="section-label">Testimonials</span>
+      <h2 class="section-title">Trusted by Focused Traders</h2>
+      <div class="testimonials-grid">
+        <article class="testimonial">
+          <div class="stars">★★★★★</div>
+          <p class="quote">"The entries are precise and the management guidance is where the real value is."</p>
+          <p class="muted">R. Okafor</p>
+        </article>
+        <article class="testimonial">
+          <div class="stars">★★★★★</div>
+          <p class="quote">"I stopped overtrading and finally trade with structure and confidence."</p>
+          <p class="muted">T. Mokoena</p>
+        </article>
+        <article class="testimonial">
+          <div class="stars">★★★★★</div>
+          <p class="quote">"Percival's US30 calls consistently put me in front of the move."</p>
+          <p class="muted">S. Patel</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="payment">
+    <div class="container">
+      <div class="pricing-wrap">
+        <span class="section-label">Membership</span>
+        <h2 class="pricing-title">The Gold Index Club - Full Access</h2>
+        <p class="price">R499/month</p>
+        <ul class="benefits">
+          <li>Daily US30 and XAUUSD trade setups</li>
+          <li>Clear entries, exits, and stop-loss guidance</li>
+          <li>Real-time updates in private members group</li>
+          <li>Weekly market outlook and strategy brief</li>
+          <li>Direct education from Percival's trading framework</li>
+        </ul>
+        <a href="#payment" class="cta-btn cta-pulse">Get Access Now &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-row">
+        <div class="footer-logo">The Gold Index Club</div>
+        <nav class="footer-nav">
+          <a href="#top">Home</a>
+          <a href="#features">Features</a>
+          <a href="#how">How It Works</a>
+          <a href="#payment">Pricing</a>
+        </nav>
+        <div class="footer-copy">&copy; 2025 The Gold Index Club. All rights reserved.</div>
+      </div>
+      <p class="risk">Trading involves risk. Past performance is not indicative of future results.</p>
+    </div>
+  </footer>
+
+  <script>
+    const cursor = document.querySelector(".site-cursor");
+    let cursorX = window.innerWidth / 2;
+    let cursorY = window.innerHeight / 2;
+    let renderX = cursorX;
+    let renderY = cursorY;
+
+    window.addEventListener("mousemove", (event) => {
+      cursorX = event.clientX;
+      cursorY = event.clientY;
+    });
+
+    function animateCursor() {
+      renderX += (cursorX - renderX) * 0.18;
+      renderY += (cursorY - renderY) * 0.18;
+      if (cursor) {
+        cursor.style.transform = "translate(" + renderX + "px, " + renderY + "px) translate(-50%, -50%)";
+      }
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    const statElements = document.querySelectorAll(".stat-value");
+    const statsObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = Number(el.dataset.target || "0");
+        const suffix = el.dataset.suffix || "";
+        let current = 0;
+        const duration = 1300;
+        const start = performance.now();
+
+        function update(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          current = Math.floor(progress * target);
+          el.textContent = current + suffix;
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          } else {
+            el.textContent = target + suffix;
+          }
+        }
+        requestAnimationFrame(update);
+        observer.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+
+    statElements.forEach((el) => statsObserver.observe(el));
+
+    const candlesGroup = document.getElementById("candles");
+    const candleCount = 32;
+    const spacing = 46;
+    const startX = 80;
+    const baseY = 690;
+    const minBody = 26;
+    const maxBody = 150;
+
+    function generateCandles() {
+      if (!candlesGroup) return;
+      candlesGroup.innerHTML = "";
+
+      for (let i = 0; i < candleCount; i += 1) {
+        const bullish = i % 2 === 0;
+        const color = bullish ? "var(--green-candle)" : "var(--red-candle)";
+        const x = startX + i * spacing;
+        const bodyHeight = minBody + Math.random() * (maxBody - minBody);
+        const yTop = baseY - bodyHeight - Math.random() * 240;
+        const wickTop = yTop - (20 + Math.random() * 34);
+        const wickBottom = yTop + bodyHeight + (16 + Math.random() * 30);
+
+        const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        wick.setAttribute("x1", x);
+        wick.setAttribute("x2", x);
+        wick.setAttribute("y1", wickBottom);
+        wick.setAttribute("y2", wickBottom);
+        wick.setAttribute("stroke", color);
+        wick.setAttribute("class", "wick");
+        wick.style.opacity = "0.9";
+        wick.style.animation = "wickGrow 1s ease forwards";
+        wick.style.animationDelay = (i * 95) + "ms";
+
+        const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        body.setAttribute("x", x - 8);
+        body.setAttribute("y", yTop + bodyHeight);
+        body.setAttribute("width", "16");
+        body.setAttribute("height", "0");
+        body.setAttribute("fill", color);
+        body.setAttribute("class", "body");
+        body.style.animation = "bodyGrow 1s ease forwards";
+        body.style.animationDelay = (i * 95 + 120) + "ms";
+
+        const styleTag = document.createElementNS("http://www.w3.org/2000/svg", "style");
+        styleTag.textContent =
+          "@keyframes wickGrow{from{y2:" + wickBottom + ";}to{y2:" + wickTop + ";}}" +
+          "@keyframes bodyGrow{from{height:0;y:" + (yTop + bodyHeight) + ";}to{height:" + bodyHeight + ";y:" + yTop + ";}}";
+
+        candlesGroup.appendChild(styleTag);
+        candlesGroup.appendChild(wick);
+        candlesGroup.appendChild(body);
+      }
+    }
+
+    generateCandles();
+    setInterval(generateCandles, 5200);
+  </script>
+</body>
+</html>
