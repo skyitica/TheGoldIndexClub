@@ -120,6 +120,25 @@
       display: none;
     }
 
+    .chart-line-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.16;
+      transition: opacity 600ms ease;
+    }
+
+    .hero.video-playing .chart-line-bg {
+      opacity: 0;
+    }
+
+    .hero.video-ended .chart-line-bg {
+      opacity: 0.2;
+    }
+
     .hero-content {
       padding-block: 6rem 5rem;
       max-width: 780px;
@@ -625,6 +644,24 @@
       <source src="assets/hero.mp4" type="video/mp4" />
     </video>
     <div class="hero-texture" aria-hidden="true"></div>
+    <svg class="chart-line-bg" id="chartLineBg" viewBox="0 0 1200 600" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="chartGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="var(--gold)" stop-opacity="0"/>
+          <stop offset="30%" stop-color="var(--gold)" stop-opacity="1"/>
+          <stop offset="100%" stop-color="var(--gold-light)" stop-opacity="1"/>
+        </linearGradient>
+        <linearGradient id="chartFillGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+        </linearGradient>
+        <marker id="arrowHead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" fill="var(--gold-light)">
+          <polygon points="0 0, 10 4, 0 8"/>
+        </marker>
+      </defs>
+      <path id="chartFill" fill="url(#chartFillGrad)" d=""/>
+      <path id="chartPath" fill="none" stroke="url(#chartGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowHead)" d=""/>
+    </svg>
     <div class="video-start-overlay" id="videoStartOverlay">
       <div class="video-start-btn" id="videoStartBtn" aria-hidden="true">
         <svg class="tap-icon" viewBox="0 0 32 32" aria-hidden="true">
@@ -638,15 +675,6 @@
         <span class="tap-label">Tap anywhere to start video with sound</span>
       </div>
     </div>
-    <svg class="chart-bg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <style>
-          .wick { stroke-width: 3; }
-          .body { opacity: 0.85; }
-        </style>
-      </defs>
-      <g id="candles"></g>
-    </svg>
 
     <div class="container hero-content">
       <span class="section-label hero-timed" style="--reveal-delay:120ms">Premium Signal Desk</span>
@@ -901,6 +929,7 @@
     }
 
     function setEndedBlackScreenState() {
+      heroSection?.classList.remove("video-playing");
       heroSection?.classList.add("video-ended");
       revealHeroContent();
     }
@@ -958,6 +987,7 @@
 
         const onPlaying = () => {
           videoStartOverlay?.classList.add("is-hidden");
+          heroSection?.classList.add("video-playing");
           if (videoStartBtn) {
             const label = videoStartBtn.querySelector(".tap-label");
             if (label) label.textContent = "Playing";
@@ -1033,61 +1063,71 @@
 
     statElements.forEach((el) => statsObserver.observe(el));
 
-    const candlesGroup = document.getElementById("candles");
-    const candleCount = 32;
-    const spacing = 46;
-    const startX = 80;
-    const baseY = 690;
-    const minBody = 26;
-    const maxBody = 150;
+    const chartPath = document.getElementById("chartPath");
+    const chartFill = document.getElementById("chartFill");
+    const W = 1200;
+    const H = 600;
+    const SEGMENTS = 60;
+    const STEP = W / SEGMENTS;
+    let chartPoints = [];
+    let chartRaf = null;
+    let chartT = 0;
 
-    function generateCandles() {
-      if (!candlesGroup) return;
-      candlesGroup.innerHTML = "";
-
-      for (let i = 0; i < candleCount; i += 1) {
-        const bullish = i % 2 === 0;
-        const color = bullish ? "var(--green-candle)" : "var(--red-candle)";
-        const x = startX + i * spacing;
-        const bodyHeight = minBody + Math.random() * (maxBody - minBody);
-        const yTop = baseY - bodyHeight - Math.random() * 240;
-        const wickTop = yTop - (20 + Math.random() * 34);
-        const wickBottom = yTop + bodyHeight + (16 + Math.random() * 30);
-
-        const wick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        wick.setAttribute("x1", x);
-        wick.setAttribute("x2", x);
-        wick.setAttribute("y1", wickBottom);
-        wick.setAttribute("y2", wickBottom);
-        wick.setAttribute("stroke", color);
-        wick.setAttribute("class", "wick");
-        wick.style.opacity = "0.9";
-        wick.style.animation = "wickGrow 1s ease forwards";
-        wick.style.animationDelay = (i * 95) + "ms";
-
-        const body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        body.setAttribute("x", x - 8);
-        body.setAttribute("y", yTop + bodyHeight);
-        body.setAttribute("width", "16");
-        body.setAttribute("height", "0");
-        body.setAttribute("fill", color);
-        body.setAttribute("class", "body");
-        body.style.animation = "bodyGrow 1s ease forwards";
-        body.style.animationDelay = (i * 95 + 120) + "ms";
-
-        const styleTag = document.createElementNS("http://www.w3.org/2000/svg", "style");
-        styleTag.textContent =
-          "@keyframes wickGrow{from{y2:" + wickBottom + ";}to{y2:" + wickTop + ";}}" +
-          "@keyframes bodyGrow{from{height:0;y:" + (yTop + bodyHeight) + ";}to{height:" + bodyHeight + ";y:" + yTop + ";}}";
-
-        candlesGroup.appendChild(styleTag);
-        candlesGroup.appendChild(wick);
-        candlesGroup.appendChild(body);
+    function seedChartPoints() {
+      chartPoints = [];
+      let y = H * 0.5;
+      for (let i = 0; i <= SEGMENTS; i++) {
+        const swing = (Math.random() - 0.42) * 70;
+        y = Math.max(80, Math.min(H - 80, y + swing));
+        chartPoints.push({ x: i * STEP, y: y });
       }
     }
 
-    generateCandles();
-    setInterval(generateCandles, 5200);
+    function lerpPoints(a, b, t) {
+      return a.map((p, i) => ({
+        x: p.x,
+        y: p.y + (b[i].y - p.y) * t
+      }));
+    }
+
+    function pointsToD(pts) {
+      if (!pts.length) return "";
+      let d = "M" + pts[0].x + " " + pts[0].y;
+      for (let i = 1; i < pts.length; i++) {
+        const prev = pts[i - 1];
+        const curr = pts[i];
+        const cx = (prev.x + curr.x) / 2;
+        d += " C" + cx + " " + prev.y + "," + cx + " " + curr.y + "," + curr.x + " " + curr.y;
+      }
+      return d;
+    }
+
+    function pointsToFillD(pts) {
+      if (!pts.length) return "";
+      const lineD = pointsToD(pts);
+      return lineD + " L" + pts[pts.length - 1].x + " " + H + " L" + pts[0].x + " " + H + " Z";
+    }
+
+    seedChartPoints();
+    let currentPoints = chartPoints.slice();
+    let targetPoints = chartPoints.slice();
+
+    function animateChart() {
+      chartT += 0.004;
+      if (chartT >= 1) {
+        chartT = 0;
+        currentPoints = targetPoints.slice();
+        seedChartPoints();
+        targetPoints = chartPoints.slice();
+      }
+      const smoothT = chartT * chartT * (3 - 2 * chartT);
+      const pts = lerpPoints(currentPoints, targetPoints, smoothT);
+      if (chartPath) chartPath.setAttribute("d", pointsToD(pts));
+      if (chartFill) chartFill.setAttribute("d", pointsToFillD(pts));
+      chartRaf = requestAnimationFrame(animateChart);
+    }
+
+    chartRaf = requestAnimationFrame(animateChart);
   </script>
 </body>
 </html>
