@@ -1458,41 +1458,27 @@
     }
 
     function generateCandles(patternKey, cw, ch) {
-      const xPad = cw * 0.07;
-      const leftX = xPad;
-      const rightX = cw - xPad;
-      const step = (rightX - leftX) / (CANDLE_COUNT - 1);
-      const candleW = Math.max(2, step * 0.52);
-
+      const step = cw / CANDLE_COUNT;
+      const candleW = Math.max(2, step * 0.55);
       const closeY = generateCloseY(patternKey, CANDLE_COUNT, ch);
 
-      // We’ll pick open/close with small deltas around the close curve.
       const candles = new Array(CANDLE_COUNT);
-      let prevClose = closeY[0] + rand(-6, 6);
       for (let i = 0; i < CANDLE_COUNT; i++) {
         const close = closeY[i];
-        const open = i === 0 ? prevClose : closeY[i - 1] + rand(-6, 6);
+        const open = i === 0 ? close + rand(-4, 4) : candles[i - 1].closeY + rand(-2, 2);
         const isBull = close < open;
 
         const bodyTop = Math.min(open, close);
         const bodyBot = Math.max(open, close);
         const bodyH = Math.max(2, bodyBot - bodyTop);
 
-        // wick lengths feel like real candles
-        const upWick = bodyH * rand(0.7, 1.9) + rand(2, 12);
-        const dnWick = bodyH * rand(0.7, 1.9) + rand(2, 12);
-        let high = bodyTop - upWick;
-        let low = bodyBot + dnWick;
-
-        high = clamp(high, 0, ch - 1);
-        low = clamp(low, 0, ch - 1);
-
-        // Ensure wick covers body
-        high = Math.min(high, bodyTop);
-        low = Math.max(low, bodyBot);
+        const upWick = rand(1, bodyH * 0.5 + 3);
+        const dnWick = rand(1, bodyH * 0.5 + 3);
+        const high = Math.max(0, bodyTop - upWick);
+        const low = Math.min(ch, bodyBot + dnWick);
 
         candles[i] = {
-          x: leftX + i * step,
+          x: step * 0.5 + i * step,
           w: candleW,
           highY: high,
           lowY: low,
@@ -1589,8 +1575,7 @@
         done: false,
         fading: false,
         fadeStart: 0,
-        patternStart: performance.now(),
-        holdDone: false
+        patternStart: performance.now()
       };
     }
 
@@ -1654,12 +1639,11 @@
         } else {
           upto = chartState.candles.length;
           showGameResult(chartState.patternKey);
-          if (!chartState.holdDone && t > DRAW_MS + HOLD_MS) {
+          if (t > DRAW_MS + HOLD_MS) {
             chartState.done = true;
             chartState.fading = true;
             chartState.fadeStart = now;
           }
-          chartState.holdDone = true;
           alpha = 1;
         }
       }
