@@ -149,13 +149,15 @@
     .video-start-overlay {
       position: absolute;
       inset: 0;
-      display: grid;
-      place-items: center;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      padding: 0 1.2rem 3.2rem;
       z-index: 4;
       pointer-events: auto;
       cursor: pointer;
       transition: opacity 260ms ease;
-      background: rgba(0, 0, 0, 0.08);
+      background: transparent;
     }
 
     .video-start-overlay.is-hidden {
@@ -165,35 +167,35 @@
 
     .video-start-btn {
       pointer-events: none;
-      border: 1px solid rgba(201, 168, 76, 0.7);
-      background: rgba(8, 8, 8, 0.54);
-      color: var(--gold-light);
-      border-radius: 14px;
-      padding: 0.75rem 0.95rem;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      background: rgba(255, 215, 0, 0.03);
+      color: rgba(232, 201, 122, 0.92);
+      border-radius: 10px;
+      padding: 0.52rem 0.72rem;
       text-transform: uppercase;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       backdrop-filter: blur(1px);
       display: inline-flex;
       align-items: center;
-      gap: 0.7rem;
-      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      gap: 0.55rem;
+      transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
     }
 
     .video-start-overlay:hover .video-start-btn {
-      transform: translateY(-1px);
-      border-color: var(--gold-light);
-      box-shadow: 0 0 16px rgba(201, 168, 76, 0.35);
+      border-color: rgba(255, 215, 0, 0.72);
+      color: var(--gold-light);
+      background: rgba(255, 215, 0, 0.06);
     }
 
     .tap-label {
       display: block;
-      font-size: 0.64rem;
+      font-size: 0.56rem;
       line-height: 1.2;
     }
 
     .tap-icon {
-      width: 30px;
-      height: 30px;
+      width: 20px;
+      height: 20px;
       stroke: var(--gold-light);
       fill: none;
       stroke-width: 1.7;
@@ -289,18 +291,27 @@
 
     .trade-game {
       position: absolute;
-      bottom: 3.2rem;
+      bottom: 3.45rem;
       right: 1.2rem;
       z-index: 5;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: min(94vw, 560px);
     }
 
     .trade-game-inner {
       display: flex;
       gap: 0.35rem;
       align-items: center;
+    }
+
+    .trade-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
     }
 
     .trade-btn {
@@ -391,6 +402,70 @@
       white-space: nowrap;
     }
 
+    .trade-balance,
+    .trade-lot {
+      font-size: 0.62rem;
+      color: #d5c28b;
+      letter-spacing: 0.06em;
+      padding: 0.28rem 0.5rem;
+      background: rgba(10, 10, 10, 0.6);
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .trade-lot input {
+      width: 54px;
+      margin-left: 0.35rem;
+      background: transparent;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 4px;
+      color: var(--gold-light);
+      font-size: 0.62rem;
+      font-family: "DM Mono", monospace;
+      padding: 0.15rem 0.25rem;
+      outline: none;
+    }
+
+    .trade-help {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 215, 0, 0.45);
+      color: rgba(232, 201, 122, 0.95);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      cursor: help;
+      background: rgba(255, 215, 0, 0.04);
+    }
+
+    .trade-help-tip {
+      position: absolute;
+      right: 0;
+      bottom: 125%;
+      width: 220px;
+      padding: 0.48rem 0.55rem;
+      border: 1px solid rgba(255, 215, 0, 0.28);
+      border-radius: 7px;
+      background: rgba(8, 8, 8, 0.93);
+      color: #d9d9d9;
+      font-size: 0.56rem;
+      letter-spacing: 0.05em;
+      line-height: 1.45;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition: opacity 150ms ease, transform 150ms ease;
+    }
+
+    .trade-help:hover .trade-help-tip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     @media (max-width: 768px) {
       .trade-game {
         display: none !important;
@@ -400,6 +475,40 @@
     .hero.video-playing .trade-game {
       opacity: 0;
       pointer-events: none;
+    }
+
+    .skip-video-btn {
+      position: absolute;
+      right: 1.2rem;
+      bottom: 3.2rem;
+      z-index: 6;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      background: rgba(255, 215, 0, 0.02);
+      color: rgba(232, 201, 122, 0.92);
+      border-radius: 8px;
+      padding: 0.42rem 0.62rem;
+      font-size: 0.56rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 180ms ease, color 180ms ease, background 180ms ease, opacity 250ms ease;
+    }
+
+    .skip-video-btn:hover {
+      border-color: rgba(255, 215, 0, 0.72);
+      color: var(--gold-light);
+      background: rgba(255, 215, 0, 0.08);
+    }
+
+    .skip-video-btn.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .hero.skip-fade > * {
+      opacity: 0;
+      transition: opacity 420ms ease;
     }
 
     .hero.video-ended .hero-video {
@@ -785,6 +894,10 @@
         display: none;
       }
 
+      #skipVideoBtn {
+        display: none;
+      }
+
       #replayVideoBtn {
         display: none;
       }
@@ -820,8 +933,16 @@
         <button class="trade-btn trade-btn--buy" id="tradeBuy" type="button">Buy ▲</button>
         <button class="trade-btn trade-btn--sell" id="tradeSell" type="button">Sell ▼</button>
       </div>
+      <span class="trade-lot">Lot <input id="tradeLot" type="number" min="0.01" step="0.01" value="0.10"></span>
+      <span class="trade-balance" id="tradeBalance">$100.00</span>
       <span class="trade-result" id="tradeResult"></span>
       <span class="trade-score" id="tradeScore">0 / 0</span>
+      <span class="trade-meta">
+        <span class="trade-help" aria-label="How to play">
+          i
+          <span class="trade-help-tip">Click Buy or Sell once to place a preview. Click the same side again to lock before cutoff. Win or lose is based on the detected pattern direction. Lot size scales P/L.</span>
+        </span>
+      </span>
     </div>
     <div class="video-start-overlay" id="videoStartOverlay">
       <div class="video-start-btn" id="videoStartBtn" aria-hidden="true">
@@ -836,6 +957,7 @@
         <span class="tap-label">Tap anywhere to start video with sound</span>
       </div>
     </div>
+    <button class="skip-video-btn" id="skipVideoBtn" type="button">Skip Video</button>
 
     <div class="container hero-content">
       <span class="section-label hero-timed" style="--reveal-delay:120ms">Premium Signal Desk</span>
@@ -1070,6 +1192,7 @@
     const timedHeroElements = document.querySelectorAll(".hero-timed");
     const videoStartOverlay = document.getElementById("videoStartOverlay");
     const videoStartBtn = document.getElementById("videoStartBtn");
+    const skipVideoBtn = document.getElementById("skipVideoBtn");
     const replayVideoBtn = document.getElementById("replayVideoBtn");
     const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
     const HERO_REVEAL_TIME = 9;
@@ -1180,6 +1303,16 @@
       videoStartOverlay?.addEventListener("click", startHeroVideo);
       heroVideo.addEventListener("click", startHeroVideo);
 
+      skipVideoBtn?.addEventListener("click", () => {
+        try { heroVideo.pause(); } catch (e) {}
+        skipVideoBtn.classList.add("is-hidden");
+        heroSection?.classList.add("skip-fade");
+        setTimeout(() => {
+          document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          heroSection?.classList.remove("skip-fade");
+        }, 420);
+      });
+
       replayVideoBtn?.addEventListener("click", () => {
         // Replay is user-initiated, so audio should be allowed.
         sessionStorage.removeItem(HERO_VIDEO_ENDED_KEY);
@@ -1197,6 +1330,7 @@
       heroVideo.addEventListener("ended", () => {
         stopTimelineLoop();
         sessionStorage.setItem(HERO_VIDEO_ENDED_KEY, "1");
+        skipVideoBtn?.classList.add("is-hidden");
         setEndedBlackScreenState();
       });
 
@@ -1210,6 +1344,7 @@
         heroSection?.classList.remove("video-ended");
         heroSection?.classList.remove("video-playing");
         videoStartOverlay?.classList.remove("is-hidden");
+        skipVideoBtn?.classList.remove("is-hidden");
         try {
           heroVideo.pause();
           heroVideo.currentTime = 0;
@@ -1232,6 +1367,7 @@
       revealHeroContent();
       heroSection?.classList.remove("video-playing");
       heroSection?.classList.remove("video-ended");
+      skipVideoBtn?.classList.add("is-hidden");
     }
 
     const statElements = document.querySelectorAll(".stat-value");
@@ -1266,14 +1402,16 @@
     const cCtx = chartCanvas ? chartCanvas.getContext("2d") : null;
 
     const PATTERN_KEYS = [
-      "headShoulders",
-      "doubleTop",
-      "tripleTop",
-      "inverseHeadShoulders",
-      "doubleBottom",
-      "tripleBottom",
-      "risingWedge",
-      "fallingWedge"
+      "doubleTopBear",
+      "headShouldersBear",
+      "risingWedgeBear",
+      "expandingTriangleBear",
+      "tripleTopBear",
+      "doubleBottomBull",
+      "inverseHeadShouldersBull",
+      "fallingWedgeBull",
+      "expandingTriangleBull",
+      "tripleBottomBull"
     ];
 
     const GREEN = "#26a69a";
@@ -1311,18 +1449,51 @@
       return out;
     }
 
+    const PATTERN_DEFS = {
+      doubleTopBear: {
+        curve: [[0,.60],[.06,.52],[.12,.42],[.18,.30],[.24,.18],[.30,.30],[.36,.42],[.42,.50],[.48,.38],[.54,.24],[.60,.18],[.66,.32],[.72,.48],[.78,.58],[.84,.68],[.90,.76],[1,.86]],
+        guides: [[[0.10,0.30],[0.62,0.30]], [[0.62,0.30],[0.72,0.84]]]
+      },
+      headShouldersBear: {
+        curve: [[0,.56],[.08,.46],[.16,.34],[.24,.44],[.34,.16],[.44,.44],[.56,.30],[.66,.46],[.76,.56],[.86,.70],[1,.84]],
+        guides: [[[0.08,0.44],[0.66,0.44]], [[0.66,0.44],[0.78,0.82]]]
+      },
+      risingWedgeBear: {
+        curve: [[0,.68],[.08,.58],[.16,.52],[.24,.46],[.32,.50],[.40,.44],[.48,.38],[.56,.42],[.64,.36],[.72,.32],[.80,.30],[.88,.44],[.94,.60],[1,.74]],
+        guides: [[[0.10,0.54],[0.78,0.34]], [[0.20,0.74],[0.88,0.48]], [[0.88,0.48],[0.96,0.82]]]
+      },
+      expandingTriangleBear: {
+        curve: [[0,.46],[.08,.38],[.16,.50],[.24,.30],[.32,.54],[.40,.24],[.48,.58],[.56,.18],[.64,.62],[.72,.14],[.80,.68],[.88,.52],[1,.84]],
+        guides: [[[0.18,0.34],[0.88,0.10]], [[0.18,0.58],[0.88,0.78]], [[0.88,0.78],[0.98,0.86]]]
+      },
+      tripleTopBear: {
+        curve: [[0,.58],[.07,.46],[.14,.30],[.18,.20],[.24,.34],[.30,.46],[.36,.32],[.42,.18],[.48,.32],[.54,.46],[.60,.34],[.66,.20],[.72,.36],[.78,.52],[.84,.64],[.90,.74],[1,.84]],
+        guides: [[[0.10,0.30],[0.72,0.30]], [[0.72,0.30],[0.84,0.84]]]
+      },
+      doubleBottomBull: {
+        curve: [[0,.40],[.06,.48],[.12,.58],[.18,.70],[.24,.82],[.30,.70],[.36,.58],[.42,.50],[.48,.62],[.54,.76],[.60,.82],[.66,.68],[.72,.52],[.78,.42],[.84,.32],[.90,.24],[1,.14]],
+        guides: [[[0.12,0.60],[0.66,0.60]], [[0.66,0.60],[0.78,0.18]]]
+      },
+      inverseHeadShouldersBull: {
+        curve: [[0,.45],[.06,.50],[.14,.62],[.20,.72],[.26,.82],[.34,.88],[.40,.74],[.46,.58],[.52,.52],[.58,.66],[.64,.72],[.70,.60],[.76,.48],[.82,.42],[.88,.32],[.94,.22],[1,.12]],
+        guides: [[[0.10,0.58],[0.74,0.58]], [[0.74,0.58],[0.86,0.16]]]
+      },
+      fallingWedgeBull: {
+        curve: [[0,.32],[.08,.42],[.16,.48],[.24,.54],[.32,.50],[.40,.56],[.48,.62],[.56,.58],[.64,.64],[.72,.68],[.80,.66],[.88,.50],[.94,.36],[1,.22]],
+        guides: [[[0.10,0.34],[0.88,0.66]], [[0.10,0.66],[0.86,0.78]], [[0.86,0.58],[0.98,0.24]]]
+      },
+      expandingTriangleBull: {
+        curve: [[0,.54],[.08,.62],[.16,.50],[.24,.70],[.32,.46],[.40,.74],[.48,.42],[.56,.78],[.64,.38],[.72,.82],[.80,.34],[.88,.48],[1,.18]],
+        guides: [[[0.18,0.38],[0.88,0.74]], [[0.18,0.62],[0.88,0.22]], [[0.88,0.22],[0.98,0.14]]]
+      },
+      tripleBottomBull: {
+        curve: [[0,.42],[.07,.54],[.14,.70],[.18,.80],[.24,.66],[.30,.54],[.36,.68],[.42,.82],[.48,.68],[.54,.54],[.60,.66],[.66,.80],[.72,.64],[.78,.48],[.84,.36],[.90,.26],[1,.16]],
+        guides: [[[0.10,0.62],[0.72,0.62]], [[0.72,0.62],[0.86,0.20]]]
+      }
+    };
+
     function patternCurve(key, n) {
-      const P = {
-        headShoulders:        [[0,.55],[.06,.50],[.14,.38],[.20,.28],[.26,.18],[.34,.12],[.40,.26],[.46,.42],[.52,.48],[.58,.34],[.64,.28],[.70,.40],[.76,.52],[.82,.58],[.88,.68],[.94,.78],[1,.88]],
-        inverseHeadShoulders: [[0,.45],[.06,.50],[.14,.62],[.20,.72],[.26,.82],[.34,.88],[.40,.74],[.46,.58],[.52,.52],[.58,.66],[.64,.72],[.70,.60],[.76,.48],[.82,.42],[.88,.32],[.94,.22],[1,.12]],
-        doubleTop:            [[0,.60],[.06,.52],[.12,.42],[.18,.30],[.24,.18],[.30,.30],[.36,.42],[.42,.50],[.48,.38],[.54,.24],[.60,.18],[.66,.32],[.72,.48],[.78,.58],[.84,.68],[.90,.76],[1,.86]],
-        tripleTop:            [[0,.58],[.07,.46],[.14,.30],[.18,.20],[.24,.34],[.30,.46],[.36,.32],[.42,.18],[.48,.32],[.54,.46],[.60,.34],[.66,.20],[.72,.36],[.78,.52],[.84,.64],[.90,.74],[1,.84]],
-        doubleBottom:         [[0,.40],[.06,.48],[.12,.58],[.18,.70],[.24,.82],[.30,.70],[.36,.58],[.42,.50],[.48,.62],[.54,.76],[.60,.82],[.66,.68],[.72,.52],[.78,.42],[.84,.32],[.90,.24],[1,.14]],
-        tripleBottom:         [[0,.42],[.07,.54],[.14,.70],[.18,.80],[.24,.66],[.30,.54],[.36,.68],[.42,.82],[.48,.68],[.54,.54],[.60,.66],[.66,.80],[.72,.64],[.78,.48],[.84,.36],[.90,.26],[1,.16]],
-        risingWedge:          [[0,.68],[.06,.60],[.12,.52],[.18,.46],[.24,.50],[.30,.44],[.36,.38],[.42,.42],[.48,.36],[.54,.32],[.60,.36],[.66,.30],[.72,.28],[.78,.26],[.84,.34],[.90,.50],[.95,.64],[1,.76]],
-        fallingWedge:         [[0,.32],[.06,.40],[.12,.48],[.18,.54],[.24,.50],[.30,.56],[.36,.62],[.42,.58],[.48,.64],[.54,.68],[.60,.64],[.66,.70],[.72,.72],[.78,.74],[.84,.66],[.90,.50],[.95,.36],[1,.24]]
-      };
-      return sampleCurve(P[key] || P.headShoulders, n);
+      return sampleCurve((PATTERN_DEFS[key] || PATTERN_DEFS.doubleTopBear).curve, n);
     }
 
     function generateCandles(key, cw, ch) {
@@ -1417,50 +1588,84 @@
     }
 
     const PATTERN_OUTCOME = {
-      headShoulders: "sell",
-      doubleTop: "sell",
-      tripleTop: "sell",
-      inverseHeadShoulders: "buy",
-      doubleBottom: "buy",
-      tripleBottom: "buy",
-      risingWedge: "sell",
-      fallingWedge: "buy"
+      doubleTopBear: "sell",
+      headShouldersBear: "sell",
+      risingWedgeBear: "sell",
+      expandingTriangleBear: "sell",
+      tripleTopBear: "sell",
+      doubleBottomBull: "buy",
+      inverseHeadShouldersBull: "buy",
+      fallingWedgeBull: "buy",
+      expandingTriangleBull: "buy",
+      tripleBottomBull: "buy"
     };
 
     const tradeBuyBtn = document.getElementById("tradeBuy");
     const tradeSellBtn = document.getElementById("tradeSell");
+    const tradeLotInput = document.getElementById("tradeLot");
+    const tradeBalanceEl = document.getElementById("tradeBalance");
     const tradeResultEl = document.getElementById("tradeResult");
     const tradeScoreEl = document.getElementById("tradeScore");
     let gameWins = 0;
     let gameTotal = 0;
-    let gameBet = null; // "buy" | "sell" | null
+    let gameBet = null; // locked "buy" | "sell" | null
+    let pendingBet = null; // preview "buy" | "sell" | null
     let gameLocked = false;
     let gameResultShown = false;
+    let gameBalance = 100;
+    let entryMarker = null; // { direction, idx }
+
+    function getLotSize() {
+      const value = Number(tradeLotInput?.value || "0.1");
+      return clamp(value, 0.01, 50);
+    }
+
+    function updateBalanceUI() {
+      if (tradeBalanceEl) {
+        tradeBalanceEl.textContent = "$" + gameBalance.toFixed(2);
+      }
+    }
 
     function resetGameUI() {
       gameBet = null;
+      pendingBet = null;
       gameLocked = false;
       gameResultShown = false;
+      entryMarker = null;
       if (tradeBuyBtn) { tradeBuyBtn.disabled = false; tradeBuyBtn.style.outline = "none"; }
       if (tradeSellBtn) { tradeSellBtn.disabled = false; tradeSellBtn.style.outline = "none"; }
       if (tradeResultEl) { tradeResultEl.className = "trade-result"; tradeResultEl.textContent = ""; }
     }
 
-    function lockBet(direction) {
+    function previewOrLockBet(direction) {
       if (gameLocked) return;
-      gameBet = direction;
-      gameLocked = true;
-      if (tradeBuyBtn) tradeBuyBtn.disabled = true;
-      if (tradeSellBtn) tradeSellBtn.disabled = true;
-      if (direction === "buy" && tradeBuyBtn) {
-        tradeBuyBtn.style.outline = "2px solid #26a69a";
-        tradeBuyBtn.disabled = false;
-        tradeBuyBtn.disabled = true;
+      if (!chartState || !chartState.candles?.length) return;
+
+      if (pendingBet === direction) {
+        gameBet = direction;
+        gameLocked = true;
+        if (tradeBuyBtn) tradeBuyBtn.disabled = true;
+        if (tradeSellBtn) tradeSellBtn.disabled = true;
+        if (tradeResultEl) {
+          tradeResultEl.className = "trade-result is-visible";
+          tradeResultEl.textContent = "Trade locked";
+        }
+        return;
       }
-      if (direction === "sell" && tradeSellBtn) {
-        tradeSellBtn.style.outline = "2px solid #ef5350";
-        tradeSellBtn.disabled = false;
-        tradeSellBtn.disabled = true;
+
+      pendingBet = direction;
+      const previewIdx = Math.max(0, Math.min(chartState.candles.length - 1, Math.floor((Date.now() - chartState.patternStart) / DRAW_MS * chartState.candles.length)));
+      entryMarker = { direction, idx: previewIdx };
+
+      if (tradeBuyBtn) {
+        tradeBuyBtn.style.outline = direction === "buy" ? "2px solid #26a69a" : "none";
+      }
+      if (tradeSellBtn) {
+        tradeSellBtn.style.outline = direction === "sell" ? "2px solid #ef5350" : "none";
+      }
+      if (tradeResultEl) {
+        tradeResultEl.className = "trade-result is-visible";
+        tradeResultEl.textContent = "Click again to lock";
       }
     }
 
@@ -1469,19 +1674,31 @@
       gameResultShown = true;
       const correct = PATTERN_OUTCOME[patternKey];
       const won = gameBet === correct;
+      const lot = getLotSize();
+      const pnl = won ? lot * 18 : -(lot * 12);
+      gameBalance = Math.max(0, gameBalance + pnl);
       gameTotal++;
       if (won) gameWins++;
       if (tradeResultEl) {
-        tradeResultEl.textContent = won ? "✓ Correct" : "✗ Wrong";
+        const sign = pnl >= 0 ? "+" : "";
+        tradeResultEl.textContent = (won ? "✓ Correct " : "✗ Wrong ") + "(" + sign + pnl.toFixed(2) + ")";
         tradeResultEl.className = "trade-result is-visible " + (won ? "trade-result--win" : "trade-result--lose");
       }
       if (tradeScoreEl) {
         tradeScoreEl.textContent = gameWins + " / " + gameTotal;
       }
+      updateBalanceUI();
     }
 
-    if (tradeBuyBtn) tradeBuyBtn.addEventListener("click", () => lockBet("buy"));
-    if (tradeSellBtn) tradeSellBtn.addEventListener("click", () => lockBet("sell"));
+    if (tradeBuyBtn) tradeBuyBtn.addEventListener("click", () => previewOrLockBet("buy"));
+    if (tradeSellBtn) tradeSellBtn.addEventListener("click", () => previewOrLockBet("sell"));
+    if (tradeLotInput) {
+      tradeLotInput.addEventListener("change", () => {
+        const v = getLotSize();
+        tradeLotInput.value = v.toFixed(2);
+      });
+    }
+    updateBalanceUI();
 
     function initChartPattern(nextIndex) {
       const cw = chartCanvas.width / devicePixelRatio;
@@ -1504,7 +1721,31 @@
       };
     }
 
-    function drawCandles(alpha, upto) {
+    function drawPatternGuides(progress, alpha) {
+      if (!chartState || !cCtx) return;
+      const def = PATTERN_DEFS[chartState.patternKey];
+      if (!def || !def.guides) return;
+      const cw = chartCanvas.width / devicePixelRatio;
+      const ch = chartCanvas.height / devicePixelRatio;
+      const appear = clamp((progress - 0.28) / 0.22, 0, 1);
+      if (appear <= 0) return;
+
+      cCtx.save();
+      cCtx.globalAlpha = alpha * appear * 0.9;
+      cCtx.strokeStyle = "#2e6bff";
+      cCtx.lineWidth = 2;
+      cCtx.lineCap = "round";
+      for (const seg of def.guides) {
+        const [a, b] = seg;
+        cCtx.beginPath();
+        cCtx.moveTo(a[0] * cw, a[1] * ch);
+        cCtx.lineTo(b[0] * cw, b[1] * ch);
+        cCtx.stroke();
+      }
+      cCtx.restore();
+    }
+
+    function drawCandles(alpha, upto, progress) {
       if (!cCtx) return;
       const cw = chartCanvas.width / devicePixelRatio;
       const ch = chartCanvas.height / devicePixelRatio;
@@ -1532,6 +1773,30 @@
         cCtx.fillRect(c.x - c.w / 2, top, c.w, bH);
       }
 
+      drawPatternGuides(progress, alpha);
+
+      if (entryMarker && chartState.candles[entryMarker.idx]) {
+        const m = chartState.candles[entryMarker.idx];
+        const isBuy = entryMarker.direction === "buy";
+        const arrowColor = isBuy ? GREEN : RED;
+        const baseY = isBuy ? (m.low + 10) : (m.high - 10);
+        const dir = isBuy ? -1 : 1;
+        cCtx.globalAlpha = alpha;
+        cCtx.strokeStyle = arrowColor;
+        cCtx.fillStyle = arrowColor;
+        cCtx.lineWidth = 1.2;
+        cCtx.beginPath();
+        cCtx.moveTo(m.x, baseY);
+        cCtx.lineTo(m.x, baseY + dir * 10);
+        cCtx.stroke();
+        cCtx.beginPath();
+        cCtx.moveTo(m.x, baseY + dir * 10);
+        cCtx.lineTo(m.x - 4, baseY + dir * 5);
+        cCtx.lineTo(m.x + 4, baseY + dir * 5);
+        cCtx.closePath();
+        cCtx.fill();
+      }
+
       cCtx.restore();
     }
 
@@ -1545,18 +1810,28 @@
       const t = now - chartState.patternStart;
       let upto = 0;
       let alpha = 1;
+      let progress = 0;
 
       if (!chartState.done) {
         if (t <= DRAW_MS) {
-          const progress = t / DRAW_MS;
+          progress = t / DRAW_MS;
           upto = Math.floor(progress * chartState.candles.length);
 
           if (progress >= BET_CUTOFF && !gameLocked) {
             if (tradeBuyBtn) tradeBuyBtn.disabled = true;
             if (tradeSellBtn) tradeSellBtn.disabled = true;
+            if (!gameBet) {
+              pendingBet = null;
+              entryMarker = null;
+              if (tradeResultEl) {
+                tradeResultEl.className = "trade-result is-visible";
+                tradeResultEl.textContent = "Entry window closed";
+              }
+            }
             gameLocked = true;
           }
         } else {
+          progress = 1;
           upto = chartState.candles.length;
           showGameResult(chartState.patternKey);
           if (t > DRAW_MS + HOLD_MS) {
@@ -1572,6 +1847,7 @@
         const elapsed = now - chartState.fadeStart;
         alpha = Math.max(0, 1 - elapsed / FADE_MS);
         upto = chartState.candles.length;
+        progress = 1;
         if (elapsed >= FADE_MS) {
           const nextIndex = (chartState.patternIndex + 1) % PATTERN_KEYS.length;
           chartState = null;
@@ -1579,7 +1855,7 @@
         }
       }
 
-      drawCandles(alpha, upto);
+      drawCandles(alpha, upto, progress);
       requestAnimationFrame(chartLoop);
     }
 
