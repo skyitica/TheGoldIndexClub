@@ -287,6 +287,121 @@
       background: rgba(8, 8, 8, 0.34);
     }
 
+    .trade-game {
+      position: absolute;
+      bottom: 3.2rem;
+      right: 1.2rem;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .trade-game-inner {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .trade-btn {
+      border: none;
+      border-radius: 6px;
+      padding: 0.42rem 0.72rem;
+      font-size: 0.68rem;
+      font-family: "DM Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+      line-height: 1;
+    }
+
+    .trade-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .trade-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+      transform: none;
+    }
+
+    .trade-btn--buy {
+      background: #26a69a;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(38, 166, 154, 0.25);
+    }
+
+    .trade-btn--buy:hover:not(:disabled) {
+      box-shadow: 0 0 18px rgba(38, 166, 154, 0.45);
+    }
+
+    .trade-btn--sell {
+      background: #ef5350;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(239, 83, 80, 0.25);
+    }
+
+    .trade-btn--sell:hover:not(:disabled) {
+      box-shadow: 0 0 18px rgba(239, 83, 80, 0.45);
+    }
+
+    .trade-result {
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.32rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(10, 10, 10, 0.7);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 300ms ease;
+      white-space: nowrap;
+    }
+
+    .trade-result.is-visible {
+      opacity: 1;
+    }
+
+    .trade-result--win {
+      color: #26a69a;
+      border: 1px solid rgba(38, 166, 154, 0.4);
+    }
+
+    .trade-result--lose {
+      color: #ef5350;
+      border: 1px solid rgba(239, 83, 80, 0.4);
+    }
+
+    .trade-label {
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .trade-score {
+      font-size: 0.62rem;
+      color: var(--gold-light);
+      letter-spacing: 0.06em;
+      padding: 0.28rem 0.5rem;
+      background: rgba(10, 10, 10, 0.6);
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .trade-game {
+        display: none !important;
+      }
+    }
+
+    .hero.video-playing .trade-game {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .hero.video-ended .hero-video {
       opacity: 0;
       visibility: hidden;
@@ -699,6 +814,15 @@
     </video>
     <div class="hero-texture" aria-hidden="true"></div>
     <canvas class="chart-line-bg" id="chartCanvas" aria-hidden="true"></canvas>
+    <div class="trade-game" id="tradeGame">
+      <span class="trade-label">Predict:</span>
+      <div class="trade-game-inner">
+        <button class="trade-btn trade-btn--buy" id="tradeBuy" type="button">Buy ▲</button>
+        <button class="trade-btn trade-btn--sell" id="tradeSell" type="button">Sell ▼</button>
+      </div>
+      <span class="trade-result" id="tradeResult"></span>
+      <span class="trade-score" id="tradeScore">0 / 0</span>
+    </div>
     <div class="video-start-overlay" id="videoStartOverlay">
       <div class="video-start-btn" id="videoStartBtn" aria-hidden="true">
         <svg class="tap-icon" viewBox="0 0 32 32" aria-hidden="true">
@@ -1174,9 +1298,10 @@
     const BODY_ALPHA = 0.95;
 
     const CANDLE_COUNT = 88;
-    const DRAW_MS = 7200; // time to draw across the hero
-    const HOLD_MS = 200;
+    const DRAW_MS = 12000;
+    const HOLD_MS = 1800;
     const FADE_MS = 900;
+    const BET_CUTOFF = 0.55;
 
     let chartState = null;
 
@@ -1380,6 +1505,73 @@
       return candles;
     }
 
+    const PATTERN_OUTCOME = {
+      headShoulders: "sell",
+      doubleTop: "sell",
+      tripleTop: "sell",
+      inverseHeadShoulders: "buy",
+      doubleBottom: "buy",
+      tripleBottom: "buy",
+      risingWedge: "sell",
+      fallingWedge: "buy"
+    };
+
+    const tradeBuyBtn = document.getElementById("tradeBuy");
+    const tradeSellBtn = document.getElementById("tradeSell");
+    const tradeResultEl = document.getElementById("tradeResult");
+    const tradeScoreEl = document.getElementById("tradeScore");
+    let gameWins = 0;
+    let gameTotal = 0;
+    let gameBet = null; // "buy" | "sell" | null
+    let gameLocked = false;
+    let gameResultShown = false;
+
+    function resetGameUI() {
+      gameBet = null;
+      gameLocked = false;
+      gameResultShown = false;
+      if (tradeBuyBtn) { tradeBuyBtn.disabled = false; tradeBuyBtn.style.outline = "none"; }
+      if (tradeSellBtn) { tradeSellBtn.disabled = false; tradeSellBtn.style.outline = "none"; }
+      if (tradeResultEl) { tradeResultEl.className = "trade-result"; tradeResultEl.textContent = ""; }
+    }
+
+    function lockBet(direction) {
+      if (gameLocked) return;
+      gameBet = direction;
+      gameLocked = true;
+      if (tradeBuyBtn) tradeBuyBtn.disabled = true;
+      if (tradeSellBtn) tradeSellBtn.disabled = true;
+      if (direction === "buy" && tradeBuyBtn) {
+        tradeBuyBtn.style.outline = "2px solid #26a69a";
+        tradeBuyBtn.disabled = false;
+        tradeBuyBtn.disabled = true;
+      }
+      if (direction === "sell" && tradeSellBtn) {
+        tradeSellBtn.style.outline = "2px solid #ef5350";
+        tradeSellBtn.disabled = false;
+        tradeSellBtn.disabled = true;
+      }
+    }
+
+    function showGameResult(patternKey) {
+      if (gameResultShown || !gameBet) return;
+      gameResultShown = true;
+      const correct = PATTERN_OUTCOME[patternKey];
+      const won = gameBet === correct;
+      gameTotal++;
+      if (won) gameWins++;
+      if (tradeResultEl) {
+        tradeResultEl.textContent = won ? "✓ Correct" : "✗ Wrong";
+        tradeResultEl.className = "trade-result is-visible " + (won ? "trade-result--win" : "trade-result--lose");
+      }
+      if (tradeScoreEl) {
+        tradeScoreEl.textContent = gameWins + " / " + gameTotal;
+      }
+    }
+
+    if (tradeBuyBtn) tradeBuyBtn.addEventListener("click", () => lockBet("buy"));
+    if (tradeSellBtn) tradeSellBtn.addEventListener("click", () => lockBet("sell"));
+
     function initChartPattern(nextIndex) {
       const cw = chartCanvas.width / devicePixelRatio;
       const ch = chartCanvas.height / devicePixelRatio;
@@ -1388,6 +1580,7 @@
         : (chartState ? (chartState.patternIndex + 1) % PATTERN_KEYS.length : 0);
       const patternKey = PATTERN_KEYS[idx];
       const candles = generateCandles(patternKey, cw, ch);
+      resetGameUI();
       chartState = {
         patternKey,
         patternIndex: idx,
@@ -1452,8 +1645,15 @@
         if (t <= DRAW_MS) {
           const progress = t / DRAW_MS;
           upto = Math.floor(progress * chartState.candles.length);
+
+          if (progress >= BET_CUTOFF && !gameLocked) {
+            if (tradeBuyBtn) tradeBuyBtn.disabled = true;
+            if (tradeSellBtn) tradeSellBtn.disabled = true;
+            gameLocked = true;
+          }
         } else {
           upto = chartState.candles.length;
+          showGameResult(chartState.patternKey);
           if (!chartState.holdDone && t > DRAW_MS + HOLD_MS) {
             chartState.done = true;
             chartState.fading = true;
