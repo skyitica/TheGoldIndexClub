@@ -1336,6 +1336,8 @@
 
       const candles = [];
       let prevClose = pad + curve[0] * priceH;
+      let shockTail = 0;
+      let shockDir = 0;
 
       for (let i = 0; i < count; i++) {
         const target = pad + curve[i] * priceH;
@@ -1344,6 +1346,25 @@
         const isSpike = Math.random() < 0.04;
         if (isSpike) {
           noise += (Math.random() > 0.5 ? -1 : 1) * priceH * rand(0.06, 0.12);
+        }
+
+        // Occasional boom/crash event: one violent impulse + short tail.
+        const canStartShock = i > 8 && i < count - 10 && shockTail === 0;
+        if (canStartShock && Math.random() < 0.018) {
+          shockDir = Math.random() > 0.5 ? -1 : 1; // -1 boom (up), +1 crash (down)
+          shockTail = 5;
+          noise += shockDir * priceH * rand(0.14, 0.22);
+        } else if (shockTail > 0) {
+          // Follow-through/mean reversion tail for a few candles
+          const tailStrength = shockTail === 5
+            ? rand(0.07, 0.12)
+            : rand(0.02, 0.07);
+          noise += shockDir * priceH * tailStrength;
+          if (shockTail <= 2) {
+            // Start calming the move near tail end.
+            noise += -shockDir * priceH * rand(0.01, 0.03);
+          }
+          shockTail -= 1;
         }
 
         const close = clamp(target + noise, pad * 0.4, ch - pad * 0.4);
@@ -1368,6 +1389,15 @@
         }
         if (Math.random() < 0.06) {
           wickDn = rand(bH * 0.8, bH * 2.5 + 8);
+        }
+
+        // Emphasize explosion candle shape during shock start.
+        if (shockTail === 4) {
+          if (shockDir < 0) {
+            wickUp = rand(bH * 1.4, bH * 3.2 + 10);
+          } else {
+            wickDn = rand(bH * 1.4, bH * 3.2 + 10);
+          }
         }
 
         const high = Math.max(2, top - wickUp);
