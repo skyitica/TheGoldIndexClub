@@ -809,7 +809,7 @@
 </head>
 <body>
   <header class="hero" id="top">
-    <video class="hero-video" playsinline preload="metadata">
+    <video class="hero-video" playsinline preload="auto">
       <source src="assets/hero.mp4" type="video/mp4" />
     </video>
     <div class="hero-texture" aria-hidden="true"></div>
@@ -1169,26 +1169,10 @@
         heroHiddenAtCut = false;
         heroSection?.classList.remove("video-ended");
         heroVideo.muted = false;
-        if (videoStartBtn) {
-          const label = videoStartBtn.querySelector(".tap-label");
-          if (label) label.textContent = "Buffering video...";
-        }
-
-        const onPlaying = () => {
-          videoStartOverlay?.classList.add("is-hidden");
-          if (videoStartBtn) {
-            const label = videoStartBtn.querySelector(".tap-label");
-            if (label) label.textContent = "Playing";
-          }
-        };
-        heroVideo.addEventListener("playing", onPlaying, { once: true });
+        videoStartOverlay?.classList.add("is-hidden");
 
         heroVideo.play().catch(() => {
           heroStarted = false;
-          if (videoStartBtn) {
-            const label = videoStartBtn.querySelector(".tap-label");
-            if (label) label.textContent = "Tap anywhere to start video with sound";
-          }
           videoStartOverlay?.classList.remove("is-hidden");
         });
       }
