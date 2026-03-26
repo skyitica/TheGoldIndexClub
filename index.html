@@ -127,7 +127,7 @@
       height: 100%;
       z-index: 0;
       pointer-events: none;
-      opacity: 0.16;
+      opacity: 0.22;
       transition: opacity 600ms ease;
     }
 
@@ -1157,14 +1157,28 @@
     const chartCanvas = document.getElementById("chartCanvas");
     const cCtx = chartCanvas ? chartCanvas.getContext("2d") : null;
 
-    const ARROW_SPEED = 3.5;
-    const LEG_MIN = 80;
-    const LEG_MAX = 200;
-    const FADE_DURATION = 900;
-    const GOLD_COLOR = "#c9a84c";
-    const GOLD_LIGHT = "#e8c97a";
+    const PATTERN_KEYS = [
+      "headShoulders",
+      "doubleTop",
+      "tripleTop",
+      "inverseHeadShoulders",
+      "doubleBottom",
+      "tripleBottom",
+      "risingWedge",
+      "fallingWedge"
+    ];
 
-    let rocketState = null;
+    const GREEN = "#26a69a";
+    const RED = "#ef5350";
+    const WICK = "rgba(232, 201, 122, 0.7)";
+    const BODY_ALPHA = 0.95;
+
+    const CANDLE_COUNT = 88;
+    const DRAW_MS = 7200; // time to draw across the hero
+    const HOLD_MS = 200;
+    const FADE_MS = 900;
+
+    let chartState = null;
 
     function resizeChartCanvas() {
       if (!chartCanvas) return;
@@ -1174,115 +1188,294 @@
       if (cCtx) cCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
     }
 
-    function initRocket() {
+    function rand(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function clamp(v, a, b) {
+      return Math.max(a, Math.min(b, v));
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function smoothstep(t) {
+      const x = clamp(t, 0, 1);
+      return x * x * (3 - 2 * x);
+    }
+
+    function sampleFromKeypoints(keypoints, n) {
+      // keypoints: [{x:0..1, y:0..1}, ...] sorted by x
+      const out = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const t = i / (n - 1);
+        // find segment
+        let j = 0;
+        while (j < keypoints.length - 2 && t > keypoints[j + 1].x) j++;
+        const k0 = keypoints[j];
+        const k1 = keypoints[j + 1];
+        const segT = (t - k0.x) / Math.max(1e-6, k1.x - k0.x);
+        const st = smoothstep(segT);
+        out[i] = lerp(k0.y, k1.y, st);
+      }
+      return out;
+    }
+
+    function generateCloseY(patternKey, n, ch) {
+      // return y pixels (0..ch), where smaller y => higher price
+      const top = ch * 0.12;
+      const bottom = ch * 0.88;
+      const height = bottom - top;
+
+      let yNorm = new Array(n);
+      const tEnd = n - 1;
+
+      const keys = (arr) => arr.map((p) => ({ x: p.x, y: p.y }));
+      if (patternKey === "headShoulders") {
+        yNorm = sampleFromKeypoints(keys([
+          { x: 0.0, y: 0.52 },
+          { x: 0.18, y: 0.44 },
+          { x: 0.34, y: 0.22 }, // head peak
+          { x: 0.50, y: 0.42 }, // right shoulder
+          { x: 0.66, y: 0.54 }, // neckline
+          { x: 0.84, y: 0.72 }, // breakdown
+          { x: 1.0, y: 0.80 }
+        ]), n);
+      } else if (patternKey === "inverseHeadShoulders") {
+        yNorm = sampleFromKeypoints(keys([
+          { x: 0.0, y: 0.50 },
+          { x: 0.18, y: 0.62 },
+          { x: 0.34, y: 0.78 }, // head valley
+          { x: 0.50, y: 0.64 },
+          { x: 0.66, y: 0.52 },
+          { x: 0.84, y: 0.30 }, // breakout up
+          { x: 1.0, y: 0.26 }
+        ]), n);
+      } else if (patternKey === "doubleTop") {
+        yNorm = sampleFromKeypoints(keys([
+          { x: 0.0, y: 0.50 },
+          { x: 0.18, y: 0.36 },
+          { x: 0.34, y: 0.52 },
+          { x: 0.50, y: 0.37 },
+          { x: 0.66, y: 0.60 },
+          { x: 1.0, y: 0.80 }
+        ]), n);
+      } else if (patternKey === "tripleTop") {
+        yNorm = sampleFromKeypoints(keys([
+          { x: 0.0, y: 0.50 },
+          { x: 0.14, y: 0.34 },
+          { x: 0.26, y: 0.52 },
+          { x: 0.40, y: 0.33 },
+          { x: 0.52, y: 0.54 },
+          { x: 0.66, y: 0.35 },
+          { x: 0.78, y: 0.62 },
+          { x: 1.0, y: 0.80 }
+        ]), n);
+      } else if (patternKey === "doubleBottom") {
+        yNorm = sampleFromKeypoints(keys([
+          { x: 0.0, y: 0.48 },
+          { x: 0.18, y: 0.68 },
+          { x: 0.34, y: 0.58 },
+          { x: 0.50, y: 0.69 },
+          { x: 0.66, y: 0.54 },
+          { x: 1.0, y: 0.28 }
+        ]), n);
+      } else if (patternKey === "tripleBottom") {
+        yNorm = sampleFromKeypoints(keys([
+          { x: 0.0, y: 0.50 },
+          { x: 0.14, y: 0.70 },
+          { x: 0.28, y: 0.58 },
+          { x: 0.42, y: 0.72 },
+          { x: 0.56, y: 0.60 },
+          { x: 0.70, y: 0.71 },
+          { x: 0.84, y: 0.52 },
+          { x: 1.0, y: 0.30 }
+        ]), n);
+      } else if (patternKey === "risingWedge") {
+        // bearish wedge: rising with shrinking amplitude, then breakdown
+        for (let i = 0; i < n; i++) {
+          const t = i / tEnd;
+          const center = lerp(0.64, 0.44, t); // upward drift
+          const range = lerp(0.20, 0.08, t); // converging
+          const wave = Math.sin(t * Math.PI * 7);
+          let v = center - wave * range * 0.35;
+          if (t > 0.82) {
+            v += ((t - 0.82) / 0.18) * 0.28; // breakdown
+          }
+          yNorm[i] = v;
+        }
+      } else if (patternKey === "fallingWedge") {
+        // bullish wedge: falling with shrinking amplitude, then breakout up
+        for (let i = 0; i < n; i++) {
+          const t = i / tEnd;
+          const center = lerp(0.42, 0.60, t); // downward drift
+          const range = lerp(0.20, 0.08, t);
+          const wave = Math.sin(t * Math.PI * 7);
+          let v = center + wave * range * 0.35;
+          if (t > 0.82) {
+            v -= ((t - 0.82) / 0.18) * 0.28; // breakout up
+          }
+          yNorm[i] = v;
+        }
+      }
+
+      // add small smoothing/noise to feel "market"
+      for (let i = 0; i < n; i++) {
+        yNorm[i] = clamp(yNorm[i] + rand(-0.012, 0.012), 0.06, 0.94);
+      }
+
+      const out = new Array(n);
+      for (let i = 0; i < n; i++) {
+        out[i] = top + yNorm[i] * height;
+      }
+      return out;
+    }
+
+    function generateCandles(patternKey, cw, ch) {
+      const xPad = cw * 0.07;
+      const leftX = xPad;
+      const rightX = cw - xPad;
+      const step = (rightX - leftX) / (CANDLE_COUNT - 1);
+      const candleW = Math.max(2, step * 0.52);
+
+      const closeY = generateCloseY(patternKey, CANDLE_COUNT, ch);
+
+      // We’ll pick open/close with small deltas around the close curve.
+      const candles = new Array(CANDLE_COUNT);
+      let prevClose = closeY[0] + rand(-6, 6);
+      for (let i = 0; i < CANDLE_COUNT; i++) {
+        const close = closeY[i];
+        const open = i === 0 ? prevClose : closeY[i - 1] + rand(-6, 6);
+        const isBull = close < open;
+
+        const bodyTop = Math.min(open, close);
+        const bodyBot = Math.max(open, close);
+        const bodyH = Math.max(2, bodyBot - bodyTop);
+
+        // wick lengths feel like real candles
+        const upWick = bodyH * rand(0.7, 1.9) + rand(2, 12);
+        const dnWick = bodyH * rand(0.7, 1.9) + rand(2, 12);
+        let high = bodyTop - upWick;
+        let low = bodyBot + dnWick;
+
+        high = clamp(high, 0, ch - 1);
+        low = clamp(low, 0, ch - 1);
+
+        // Ensure wick covers body
+        high = Math.min(high, bodyTop);
+        low = Math.max(low, bodyBot);
+
+        candles[i] = {
+          x: leftX + i * step,
+          w: candleW,
+          highY: high,
+          lowY: low,
+          openY: open,
+          closeY: close,
+          bull: isBull
+        };
+      }
+
+      return candles;
+    }
+
+    function initChartPattern(nextIndex) {
       const cw = chartCanvas.width / devicePixelRatio;
       const ch = chartCanvas.height / devicePixelRatio;
-      const startY = ch * 0.3 + Math.random() * ch * 0.4;
-      const initDir = Math.random() > 0.5 ? -1 : 1;
-      rocketState = {
-        trail: [{ x: -10, y: startY }],
-        x: -10,
-        y: startY,
-        vDir: initDir,
-        legLeft: LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN),
-        legDone: 0,
+      const idx = typeof nextIndex === "number"
+        ? nextIndex
+        : (chartState ? (chartState.patternIndex + 1) % PATTERN_KEYS.length : 0);
+      const patternKey = PATTERN_KEYS[idx];
+      const candles = generateCandles(patternKey, cw, ch);
+      chartState = {
+        patternKey,
+        patternIndex: idx,
+        candles,
+        drawnCount: 0,
         done: false,
-        fadeStart: 0,
         fading: false,
-        cw: cw,
-        ch: ch
+        fadeStart: 0,
+        patternStart: performance.now(),
+        holdDone: false
       };
     }
 
-    function stepRocket(r) {
-      if (r.done) return;
-      r.x += ARROW_SPEED;
-      r.y += ARROW_SPEED * r.vDir;
+    function drawCandles(alpha, upto) {
+      if (!cCtx) return;
+      const cw = chartCanvas.width / devicePixelRatio;
+      const ch = chartCanvas.height / devicePixelRatio;
+      cCtx.clearRect(0, 0, cw, ch);
+      if (!chartState) return;
 
-      if (r.y < 30) { r.y = 30; r.vDir = 1; r.legDone = 0; r.legLeft = LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN); }
-      if (r.y > r.ch - 30) { r.y = r.ch - 30; r.vDir = -1; r.legDone = 0; r.legLeft = LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN); }
+      cCtx.save();
+      cCtx.globalAlpha = alpha;
 
-      r.legDone += ARROW_SPEED;
-      r.trail.push({ x: r.x, y: r.y });
+      const count = Math.min(upto, chartState.candles.length);
+      for (let i = 0; i < count; i++) {
+        const cd = chartState.candles[i];
+        const color = cd.bull ? GREEN : RED;
 
-      if (r.legDone >= r.legLeft) {
-        r.vDir *= -1;
-        r.legDone = 0;
-        r.legLeft = LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN);
+        // wick
+        cCtx.globalAlpha = alpha;
+        cCtx.strokeStyle = WICK;
+        cCtx.lineWidth = 1.4;
+        cCtx.beginPath();
+        cCtx.moveTo(cd.x, cd.highY);
+        cCtx.lineTo(cd.x, cd.lowY);
+        cCtx.stroke();
+
+        // body
+        const top = Math.min(cd.openY, cd.closeY);
+        const bot = Math.max(cd.openY, cd.closeY);
+        const bodyH = Math.max(2, bot - top);
+        cCtx.fillStyle = color;
+        cCtx.globalAlpha = alpha * BODY_ALPHA;
+        cCtx.fillRect(cd.x - cd.w / 2, top, cd.w, bodyH);
       }
 
-      if (r.x >= r.cw + 10) {
-        r.done = true;
-        r.fading = true;
-        r.fadeStart = performance.now();
-      }
-    }
-
-    function drawArrowHead(ctx, r) {
-      const len = r.trail.length;
-      if (len < 2) return;
-      const tip = r.trail[len - 1];
-      const prev = r.trail[len - 2];
-      const dx = tip.x - prev.x;
-      const dy = tip.y - prev.y;
-      const angle = Math.atan2(dy, dx);
-      const size = 10;
-      ctx.save();
-      ctx.translate(tip.x, tip.y);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(-size, -size * 0.5);
-      ctx.lineTo(-size, size * 0.5);
-      ctx.closePath();
-      ctx.fillStyle = GOLD_LIGHT;
-      ctx.fill();
-      ctx.restore();
-    }
-
-    function drawRocket(ctx, r, alpha) {
-      if (r.trail.length < 2) return;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-
-      ctx.beginPath();
-      ctx.moveTo(r.trail[0].x, r.trail[0].y);
-      for (let i = 1; i < r.trail.length; i++) {
-        ctx.lineTo(r.trail[i].x, r.trail[i].y);
-      }
-      ctx.strokeStyle = GOLD_COLOR;
-      ctx.lineWidth = 2;
-      ctx.lineJoin = "miter";
-      ctx.lineCap = "square";
-      ctx.stroke();
-
-      if (!r.done) drawArrowHead(ctx, r);
-
-      ctx.restore();
+      cCtx.restore();
     }
 
     function chartLoop(now) {
       if (!cCtx || !chartCanvas) return;
+      if (!chartState) initChartPattern();
+
       const cw = chartCanvas.width / devicePixelRatio;
       const ch = chartCanvas.height / devicePixelRatio;
-      cCtx.clearRect(0, 0, cw, ch);
 
-      if (!rocketState) initRocket();
+      const t = now - chartState.patternStart;
+      let upto = 0;
+      let alpha = 1;
 
-      const r = rocketState;
-
-      if (!r.done) {
-        stepRocket(r);
-        drawRocket(cCtx, r, 1);
-      } else if (r.fading) {
-        const elapsed = now - r.fadeStart;
-        const fadeAlpha = Math.max(0, 1 - elapsed / FADE_DURATION);
-        drawRocket(cCtx, r, fadeAlpha);
-        if (fadeAlpha <= 0) {
-          initRocket();
+      if (!chartState.done) {
+        if (t <= DRAW_MS) {
+          const progress = t / DRAW_MS;
+          upto = Math.floor(progress * chartState.candles.length);
+        } else {
+          upto = chartState.candles.length;
+          if (!chartState.holdDone && t > DRAW_MS + HOLD_MS) {
+            chartState.done = true;
+            chartState.fading = true;
+            chartState.fadeStart = now;
+          }
+          chartState.holdDone = true;
+          alpha = 1;
         }
       }
 
+      if (chartState.fading) {
+        const elapsed = now - chartState.fadeStart;
+        alpha = Math.max(0, 1 - elapsed / FADE_MS);
+        upto = chartState.candles.length;
+        if (elapsed >= FADE_MS) {
+          const nextIndex = (chartState.patternIndex + 1) % PATTERN_KEYS.length;
+          chartState = null;
+          initChartPattern(nextIndex);
+        }
+      }
+
+      drawCandles(alpha, upto);
       requestAnimationFrame(chartLoop);
     }
 
