@@ -1049,11 +1049,9 @@
     const chartCanvas = document.getElementById("chartCanvas");
     const cCtx = chartCanvas ? chartCanvas.getContext("2d") : null;
 
-    const ARROW_SPEED = 3.2;
-    const H_RUN_MIN = 60;
-    const H_RUN_MAX = 160;
-    const V_RUN_MIN = 40;
-    const V_RUN_MAX = 120;
+    const ARROW_SPEED = 3.5;
+    const LEG_MIN = 80;
+    const LEG_MAX = 200;
     const FADE_DURATION = 900;
     const GOLD_COLOR = "#c9a84c";
     const GOLD_LIGHT = "#e8c97a";
@@ -1072,14 +1070,14 @@
       const cw = chartCanvas.width / devicePixelRatio;
       const ch = chartCanvas.height / devicePixelRatio;
       const startY = ch * 0.3 + Math.random() * ch * 0.4;
+      const initDir = Math.random() > 0.5 ? -1 : 1;
       rocketState = {
         trail: [{ x: -10, y: startY }],
         x: -10,
         y: startY,
-        dir: "right",
-        runLeft: H_RUN_MIN + Math.random() * (H_RUN_MAX - H_RUN_MIN),
-        runDone: 0,
-        vDir: Math.random() > 0.5 ? -1 : 1,
+        vDir: initDir,
+        legLeft: LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN),
+        legDone: 0,
         done: false,
         fadeStart: 0,
         fading: false,
@@ -1088,34 +1086,21 @@
       };
     }
 
-    function pickNextSegment(r) {
-      if (r.dir === "right") {
-        r.dir = "vert";
-        r.vDir = Math.random() > 0.5 ? -1 : 1;
-        if (r.y < r.ch * 0.2) r.vDir = 1;
-        if (r.y > r.ch * 0.8) r.vDir = -1;
-        r.runLeft = V_RUN_MIN + Math.random() * (V_RUN_MAX - V_RUN_MIN);
-      } else {
-        r.dir = "right";
-        r.runLeft = H_RUN_MIN + Math.random() * (H_RUN_MAX - H_RUN_MIN);
-      }
-      r.runDone = 0;
-    }
-
     function stepRocket(r) {
       if (r.done) return;
-      const move = ARROW_SPEED;
-      if (r.dir === "right") {
-        r.x += move;
-      } else {
-        r.y += move * r.vDir;
-        r.y = Math.max(20, Math.min(r.ch - 20, r.y));
-      }
-      r.runDone += move;
+      r.x += ARROW_SPEED;
+      r.y += ARROW_SPEED * r.vDir;
+
+      if (r.y < 30) { r.y = 30; r.vDir = 1; r.legDone = 0; r.legLeft = LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN); }
+      if (r.y > r.ch - 30) { r.y = r.ch - 30; r.vDir = -1; r.legDone = 0; r.legLeft = LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN); }
+
+      r.legDone += ARROW_SPEED;
       r.trail.push({ x: r.x, y: r.y });
 
-      if (r.runDone >= r.runLeft) {
-        pickNextSegment(r);
+      if (r.legDone >= r.legLeft) {
+        r.vDir *= -1;
+        r.legDone = 0;
+        r.legLeft = LEG_MIN + Math.random() * (LEG_MAX - LEG_MIN);
       }
 
       if (r.x >= r.cw + 10) {
