@@ -126,15 +126,17 @@
       font-size: clamp(0.95rem, 2.2vw, 1.1rem);
     }
 
-    .hero-animate {
+    .hero-timed {
       opacity: 0;
       transform: translateY(20px);
-      animation: heroReveal 700ms ease forwards;
+      transition: opacity 700ms ease, transform 700ms ease;
+      transition-delay: var(--reveal-delay, 0ms);
     }
 
-    .hero-animate:nth-child(1) { animation-delay: 120ms; }
-    .hero-animate:nth-child(2) { animation-delay: 320ms; }
-    .hero-animate:nth-child(3) { animation-delay: 520ms; }
+    .hero-timed.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
     @keyframes heroReveal {
       to {
@@ -516,7 +518,7 @@
 </head>
 <body>
   <header class="hero" id="top">
-    <video class="hero-video" autoplay muted loop playsinline>
+    <video class="hero-video" autoplay loop playsinline>
       <source src="assets/hero.mp4" type="video/mp4" />
     </video>
     <svg class="chart-bg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
@@ -530,10 +532,10 @@
     </svg>
 
     <div class="container hero-content">
-      <span class="section-label hero-animate">Premium Signal Desk</span>
-      <h1 class="hero-title hero-animate">Trade Smarter. Follow Percival.</h1>
-      <p class="hero-subtitle hero-animate">Precision signals on US30 &amp; Gold - delivered before the move.</p>
-      <a href="#payment" class="cta-btn hero-animate">Join The Club &rarr;</a>
+      <span class="section-label hero-timed" style="--reveal-delay:120ms">Premium Signal Desk</span>
+      <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
+      <p class="hero-subtitle hero-timed" style="--reveal-delay:520ms">Precision signals on US30 &amp; Gold - delivered before the move.</p>
+      <a href="#payment" class="cta-btn hero-timed" style="--reveal-delay:720ms">Join The Club &rarr;</a>
     </div>
 
     <div class="ticker-wrap" aria-label="market ticker">
@@ -733,6 +735,39 @@
   </footer>
 
   <script>
+    const heroVideo = document.querySelector(".hero-video");
+    const timedHeroElements = document.querySelectorAll(".hero-timed");
+    let heroContentShown = false;
+
+    function revealHeroContent() {
+      if (heroContentShown) return;
+      heroContentShown = true;
+      timedHeroElements.forEach((el) => el.classList.add("is-visible"));
+    }
+
+    if (heroVideo) {
+      heroVideo.muted = false;
+      heroVideo.volume = 1;
+
+      heroVideo.addEventListener("timeupdate", () => {
+        if (heroVideo.currentTime >= 9) {
+          revealHeroContent();
+        }
+      });
+
+      // Fallback in case timeupdate is delayed or autoplay is blocked.
+      setTimeout(revealHeroContent, 9500);
+
+      // Most browsers block autoplay with audio; unmute playback on first user gesture.
+      function enableAudioPlayback() {
+        heroVideo.muted = false;
+        heroVideo.play().catch(() => {});
+      }
+
+      document.addEventListener("click", enableAudioPlayback, { once: true });
+      document.addEventListener("touchstart", enableAudioPlayback, { once: true });
+    }
+
     const statElements = document.querySelectorAll(".stat-value");
     const statsObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
