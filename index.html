@@ -101,6 +101,21 @@
       content: none;
     }
 
+    .hero-texture {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 900ms ease;
+      background-image:
+        radial-gradient(rgba(201, 168, 76, 0.28) 0.8px, transparent 0.8px),
+        radial-gradient(rgba(201, 168, 76, 0.16) 0.8px, transparent 0.8px);
+      background-size: 3px 3px, 5px 5px;
+      background-position: 0 0, 1px 1px;
+      mix-blend-mode: screen;
+    }
+
     .chart-bg {
       display: none;
     }
@@ -118,8 +133,10 @@
       display: grid;
       place-items: center;
       z-index: 4;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: pointer;
       transition: opacity 260ms ease;
+      background: rgba(0, 0, 0, 0.08);
     }
 
     .video-start-overlay.is-hidden {
@@ -128,24 +145,57 @@
     }
 
     .video-start-btn {
-      pointer-events: auto;
-      border: 1px solid var(--gold);
-      background: rgba(8, 8, 8, 0.58);
+      pointer-events: none;
+      border: 1px solid rgba(201, 168, 76, 0.7);
+      background: rgba(8, 8, 8, 0.54);
       color: var(--gold-light);
-      border-radius: 999px;
-      padding: 0.62rem 1rem;
-      font-size: 0.72rem;
+      border-radius: 14px;
+      padding: 0.75rem 0.95rem;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      cursor: pointer;
       backdrop-filter: blur(1px);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
       transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
     }
 
-    .video-start-btn:hover {
+    .video-start-overlay:hover .video-start-btn {
       transform: translateY(-1px);
       border-color: var(--gold-light);
       box-shadow: 0 0 16px rgba(201, 168, 76, 0.35);
+    }
+
+    .tap-label {
+      display: block;
+      font-size: 0.64rem;
+      line-height: 1.2;
+    }
+
+    .tap-icon {
+      width: 30px;
+      height: 30px;
+      stroke: var(--gold-light);
+      fill: none;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      overflow: visible;
+    }
+
+    .tap-ring {
+      transform-origin: center;
+      animation: tapPulse 1.5s ease-out infinite;
+    }
+
+    .tap-ring.delay {
+      animation-delay: 0.35s;
+    }
+
+    @keyframes tapPulse {
+      0% { opacity: 0.9; transform: scale(0.7); }
+      85% { opacity: 0; transform: scale(1.4); }
+      100% { opacity: 0; transform: scale(1.4); }
     }
 
     .hero-title {
@@ -185,6 +235,10 @@
     .hero.video-ended .hero-video {
       opacity: 0;
       visibility: hidden;
+    }
+
+    .hero.video-ended .hero-texture {
+      opacity: 0.23;
     }
 
     @keyframes heroReveal {
@@ -251,12 +305,10 @@
 
     .ticker-group {
       display: inline-flex;
-      gap: 2.5rem;
+      gap: 1.2rem;
       align-items: center;
-      padding: 0.6rem 2.5rem;
+      padding: 0.6rem 1.2rem;
       flex-shrink: 0;
-      min-width: 100vw;
-      justify-content: space-around;
     }
 
     @keyframes tickerMove {
@@ -572,8 +624,19 @@
     <video class="hero-video" playsinline preload="metadata">
       <source src="assets/hero.mp4" type="video/mp4" />
     </video>
+    <div class="hero-texture" aria-hidden="true"></div>
     <div class="video-start-overlay" id="videoStartOverlay">
-      <button class="video-start-btn" id="videoStartBtn" type="button">Click to start video with sound</button>
+      <div class="video-start-btn" id="videoStartBtn" aria-hidden="true">
+        <svg class="tap-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <circle class="tap-ring" cx="16" cy="9" r="4"></circle>
+          <circle class="tap-ring delay" cx="16" cy="9" r="4"></circle>
+          <path d="M12 27V16.8a2 2 0 0 1 4 0V21"></path>
+          <path d="M16 22v-1.7a1.8 1.8 0 0 1 3.6 0V22"></path>
+          <path d="M19.6 22.2v-1a1.7 1.7 0 1 1 3.4 0V24"></path>
+          <path d="M12 27h7.8c2.2 0 4-1.8 4-4v-2.4"></path>
+        </svg>
+        <span class="tap-label">Tap anywhere to start video with sound</span>
+      </div>
     </div>
     <svg class="chart-bg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
       <defs>
@@ -600,6 +663,15 @@
           <span>GOLD $2,341</span>
           <span>DOW 39,420</span>
           <span>XAUUSD +0.4%</span>
+          <span>NASDAQ 17,945</span>
+          <span>SPX500 5,178</span>
+          <span>BRENT $83.10</span>
+          <span>US100 +0.6%</span>
+          <span>DXY 103.44</span>
+          <span>USOIL $78.90</span>
+          <span>XAUUSD $2,337</span>
+          <span>US30 39,402</span>
+          <span>GOLD +1.1%</span>
         </div>
         <div class="ticker-group" aria-hidden="true">
           <span>XAUUSD +1.2%</span>
@@ -607,6 +679,15 @@
           <span>GOLD $2,341</span>
           <span>DOW 39,420</span>
           <span>XAUUSD +0.4%</span>
+          <span>NASDAQ 17,945</span>
+          <span>SPX500 5,178</span>
+          <span>BRENT $83.10</span>
+          <span>US100 +0.6%</span>
+          <span>DXY 103.44</span>
+          <span>USOIL $78.90</span>
+          <span>XAUUSD $2,337</span>
+          <span>US30 39,402</span>
+          <span>GOLD +1.1%</span>
         </div>
       </div>
     </div>
@@ -871,14 +952,15 @@
         heroHiddenAtCut = false;
         heroVideo.muted = false;
         if (videoStartBtn) {
-          videoStartBtn.textContent = "Buffering video...";
-          videoStartBtn.disabled = true;
+          const label = videoStartBtn.querySelector(".tap-label");
+          if (label) label.textContent = "Buffering video...";
         }
 
         const onPlaying = () => {
           videoStartOverlay?.classList.add("is-hidden");
           if (videoStartBtn) {
-            videoStartBtn.textContent = "Playing";
+            const label = videoStartBtn.querySelector(".tap-label");
+            if (label) label.textContent = "Playing";
           }
         };
         heroVideo.addEventListener("playing", onPlaying, { once: true });
@@ -886,14 +968,14 @@
         heroVideo.play().catch(() => {
           heroStarted = false;
           if (videoStartBtn) {
-            videoStartBtn.textContent = "Click to start video with sound";
-            videoStartBtn.disabled = false;
+            const label = videoStartBtn.querySelector(".tap-label");
+            if (label) label.textContent = "Tap anywhere to start video with sound";
           }
           videoStartOverlay?.classList.remove("is-hidden");
         });
       }
 
-      videoStartBtn?.addEventListener("click", startHeroVideo);
+      videoStartOverlay?.addEventListener("click", startHeroVideo);
       heroVideo.addEventListener("click", startHeroVideo);
 
       heroVideo.addEventListener("ended", () => {
