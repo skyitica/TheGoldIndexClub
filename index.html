@@ -261,13 +261,30 @@
 
     .replay-btn {
       display: none;
-      background: rgba(8, 8, 8, 0.35);
-      border-color: rgba(201, 168, 76, 0.55);
-      box-shadow: 0 0 0 rgba(201, 168, 76, 0);
+      padding: 0.62rem 0.9rem;
+      border: 1px solid rgba(201, 168, 76, 0.45);
+      background: rgba(8, 8, 8, 0.25);
+      color: rgba(232, 201, 122, 0.95);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
     }
 
     .hero.video-ended .replay-btn {
       display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .replay-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(232, 201, 122, 0.85);
+      box-shadow: 0 0 18px rgba(201, 168, 76, 0.18);
+      background: rgba(8, 8, 8, 0.34);
     }
 
     .hero.video-ended .hero-video {
@@ -684,7 +701,7 @@
       <p class="hero-subtitle hero-timed" style="--reveal-delay:520ms">Precision signals on US30 &amp; Gold - delivered before the move.</p>
       <div class="hero-actions">
         <a href="#payment" class="cta-btn hero-timed" style="--reveal-delay:720ms">Join The Club &rarr;</a>
-        <button class="cta-btn replay-btn hero-timed" id="replayVideoBtn" type="button" style="--reveal-delay:720ms">
+        <button class="replay-btn" id="replayVideoBtn" type="button">
           Replay Video &rarr;
         </button>
       </div>
@@ -913,7 +930,7 @@
     const replayVideoBtn = document.getElementById("replayVideoBtn");
     const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
     const HERO_REVEAL_TIME = 9;
-    const HERO_HIDE_TIME = 28;
+    const HERO_HIDE_TIME = 28.2;
     let heroContentShown = false;
     let heroStarted = false;
     let heroHiddenAtCut = false;
@@ -993,8 +1010,15 @@
       heroVideo.addEventListener("timeupdate", syncHeroTimelineToVideo);
       heroVideo.addEventListener("seeking", syncHeroTimelineToVideo);
       heroVideo.addEventListener("seeked", syncHeroTimelineToVideo);
-      heroVideo.addEventListener("play", startTimelineLoop);
-      heroVideo.addEventListener("pause", stopTimelineLoop);
+      heroVideo.addEventListener("play", () => {
+        heroSection?.classList.add("video-playing");
+        heroSection?.classList.remove("video-ended");
+        startTimelineLoop();
+      });
+      heroVideo.addEventListener("pause", () => {
+        heroSection?.classList.remove("video-playing");
+        stopTimelineLoop();
+      });
 
       async function startHeroVideo() {
         if (heroStarted) return;
@@ -1009,7 +1033,6 @@
 
         const onPlaying = () => {
           videoStartOverlay?.classList.add("is-hidden");
-          heroSection?.classList.add("video-playing");
           if (videoStartBtn) {
             const label = videoStartBtn.querySelector(".tap-label");
             if (label) label.textContent = "Playing";
