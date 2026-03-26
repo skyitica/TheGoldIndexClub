@@ -998,13 +998,21 @@
       });
 
       if (sessionStorage.getItem(HERO_VIDEO_ENDED_KEY) === "1") {
-        heroStarted = true;
-        videoStartOverlay?.classList.add("is-hidden");
-        setEndedBlackScreenState();
-        heroVideo.addEventListener("loadedmetadata", () => {
-          heroVideo.currentTime = Math.max(heroVideo.duration - 0.08, 0);
+        // On refresh, we want the video to be playable again, but still not autoplay.
+        // So we clear the "ended" persistence and reset UI to the initial state.
+        sessionStorage.removeItem(HERO_VIDEO_ENDED_KEY);
+        heroStarted = false;
+        heroHiddenAtCut = false;
+        stopTimelineLoop();
+        heroSection?.classList.remove("video-ended");
+        heroSection?.classList.remove("video-playing");
+        videoStartOverlay?.classList.remove("is-hidden");
+        try {
           heroVideo.pause();
-        }, { once: true });
+          heroVideo.currentTime = 0;
+        } catch (e) {
+          // ignore
+        }
       }
 
       // Warm metadata early so first frame/playback starts faster.
