@@ -653,11 +653,29 @@
     }
 
     @media (max-width: 768px) {
+      body { cursor: auto; }
+
       .stats-grid,
       .features-grid,
       .testimonials-grid,
       .how-grid {
         grid-template-columns: 1fr;
+      }
+
+      .hero-video {
+        display: none;
+      }
+
+      #videoStartOverlay {
+        display: none;
+      }
+
+      #replayVideoBtn {
+        display: none;
+      }
+
+      .hero-texture {
+        opacity: 0.23;
       }
 
       section {
@@ -922,6 +940,7 @@
   </footer>
 
   <script>
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     const heroVideo = document.querySelector(".hero-video");
     const heroSection = document.querySelector(".hero");
     const timedHeroElements = document.querySelectorAll(".hero-timed");
@@ -1002,7 +1021,7 @@
       heroTimelineRaf = requestAnimationFrame(tick);
     }
 
-    if (heroVideo) {
+    if (heroVideo && !isMobile) {
       heroVideo.muted = false;
       heroVideo.volume = 1;
       heroVideo.loop = false;
@@ -1100,6 +1119,11 @@
         const videoSource = heroVideo.currentSrc || heroVideo.querySelector("source")?.src || "assets/hero.mp4";
         fetch(videoSource, { cache: "force-cache" }).catch(() => {});
       }
+    } else {
+      // Mobile: no video, no timed reveal. Show hero content immediately.
+      revealHeroContent();
+      heroSection?.classList.remove("video-playing");
+      heroSection?.classList.remove("video-ended");
     }
 
     const statElements = document.querySelectorAll(".stat-value");
