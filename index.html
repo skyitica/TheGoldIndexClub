@@ -251,6 +251,25 @@
       transition: none !important;
     }
 
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      flex-wrap: wrap;
+      margin-top: 0.2rem;
+    }
+
+    .replay-btn {
+      display: none;
+      background: rgba(8, 8, 8, 0.35);
+      border-color: rgba(201, 168, 76, 0.55);
+      box-shadow: 0 0 0 rgba(201, 168, 76, 0);
+    }
+
+    .hero.video-ended .replay-btn {
+      display: inline-flex;
+    }
+
     .hero.video-ended .hero-video {
       opacity: 0;
       visibility: hidden;
@@ -663,7 +682,12 @@
       <span class="section-label hero-timed" style="--reveal-delay:120ms">Premium Signal Desk</span>
       <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
       <p class="hero-subtitle hero-timed" style="--reveal-delay:520ms">Precision signals on US30 &amp; Gold - delivered before the move.</p>
-      <a href="#payment" class="cta-btn hero-timed" style="--reveal-delay:720ms">Join The Club &rarr;</a>
+      <div class="hero-actions">
+        <a href="#payment" class="cta-btn hero-timed" style="--reveal-delay:720ms">Join The Club &rarr;</a>
+        <button class="cta-btn replay-btn hero-timed" id="replayVideoBtn" type="button" style="--reveal-delay:720ms">
+          Replay Video &rarr;
+        </button>
+      </div>
     </div>
 
     <div class="ticker-wrap" aria-label="market ticker">
@@ -886,9 +910,10 @@
     const timedHeroElements = document.querySelectorAll(".hero-timed");
     const videoStartOverlay = document.getElementById("videoStartOverlay");
     const videoStartBtn = document.getElementById("videoStartBtn");
+    const replayVideoBtn = document.getElementById("replayVideoBtn");
     const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
     const HERO_REVEAL_TIME = 9;
-    const HERO_HIDE_TIME = 27.8;
+    const HERO_HIDE_TIME = 28;
     let heroContentShown = false;
     let heroStarted = false;
     let heroHiddenAtCut = false;
@@ -915,6 +940,19 @@
       heroSection?.classList.remove("video-playing");
       heroSection?.classList.add("video-ended");
       revealHeroContent();
+    }
+
+    function resetHeroForNewPlayback() {
+      // Reset hero state so the 9s/27.8s timing works again on replay.
+      heroContentShown = false;
+      heroHiddenAtCut = false;
+      heroSection?.classList.remove("video-ended");
+      heroSection?.classList.remove("video-playing");
+      stopTimelineLoop();
+      timedHeroElements.forEach((el) => {
+        el.classList.remove("is-visible");
+        el.classList.add("is-hidden-now");
+      });
     }
 
     function syncHeroTimelineToVideo() {
@@ -962,6 +1000,7 @@
         if (heroStarted) return;
         heroStarted = true;
         heroHiddenAtCut = false;
+        heroSection?.classList.remove("video-ended");
         heroVideo.muted = false;
         if (videoStartBtn) {
           const label = videoStartBtn.querySelector(".tap-label");
@@ -990,6 +1029,20 @@
 
       videoStartOverlay?.addEventListener("click", startHeroVideo);
       heroVideo.addEventListener("click", startHeroVideo);
+
+      replayVideoBtn?.addEventListener("click", () => {
+        // Replay is user-initiated, so audio should be allowed.
+        sessionStorage.removeItem(HERO_VIDEO_ENDED_KEY);
+        resetHeroForNewPlayback();
+        heroStarted = true;
+        try { heroVideo.pause(); } catch (e) {}
+        heroVideo.currentTime = 0;
+        heroVideo.play().catch(() => {
+          heroStarted = false;
+          // If play is blocked, show the original prompt again.
+          videoStartOverlay?.classList.remove("is-hidden");
+        });
+      });
 
       heroVideo.addEventListener("ended", () => {
         stopTimelineLoop();
