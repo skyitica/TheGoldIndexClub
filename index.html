@@ -1055,7 +1055,7 @@
       <span class="trade-meta">
         <span class="trade-help" aria-label="How to play">
           i
-          <span class="trade-help-tip">Click Buy or Sell once to place a preview. Click the same side again to lock before cutoff. Entry window closes at 75% of each chart run. Win or lose is based on where price closes versus your entry. Lot size scales P/L.</span>
+          <span class="trade-help-tip">Click Buy or Sell once to lock a trade before cutoff. Entry window closes at 75% of each chart run. Win or lose is based on where price closes versus your entry. Lot size scales P/L.</span>
         </span>
       </span>
     </div>
@@ -1751,7 +1751,6 @@
     let gameWins = 0;
     let gameTotal = 0;
     let openTrades = []; // [{direction, idx, entryPrice, lot}]
-    let pendingBet = null; // {direction, idx, entryPrice, lot} | null
     let gameLocked = false;
     let gameResultShown = false;
     let gameBalance = 100;
@@ -1770,7 +1769,6 @@
 
     function resetGameUI() {
       openTrades = [];
-      pendingBet = null;
       gameLocked = false;
       gameResultShown = false;
       if (tradeBuyBtn) { tradeBuyBtn.disabled = false; tradeBuyBtn.style.outline = "none"; }
@@ -1785,46 +1783,21 @@
       return { idx, entryPrice: candle.close };
     }
 
-    function previewOrLockBet(direction) {
+    function placeTrade(direction) {
       if (gameLocked) return;
       if (!chartState || !chartState.candles?.length) return;
       const snap = getCurrentSnapshot();
       if (!snap) return;
 
-      if (pendingBet && pendingBet.direction === direction) {
-        // Second click on same side locks a new trade.
-        openTrades.push({
-          direction,
-          idx: pendingBet.idx,
-          entryPrice: pendingBet.entryPrice,
-          lot: pendingBet.lot
-        });
-        pendingBet = null;
-        if (tradeResultEl) {
-          tradeResultEl.className = "trade-result is-visible";
-          tradeResultEl.textContent = "Trade locked (" + openTrades.length + ")";
-        }
-        if (tradeBuyBtn) tradeBuyBtn.style.outline = "none";
-        if (tradeSellBtn) tradeSellBtn.style.outline = "none";
-        return;
-      }
-
-      pendingBet = {
+      openTrades.push({
         direction,
         idx: snap.idx,
         entryPrice: snap.entryPrice,
         lot: getLotSize()
-      };
-
-      if (tradeBuyBtn) {
-        tradeBuyBtn.style.outline = direction === "buy" ? "2px solid #26a69a" : "none";
-      }
-      if (tradeSellBtn) {
-        tradeSellBtn.style.outline = direction === "sell" ? "2px solid #ef5350" : "none";
-      }
+      });
       if (tradeResultEl) {
         tradeResultEl.className = "trade-result is-visible";
-        tradeResultEl.textContent = "Click again to lock";
+        tradeResultEl.textContent = "Trade locked (" + openTrades.length + ")";
       }
     }
 
@@ -1861,8 +1834,8 @@
       updateBalanceUI();
     }
 
-    if (tradeBuyBtn) tradeBuyBtn.addEventListener("click", () => previewOrLockBet("buy"));
-    if (tradeSellBtn) tradeSellBtn.addEventListener("click", () => previewOrLockBet("sell"));
+    if (tradeBuyBtn) tradeBuyBtn.addEventListener("click", () => placeTrade("buy"));
+    if (tradeSellBtn) tradeSellBtn.addEventListener("click", () => placeTrade("sell"));
     if (tradeLotInput) {
       tradeLotInput.addEventListener("change", () => {
         const v = getLotSize();
@@ -1943,8 +1916,6 @@
         cCtx.fill();
       }
       for (const t of openTrades) drawMarker(t, false);
-      if (pendingBet) drawMarker(pendingBet, true);
-
       cCtx.restore();
     }
 
@@ -1969,7 +1940,6 @@
           if (progress >= BET_CUTOFF && !gameLocked) {
             if (tradeBuyBtn) tradeBuyBtn.disabled = true;
             if (tradeSellBtn) tradeSellBtn.disabled = true;
-            pendingBet = null;
             if (openTrades.length === 0) {
               if (tradeResultEl) {
                 tradeResultEl.className = "trade-result is-visible";
