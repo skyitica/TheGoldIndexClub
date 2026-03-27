@@ -299,7 +299,6 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--gold-light);
-      opacity: 0.92;
     }
 
     .urgency-line::before {
@@ -317,10 +316,12 @@
       50% { opacity: 0.45; transform: scale(0.92); }
     }
 
+    /* Keep layout/opacity on pricing only — hero .urgency-line must not set opacity or it overrides .hero-timed. */
     .pricing-wrap .urgency-line {
       justify-content: center;
       width: 100%;
       margin: 0.25rem 0 0.85rem;
+      opacity: 0.92;
     }
 
     .replay-btn {
