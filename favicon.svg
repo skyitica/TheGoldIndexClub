@@ -1,17 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Dark background with slight rounding -->
-  <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
+  <defs>
+    <!-- Metallic gold coin gradient — off-center for 3D depth -->
+    <radialGradient id="coin" cx="36%" cy="30%" r="68%">
+      <stop offset="0%"   stop-color="#f7e27e"/>
+      <stop offset="30%"  stop-color="#d9a93a"/>
+      <stop offset="70%"  stop-color="#b8872a"/>
+      <stop offset="100%" stop-color="#7a5010"/>
+    </radialGradient>
+    <!-- Glint highlight -->
+    <radialGradient id="glint" cx="28%" cy="22%" r="40%">
+      <stop offset="0%"   stop-color="#fff" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
 
-  <!-- Gold candlestick bars — simple chart icon -->
-  <!-- Left bar: bearish (shorter) -->
-  <rect x="6" y="14" width="4" height="12" rx="1" fill="#c9a84c" opacity="0.55"/>
-  <!-- Center bar: bullish (tall) -->
-  <rect x="14" y="7" width="4" height="19" rx="1" fill="#c9a84c"/>
-  <!-- Right bar: mid -->
-  <rect x="22" y="11" width="4" height="15" rx="1" fill="#c9a84c" opacity="0.75"/>
+  <!-- Dark premium bg -->
+  <rect width="32" height="32" rx="5.5" fill="#0a0a0a"/>
 
-  <!-- Subtle top wicks -->
-  <line x1="8" y1="10" x2="8" y2="14" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
-  <line x1="16" y1="4" x2="16" y2="7" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round"/>
-  <line x1="24" y1="8" x2="24" y2="11" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+  <!-- Milled coin edge (serrated outer ring) -->
+  <circle cx="16" cy="16" r="13.8" fill="#6b4209"
+    stroke="#c9a84c" stroke-width="1.4" stroke-dasharray="1.1 0.7" opacity="0.7"/>
+
+  <!-- Coin face -->
+  <circle cx="16" cy="16" r="12.3" fill="url(#coin)"/>
+
+  <!-- Inner beaded ring (coin detail) -->
+  <circle cx="16" cy="16" r="11.4" fill="none" stroke="#7a5010" stroke-width="0.45" opacity="0.9"/>
+
+  <!-- Glint -->
+  <circle cx="16" cy="16" r="12.3" fill="url(#glint)"/>
+
+  <!-- Springbok silhouette — engraving-style, dark bronze -->
+  <!-- Body -->
+  <ellipse cx="14.8" cy="18.5" rx="5.2" ry="2.1" fill="#4a2e04"/>
+
+  <!-- Rump bump (springbok has raised hindquarters) -->
+  <path d="M10,18 Q9.5,16.5 10.5,16 Q11.5,15.5 12,16.5" fill="#4a2e04"/>
+
+  <!-- Neck -->
+  <path d="M19.5,17 Q21,15 21.5,13.8" stroke="#4a2e04" stroke-width="2.1"
+        fill="none" stroke-linecap="round"/>
+
+  <!-- Head -->
+  <ellipse cx="22.2" cy="13.2" rx="1.7" ry="1.25" fill="#4a2e04"/>
+
+  <!-- Lyre-shaped horns (key krugerrand feature — curve out, tips curl back) -->
+  <path d="M21.5,12.2 C20.5,10.5 20.8,9 22.2,8.5" stroke="#4a2e04" stroke-width="0.85"
+        fill="none" stroke-linecap="round"/>
+  <path d="M22.8,12.2 C24.2,10.5 24.2,9 22.8,8.5" stroke="#4a2e04" stroke-width="0.85"
+        fill="none" stroke-linecap="round"/>
+
+  <!-- Front legs (pair) -->
+  <path d="M12.2,20.5 L11.8,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M13.8,20.6 L13.6,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
+
+  <!-- Hind legs (pair) -->
+  <path d="M16.8,20.6 L16.4,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M18.2,20.4 L18.6,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
+
+  <!-- Tail -->
+  <path d="M10.2,17.8 Q9,17.2 9.3,16.2" stroke="#4a2e04" stroke-width="0.9"
+        fill="none" stroke-linecap="round"/>
 </svg>
