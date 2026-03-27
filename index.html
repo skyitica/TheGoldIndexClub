@@ -97,6 +97,13 @@
       gap: 0.65rem 2.15rem;
     }
 
+    .topbar-guest-cluster {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 2.15rem;
+    }
+
     .topbar-link {
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -148,25 +155,30 @@
       text-decoration-color: var(--gold-light);
     }
 
-    .topbar-btn--login {
-      border: 1px solid rgba(201, 168, 76, 0.4);
-      background: rgba(8, 8, 8, 0.35);
-      color: rgba(232, 201, 122, 0.95);
-    }
-
-    .topbar-btn--login:hover {
-      border-color: rgba(232, 201, 122, 0.75);
-      background: rgba(201, 168, 76, 0.1);
-      color: var(--gold-light);
-      text-decoration-color: var(--gold-light);
-    }
-
     body:has(.hero.video-playing) .topbar-btn--join {
       background: rgba(0, 0, 0, 0.45);
     }
 
-    body:has(.hero.video-playing) .topbar-btn--login {
-      background: rgba(0, 0, 0, 0.35);
+    .topbar-btn--dashboard {
+      border: 1px solid var(--gold);
+      background: rgba(13, 13, 13, 0.65);
+      color: var(--gold-light);
+    }
+
+    .topbar-btn--dashboard:hover {
+      border-color: var(--gold-light);
+      box-shadow: 0 0 14px rgba(201, 168, 76, 0.22);
+      color: #fff6d4;
+      text-decoration-color: var(--gold-light);
+    }
+
+    body:has(.hero.video-playing) .topbar-btn--dashboard {
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    /* Toggled by Supabase session (index auth UI) */
+    .tgic-auth-hidden {
+      display: none !important;
     }
 
     @media (min-width: 769px) {
@@ -1233,8 +1245,11 @@
       <a class="topbar-brand" href="#top">The Gold Index Club</a>
       <nav class="topbar-actions" aria-label="Main">
         <a class="topbar-link" href="#payment">Pricing</a>
-        <a class="topbar-btn topbar-btn--login" href="login.html">Log in</a>
-        <a class="topbar-btn topbar-btn--join" href="checkout.html">Join</a>
+        <span class="topbar-guest-cluster tgic-when-logged-out">
+          <a class="topbar-link" href="login.html">Log in</a>
+          <a class="topbar-btn topbar-btn--join" href="checkout.html">Join</a>
+        </span>
+        <a class="topbar-btn topbar-btn--dashboard tgic-when-logged-in tgic-auth-hidden" href="account.html">Dashboard</a>
       </nav>
     </div>
   </div>
@@ -1276,7 +1291,8 @@
       <div class="hero-cta-stack">
         <p class="urgency-line hero-timed" style="--reveal-delay:640ms">Limited spots left</p>
         <div class="hero-actions">
-          <a href="checkout.html" class="cta-btn hero-timed" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
+          <a href="checkout.html" class="cta-btn hero-timed tgic-when-logged-out" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
+          <a href="account.html" class="cta-btn hero-timed tgic-when-logged-in tgic-auth-hidden" style="--reveal-delay:720ms">Dashboard &rarr;</a>
           <button class="replay-btn" id="replayVideoBtn" type="button">
             Replay Video &rarr;
           </button>
@@ -1518,7 +1534,8 @@
           <li>Weekly market outlook and strategy brief</li>
           <li>Direct education from Percival's trading framework</li>
         </ul>
-        <a href="checkout.html" class="cta-btn cta-pulse">Secure Your Spot Now &rarr;</a>
+        <a href="checkout.html" class="cta-btn cta-pulse tgic-when-logged-out">Secure Your Spot Now &rarr;</a>
+        <a href="account.html" class="cta-btn cta-pulse tgic-when-logged-in tgic-auth-hidden">Dashboard &rarr;</a>
       </div>
     </div>
   </section>
@@ -2208,6 +2225,40 @@
       window.addEventListener("resize", resizeChartCanvas);
       requestAnimationFrame(chartLoop);
     }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    (function () {
+      function applyAuthUi(loggedIn) {
+        document.querySelectorAll(".tgic-when-logged-out").forEach(function (el) {
+          el.classList.toggle("tgic-auth-hidden", loggedIn);
+        });
+        document.querySelectorAll(".tgic-when-logged-in").forEach(function (el) {
+          el.classList.toggle("tgic-auth-hidden", !loggedIn);
+        });
+        document.body.classList.toggle("tgic-logged-in", loggedIn);
+      }
+
+      function boot() {
+        if (typeof supabase === "undefined" || !window.TGIC_CONFIG || !TGIC_CONFIG.SUPABASE_URL) {
+          return;
+        }
+        var sb = supabase.createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+        sb.auth.getSession().then(function (res) {
+          applyAuthUi(!!(res.data && res.data.session && res.data.session.user));
+        });
+        sb.auth.onAuthStateChange(function (_evt, session) {
+          applyAuthUi(!!(session && session.user));
+        });
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot);
+      } else {
+        boot();
+      }
+    })();
   </script>
 </body>
 </html>

@@ -1,64 +1,70 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <defs>
-    <!-- Metallic gold coin gradient — off-center for 3D depth -->
-    <radialGradient id="coin" cx="36%" cy="30%" r="68%">
-      <stop offset="0%"   stop-color="#f7e27e"/>
-      <stop offset="30%"  stop-color="#d9a93a"/>
-      <stop offset="70%"  stop-color="#b8872a"/>
-      <stop offset="100%" stop-color="#7a5010"/>
-    </radialGradient>
-    <!-- Glint highlight -->
-    <radialGradient id="glint" cx="28%" cy="22%" r="40%">
-      <stop offset="0%"   stop-color="#fff" stop-opacity="0.32"/>
-      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    <!-- Rich metallic gold gradient — top-lit for depth -->
+    <linearGradient id="gld" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5e6a3"/>
+      <stop offset="25%" stop-color="#e8c97a"/>
+      <stop offset="50%" stop-color="#c9a84c"/>
+      <stop offset="75%" stop-color="#a07830"/>
+      <stop offset="100%" stop-color="#7a5a1e"/>
+    </linearGradient>
+    <!-- Bright highlight gradient for inner elements -->
+    <linearGradient id="ghi" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#faf0c8"/>
+      <stop offset="40%" stop-color="#e8c97a"/>
+      <stop offset="100%" stop-color="#b8922e"/>
+    </linearGradient>
+    <!-- Dark gold for shadow/depth -->
+    <linearGradient id="gdk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c9a84c"/>
+      <stop offset="100%" stop-color="#6b4a14"/>
+    </linearGradient>
+    <!-- Subtle glow behind the shield -->
+    <radialGradient id="aura" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#e8c97a" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#e8c97a" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
-  <!-- Dark premium bg -->
-  <rect width="32" height="32" rx="5.5" fill="#0a0a0a"/>
+  <!-- Subtle ambient glow -->
+  <circle cx="16" cy="16" r="15" fill="url(#aura)"/>
 
-  <!-- Milled coin edge (serrated outer ring) -->
-  <circle cx="16" cy="16" r="13.8" fill="#6b4209"
-    stroke="#c9a84c" stroke-width="1.4" stroke-dasharray="1.1 0.7" opacity="0.7"/>
+  <!-- Shield shape — pointed heraldic escutcheon -->
+  <path d="M16,1.5 L28,5.5 L28,15 C28,22.5 22,27.5 16,30.5 C10,27.5 4,22.5 4,15 L4,5.5 Z"
+        fill="url(#gld)" stroke="url(#ghi)" stroke-width="0.6"/>
 
-  <!-- Coin face -->
-  <circle cx="16" cy="16" r="12.3" fill="url(#coin)"/>
+  <!-- Inner shield border — inset line for heraldic detail -->
+  <path d="M16,3.5 L26,6.8 L26,15 C26,21.5 21,26 16,28.5 C11,26 6,21.5 6,15 L6,6.8 Z"
+        fill="none" stroke="url(#ghi)" stroke-width="0.4" opacity="0.7"/>
 
-  <!-- Inner beaded ring (coin detail) -->
-  <circle cx="16" cy="16" r="11.4" fill="none" stroke="#7a5010" stroke-width="0.45" opacity="0.9"/>
+  <!-- Monogram "G" — bold, geometric, serif-inspired -->
+  <!-- Outer arc of the G -->
+  <path d="M20.5,10.2 C19,8.5 17.2,8 15.8,8 C12.8,8 10.5,10.5 10.5,14
+           C10.5,17.5 12.8,20 15.8,20 C17.5,20 19,19.2 20.5,17.8"
+        fill="none" stroke="#3a2808" stroke-width="2.4" stroke-linecap="square" opacity="0.85"/>
+  <!-- Horizontal bar of the G -->
+  <line x1="15.5" y1="14" x2="21" y2="14"
+        stroke="#3a2808" stroke-width="2" stroke-linecap="square" opacity="0.85"/>
+  <!-- Vertical stem descending from bar -->
+  <line x1="20.5" y1="14" x2="20.5" y2="17.8"
+        stroke="#3a2808" stroke-width="2" stroke-linecap="square" opacity="0.85"/>
 
-  <!-- Glint -->
-  <circle cx="16" cy="16" r="12.3" fill="url(#glint)"/>
+  <!-- Small decorative serifs on the G -->
+  <line x1="20" y1="10.2" x2="21.8" y2="10.2"
+        stroke="#3a2808" stroke-width="1" stroke-linecap="square" opacity="0.7"/>
 
-  <!-- Springbok silhouette — engraving-style, dark bronze -->
-  <!-- Body -->
-  <ellipse cx="14.8" cy="18.5" rx="5.2" ry="2.1" fill="#4a2e04"/>
+  <!-- Crown above the G — three-point coronet for exclusivity -->
+  <path d="M11.5,6.5 L13,4.5 L14.5,6 L16,3.5 L17.5,6 L19,4.5 L20.5,6.5"
+        fill="none" stroke="#3a2808" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+  <!-- Crown base band -->
+  <line x1="11.5" y1="6.5" x2="20.5" y2="6.5"
+        stroke="#3a2808" stroke-width="0.7" opacity="0.5"/>
 
-  <!-- Rump bump (springbok has raised hindquarters) -->
-  <path d="M10,18 Q9.5,16.5 10.5,16 Q11.5,15.5 12,16.5" fill="#4a2e04"/>
+  <!-- Small diamond accents flanking the G -->
+  <path d="M8.5,14 L9.2,13.2 L9.9,14 L9.2,14.8 Z" fill="#3a2808" opacity="0.5"/>
+  <path d="M22.1,14 L22.8,13.2 L23.5,14 L22.8,14.8 Z" fill="#3a2808" opacity="0.5"/>
 
-  <!-- Neck -->
-  <path d="M19.5,17 Q21,15 21.5,13.8" stroke="#4a2e04" stroke-width="2.1"
-        fill="none" stroke-linecap="round"/>
-
-  <!-- Head -->
-  <ellipse cx="22.2" cy="13.2" rx="1.7" ry="1.25" fill="#4a2e04"/>
-
-  <!-- Lyre-shaped horns (key krugerrand feature — curve out, tips curl back) -->
-  <path d="M21.5,12.2 C20.5,10.5 20.8,9 22.2,8.5" stroke="#4a2e04" stroke-width="0.85"
-        fill="none" stroke-linecap="round"/>
-  <path d="M22.8,12.2 C24.2,10.5 24.2,9 22.8,8.5" stroke="#4a2e04" stroke-width="0.85"
-        fill="none" stroke-linecap="round"/>
-
-  <!-- Front legs (pair) -->
-  <path d="M12.2,20.5 L11.8,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
-  <path d="M13.8,20.6 L13.6,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
-
-  <!-- Hind legs (pair) -->
-  <path d="M16.8,20.6 L16.4,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
-  <path d="M18.2,20.4 L18.6,24.2" stroke="#4a2e04" stroke-width="1.15" stroke-linecap="round"/>
-
-  <!-- Tail -->
-  <path d="M10.2,17.8 Q9,17.2 9.3,16.2" stroke="#4a2e04" stroke-width="0.9"
-        fill="none" stroke-linecap="round"/>
+  <!-- Subtle bottom flourish — two small laurel leaves -->
+  <path d="M13,22 Q14,21 15,22 Q14,22.5 13,22 Z" fill="#3a2808" opacity="0.4"/>
+  <path d="M17,22 Q18,21 19,22 Q18,22.5 17,22 Z" fill="#3a2808" opacity="0.4"/>
 </svg>

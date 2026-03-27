@@ -32,7 +32,7 @@
       flex-direction: column;
     }
     a { color: var(--gold-light); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    .page a:hover { text-decoration: underline; }
 
     .topbar {
       border-bottom: 1px solid var(--border);
@@ -55,18 +55,46 @@
       letter-spacing: 0.06em;
       text-decoration: none;
     }
-    .topbar-links { display: flex; gap: 1rem; align-items: center; }
-    .topbar-links a, .topbar-links button {
+    .topbar-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+    }
+
+    .topbar-nav-item {
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.5rem;
+      padding: 0;
+      margin: 0;
       font-size: 0.72rem;
-      color: #aaa;
+      line-height: 1;
+      color: #c8c8c8;
       text-transform: uppercase;
       letter-spacing: 0.1em;
+      font-family: inherit;
+      text-decoration: underline;
+      text-decoration-color: rgba(201, 168, 76, 0.5);
+      text-underline-offset: 6px;
+      text-decoration-thickness: 1px;
       background: none;
       border: none;
       cursor: pointer;
-      font-family: inherit;
+      -webkit-appearance: none;
+      appearance: none;
+      vertical-align: middle;
     }
-    .topbar-links button:hover { color: var(--gold-light); }
+
+    a.topbar-nav-item {
+      color: #c8c8c8;
+    }
+
+    .topbar-nav-item:hover {
+      color: var(--gold-light);
+      text-decoration-color: var(--gold-light);
+    }
 
     .page {
       flex: 1;
@@ -238,8 +266,8 @@
     <div class="topbar-inner">
       <a class="brand" href="index.html">The Gold Index Club</a>
       <div class="topbar-links">
-        <a href="index.html">Home</a>
-        <button id="logoutBtn" type="button">Log Out</button>
+        <a class="topbar-nav-item" href="index.html">Home</a>
+        <button class="topbar-nav-item" id="logoutBtn" type="button">Log Out</button>
       </div>
     </div>
   </header>
