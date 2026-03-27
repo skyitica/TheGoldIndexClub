@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In | The Gold Index Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --border: #1e1e1e;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --text-primary: #f0f0f0;
+      --text-muted: #888888;
+      --error: #ef5350;
+      --container: 480px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% -20%, rgba(201,168,76,0.1), transparent 42%), var(--bg);
+      color: var(--text-primary);
+      font-family: "DM Mono", monospace;
+      line-height: 1.55;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: var(--gold-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .topbar {
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.94);
+      backdrop-filter: blur(10px);
+      padding: 0 1rem;
+    }
+    .topbar-inner {
+      max-width: var(--container);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 56px;
+    }
+    .brand {
+      font-family: "Cormorant Garamond", serif;
+      color: var(--gold-light);
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+    }
+
+    .page {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: var(--container);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem 1.5rem;
+    }
+
+    .card-label {
+      color: var(--gold-light);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.85rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .field { margin-bottom: 1rem; }
+
+    label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #b0b0b0;
+      margin-bottom: 0.35rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.68rem 0.85rem;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 180ms ease;
+    }
+    input:focus { border-color: rgba(201,168,76,0.55); }
+    input::placeholder { color: #555; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 0.82rem;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      background: #0d0d0d;
+      color: var(--gold-light);
+      font-family: inherit;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 180ms ease, box-shadow 200ms ease, transform 180ms ease;
+    }
+    .btn:hover {
+      border-color: var(--gold-light);
+      box-shadow: 0 0 22px rgba(201,168,76,0.2);
+      transform: translateY(-1px);
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .error-msg {
+      color: var(--error);
+      font-size: 0.78rem;
+      margin-bottom: 1rem;
+      min-height: 1.2em;
+    }
+
+    .alt-link {
+      text-align: center;
+      margin-top: 1.15rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">The Gold Index Club</a>
+      <a href="signup.html" style="font-size:0.72rem;color:#aaa;text-transform:uppercase;letter-spacing:0.1em;">Sign Up</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="card">
+      <p class="card-label">Welcome back</p>
+      <h1>Log In</h1>
+      <p class="subtitle">Access your account and signals dashboard.</p>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Your password" required autocomplete="current-password" />
+        </div>
+        <button class="btn" type="submit" id="submitBtn">Log In &rarr;</button>
+      </form>
+
+      <p class="alt-link">Don't have an account? <a href="signup.html">Sign up</a></p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+
+    const form = document.getElementById("loginForm");
+    const errorMsg = document.getElementById("errorMsg");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.textContent = "";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Logging in…";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        errorMsg.textContent = error.message;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Log In &rarr;";
+        return;
+      }
+
+      window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+    });
+
+    // If already logged in, redirect.
+    sb.auth.getUser().then(({ data: { user } }) => {
+      if (user) window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+    });
+  </script>
+</body>
+</html>

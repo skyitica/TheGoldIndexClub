@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account | The Gold Index Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --border: #1e1e1e;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --green: #26a69a;
+      --red: #ef5350;
+      --text-primary: #f0f0f0;
+      --text-muted: #888888;
+      --container: 620px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% -20%, rgba(201,168,76,0.1), transparent 42%), var(--bg);
+      color: var(--text-primary);
+      font-family: "DM Mono", monospace;
+      line-height: 1.55;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: var(--gold-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .topbar {
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.94);
+      backdrop-filter: blur(10px);
+      padding: 0 1rem;
+    }
+    .topbar-inner {
+      max-width: var(--container);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 56px;
+    }
+    .brand {
+      font-family: "Cormorant Garamond", serif;
+      color: var(--gold-light);
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+    }
+    .topbar-links { display: flex; gap: 1rem; align-items: center; }
+    .topbar-links a, .topbar-links button {
+      font-size: 0.72rem;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .topbar-links button:hover { color: var(--gold-light); }
+
+    .page {
+      flex: 1;
+      padding: 2.2rem 1rem 3rem;
+      width: 100%;
+      max-width: var(--container);
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.85rem;
+      margin-bottom: 0.2rem;
+    }
+    .greeting {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.35rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-label {
+      color: var(--gold-light);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-bottom: 0.65rem;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .badge-active { background: rgba(38,166,154,0.15); color: var(--green); border: 1px solid rgba(38,166,154,0.3); }
+    .badge-cancelled { background: rgba(239,83,80,0.12); color: var(--red); border: 1px solid rgba(239,83,80,0.25); }
+    .badge-past-due { background: rgba(255,180,0,0.12); color: #ffb400; border: 1px solid rgba(255,180,0,0.25); }
+    .badge-none { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .detail { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+
+    .wa-link-box {
+      margin-top: 0.7rem;
+      padding: 0.85rem 1rem;
+      background: rgba(38,166,154,0.06);
+      border: 1px solid rgba(38,166,154,0.25);
+      border-radius: 10px;
+    }
+    .wa-link-box p { font-size: 0.78rem; margin-bottom: 0.45rem; color: #c7c7c7; }
+    .wa-link-box a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(38,166,154,0.4);
+      background: rgba(38,166,154,0.1);
+      color: var(--green);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background 180ms ease;
+    }
+    .wa-link-box a:hover { background: rgba(38,166,154,0.2); }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.85rem; }
+
+    .btn-sm {
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 160ms ease, color 160ms ease;
+    }
+    .btn-sm:hover { border-color: var(--gold); color: var(--gold-light); }
+    .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-danger { border-color: rgba(239,83,80,0.35); color: var(--red); }
+    .btn-danger:hover { border-color: var(--red); }
+
+    .btn-gold {
+      padding: 0.65rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid var(--gold);
+      background: #0d0d0d;
+      color: var(--gold-light);
+      font-family: inherit;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 180ms ease, box-shadow 200ms ease, transform 180ms ease;
+    }
+    .btn-gold:hover {
+      border-color: var(--gold-light);
+      box-shadow: 0 0 18px rgba(201,168,76,0.2);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .field { margin-bottom: 0.75rem; }
+    .field label {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 0.3rem;
+    }
+    .field input {
+      width: 100%;
+      max-width: 300px;
+      padding: 0.55rem 0.75rem;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .field input:focus { border-color: rgba(201,168,76,0.55); }
+
+    .msg { font-size: 0.78rem; margin-top: 0.5rem; min-height: 1.1em; }
+    .msg-ok { color: var(--green); }
+    .msg-err { color: var(--red); }
+
+    .loading { text-align: center; padding: 3rem 0; color: var(--text-muted); font-size: 0.82rem; }
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 2px solid rgba(232,201,122,0.25); border-top-color: var(--gold-light);
+      border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 0.4rem; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">The Gold Index Club</a>
+      <div class="topbar-links">
+        <a href="index.html">Home</a>
+        <button id="logoutBtn" type="button">Log Out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page" id="pageContent">
+    <div class="loading" id="loadingState">
+      <span class="spinner"></span> Loading your account…
+    </div>
+
+    <div id="dashboard" class="hidden">
+      <h1>Your Account</h1>
+      <p class="greeting" id="greetingText"></p>
+
+      <!-- Subscription status -->
+      <div class="section">
+        <p class="section-label">Subscription</p>
+        <div class="status-row">
+          <span class="badge" id="statusBadge"></span>
+        </div>
+        <p class="detail" id="periodDetail"></p>
+
+        <!-- WhatsApp link (shown only when active) -->
+        <div class="wa-link-box hidden" id="waBox">
+          <p>Your private WhatsApp invite link:</p>
+          <a id="waLink" href="#" target="_blank" rel="noopener">Join WhatsApp Group &rarr;</a>
+        </div>
+
+        <!-- Not subscribed CTA -->
+        <div class="hidden" id="subscribeBox" style="margin-top:0.8rem;">
+          <a class="btn-gold" href="checkout.html">Subscribe — R150/month &rarr;</a>
+        </div>
+
+        <!-- Cancel button (shown only when active) -->
+        <div class="btn-row hidden" id="cancelRow">
+          <button class="btn-sm btn-danger" id="cancelBtn" type="button">Cancel subscription</button>
+        </div>
+        <p class="msg" id="cancelMsg"></p>
+      </div>
+
+      <!-- Phone number -->
+      <div class="section">
+        <p class="section-label">Phone number (WhatsApp)</p>
+        <p class="detail">This is the phone number linked to your membership for WhatsApp access.</p>
+        <p style="font-size:0.92rem;margin:0.45rem 0;" id="currentPhone"></p>
+
+        <details style="margin-top:0.65rem;">
+          <summary style="cursor:pointer;font-size:0.72rem;color:var(--gold-light);letter-spacing:0.06em;text-transform:uppercase;">
+            Request phone number change
+          </summary>
+          <div style="margin-top:0.65rem;">
+            <div class="field">
+              <label for="newPhone">New phone number</label>
+              <input id="newPhone" type="tel" placeholder="+27 82 123 4567" />
+            </div>
+            <button class="btn-sm" id="phoneChangeBtn" type="button">Submit request</button>
+            <p class="msg" id="phoneMsg"></p>
+          </div>
+        </details>
+      </div>
+
+      <!-- Account info -->
+      <div class="section">
+        <p class="section-label">Account</p>
+        <p class="detail" id="accountEmail"></p>
+        <p class="detail" id="accountName"></p>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+
+    const loadingState = document.getElementById("loadingState");
+    const dashboard = document.getElementById("dashboard");
+
+    async function boot() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = TGIC_CONFIG.LOGIN_URL; return; }
+
+      const user = session.user;
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile) {
+        loadingState.textContent = "Profile not found. Please contact support.";
+        return;
+      }
+
+      renderDashboard(user, profile, session);
+    }
+
+    function renderDashboard(user, profile, session) {
+      loadingState.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+
+      document.getElementById("greetingText").textContent =
+        "Welcome, " + (profile.full_name || user.email);
+
+      document.getElementById("accountEmail").textContent = "Email: " + user.email;
+      document.getElementById("accountName").textContent = "Name: " + (profile.full_name || "—");
+      document.getElementById("currentPhone").textContent = profile.phone_number || "Not set";
+
+      // Status badge.
+      const badge = document.getElementById("statusBadge");
+      const status = profile.subscription_status || "none";
+      const labels = { active: "Active", cancelled: "Cancelled", past_due: "Past Due", none: "No Subscription" };
+      badge.textContent = labels[status] || status;
+      badge.className = "badge badge-" + (status === "none" ? "none" : status.replace("_", "-"));
+
+      // Period detail.
+      const periodEl = document.getElementById("periodDetail");
+      if (profile.current_period_end) {
+        const end = new Date(profile.current_period_end);
+        periodEl.textContent = status === "cancelled"
+          ? "Access until " + end.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" })
+          : "Next billing: " + end.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+      } else {
+        periodEl.textContent = "";
+      }
+
+      const isActive = status === "active";
+      const hasPeriod = profile.current_period_end && new Date(profile.current_period_end) > new Date();
+
+      // Subscribe box (if not active).
+      if (!isActive && !hasPeriod) {
+        document.getElementById("subscribeBox").classList.remove("hidden");
+      }
+
+      // Cancel button (if active).
+      if (isActive) {
+        document.getElementById("cancelRow").classList.remove("hidden");
+      }
+
+      // WhatsApp link (if active or within period).
+      if (isActive || hasPeriod) {
+        fetchInviteLink(session);
+      }
+
+      // Cancel handler.
+      const cancelBtn = document.getElementById("cancelBtn");
+      const cancelMsg = document.getElementById("cancelMsg");
+      cancelBtn.addEventListener("click", async () => {
+        if (!confirm("Are you sure you want to cancel your subscription? You'll keep access until the end of your current billing period.")) return;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = "Cancelling…";
+        cancelMsg.textContent = "";
+
+        try {
+          const res = await sb.functions.invoke("cancel-subscription");
+          if (res.error) throw new Error(res.error.message);
+
+          cancelMsg.className = "msg msg-ok";
+          cancelMsg.textContent = "Subscription cancelled. Access continues until your current period ends.";
+          cancelBtn.textContent = "Cancelled";
+          badge.textContent = "Cancelled";
+          badge.className = "badge badge-cancelled";
+        } catch (err) {
+          cancelMsg.className = "msg msg-err";
+          cancelMsg.textContent = err.message || "Failed to cancel. Please try again.";
+          cancelBtn.disabled = false;
+          cancelBtn.textContent = "Cancel subscription";
+        }
+      });
+
+      // Phone change handler.
+      const phoneChangeBtn = document.getElementById("phoneChangeBtn");
+      const phoneMsg = document.getElementById("phoneMsg");
+      phoneChangeBtn.addEventListener("click", async () => {
+        const newPhone = document.getElementById("newPhone").value.trim();
+        if (!newPhone) { phoneMsg.className = "msg msg-err"; phoneMsg.textContent = "Enter a phone number."; return; }
+
+        phoneChangeBtn.disabled = true;
+        phoneMsg.textContent = "";
+
+        const { error } = await sb.from("phone_change_requests").insert({
+          user_id: user.id,
+          old_phone: profile.phone_number || "",
+          new_phone: newPhone,
+        });
+
+        if (error) {
+          phoneMsg.className = "msg msg-err";
+          phoneMsg.textContent = error.message;
+          phoneChangeBtn.disabled = false;
+        } else {
+          phoneMsg.className = "msg msg-ok";
+          phoneMsg.textContent = "Request submitted. We'll review and update your number.";
+          phoneChangeBtn.textContent = "Submitted";
+        }
+      });
+    }
+
+    async function fetchInviteLink(session) {
+      try {
+        const res = await sb.functions.invoke("get-invite-link");
+        if (res.error) throw new Error(res.error.message);
+        const data = res.data;
+        if (data.invite_link) {
+          const waBox = document.getElementById("waBox");
+          const waLink = document.getElementById("waLink");
+          waBox.classList.remove("hidden");
+          waLink.href = data.invite_link;
+        }
+      } catch {
+        // Link not available yet — silently skip.
+      }
+    }
+
+    // Logout.
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await sb.auth.signOut();
+      window.location.href = TGIC_CONFIG.LOGIN_URL;
+    });
+
+    boot();
+  </script>
+</body>
+</html>
