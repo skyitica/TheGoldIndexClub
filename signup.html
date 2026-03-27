@@ -137,6 +137,13 @@
       margin-bottom: 1rem;
     }
 
+    .field-hint {
+      font-size: 0.68rem;
+      color: #7a7a7a;
+      margin-top: 0.35rem;
+      line-height: 1.45;
+    }
+
     label {
       display: block;
       font-size: 0.72rem;
@@ -239,7 +246,7 @@
       <div id="paidFlow" class="hidden">
         <p class="card-label">Payment received</p>
         <h1>Create your password</h1>
-        <p class="subtitle" id="paidSubtitle">Use the same email you paid with. Then we link your membership.</p>
+        <p class="subtitle" id="paidSubtitle">Use the same email you paid with. Then we link your membership. Enter the WhatsApp number you use in the private group — we need it to verify access.</p>
         <div class="error-msg" id="errorMsgPaid"></div>
         <div id="paidWait" class="hidden">
           <p class="subtitle" id="paidWaitText">Confirming payment with Paystack…</p>
@@ -255,8 +262,9 @@
             <input id="paidName" type="text" required autocomplete="name" />
           </div>
           <div class="field">
-            <label for="paidPhone">Phone (WhatsApp)</label>
-            <input id="paidPhone" type="tel" required autocomplete="tel" />
+            <label for="paidPhone">WhatsApp number</label>
+            <input id="paidPhone" type="tel" required autocomplete="tel" placeholder="+27 82 123 4567" />
+            <p class="field-hint">Required: this must be the WhatsApp number on the account you will use in the private members group. We use it to send your invite and confirm access.</p>
           </div>
           <div class="field">
             <label for="paidPassword">Password</label>
@@ -271,7 +279,7 @@
       <div id="standardFlow">
         <p class="card-label">Create account</p>
         <h1>Join The Gold Index Club</h1>
-        <p class="subtitle">Create your account, then go to checkout. Or <a href="checkout.html">pay first</a> if you prefer.</p>
+        <p class="subtitle">Create your account, then go to checkout. Or <a href="checkout.html">pay first</a> if you prefer. Your WhatsApp number is required so we can add you to the private members group.</p>
 
         <div class="error-msg" id="errorMsg"></div>
 
@@ -281,8 +289,9 @@
             <input id="fullName" type="text" placeholder="Percival Gold" required autocomplete="name" />
           </div>
           <div class="field">
-            <label for="phone">Phone number (WhatsApp)</label>
+            <label for="phone">WhatsApp number</label>
             <input id="phone" type="tel" placeholder="+27 82 123 4567" required autocomplete="tel" />
+            <p class="field-hint">Required: use the number on the WhatsApp account you will join the group with. We use this to verify membership and deliver your invite.</p>
           </div>
           <div class="field">
             <label for="email">Email</label>
