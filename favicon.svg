@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Dark background with slight rounding -->
+  <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
+
+  <!-- Gold candlestick bars — simple chart icon -->
+  <!-- Left bar: bearish (shorter) -->
+  <rect x="6" y="14" width="4" height="12" rx="1" fill="#c9a84c" opacity="0.55"/>
+  <!-- Center bar: bullish (tall) -->
+  <rect x="14" y="7" width="4" height="19" rx="1" fill="#c9a84c"/>
+  <!-- Right bar: mid -->
+  <rect x="22" y="11" width="4" height="15" rx="1" fill="#c9a84c" opacity="0.75"/>
+
+  <!-- Subtle top wicks -->
+  <line x1="8" y1="10" x2="8" y2="14" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+  <line x1="16" y1="4" x2="16" y2="7" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="24" y1="8" x2="24" y2="11" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+</svg>

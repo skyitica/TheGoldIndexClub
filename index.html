@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Gold Index Club | Premium US30 & Gold Signals</title>
   <meta name="description" content="Trade smarter with Percival's premium US30 and XAUUSD trading signals. Join The Gold Index Club." />
@@ -49,6 +50,67 @@
     .container {
       width: min(100% - 2rem, var(--container));
       margin-inline: auto;
+    }
+
+    /* Fixed site nav — visible on load; hides while video plays until 9s, then stays visible */
+    .site-top-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 12;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 8, 8, 0.92);
+      backdrop-filter: blur(10px);
+      transition: opacity 420ms ease, transform 420ms ease, visibility 420ms ease;
+    }
+
+    .site-top-header .topbar-inner {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .topbar-brand {
+      font-family: "Cormorant Garamond", serif;
+      color: var(--gold-light);
+      font-size: 1.02rem;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .topbar-nav {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.75rem 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.64rem;
+      color: #b0b0b0;
+    }
+
+    .topbar-nav a:hover {
+      color: #f0e1b4;
+    }
+
+    @media (min-width: 769px) {
+      .site-top-header.is-hidden-for-video:not(.is-header-locked) {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-100%);
+        pointer-events: none;
+      }
+    }
+
+    .site-top-header.is-header-locked {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+      pointer-events: auto !important;
     }
 
     .section-label {
@@ -1030,6 +1092,18 @@
     @media (max-width: 768px) {
       body { cursor: auto; }
 
+      .site-top-header .topbar-inner {
+        min-height: 52px;
+        flex-wrap: wrap;
+      }
+
+      .topbar-nav {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.58rem;
+        gap: 0.5rem 0.75rem;
+      }
+
       .stats-grid,
       .features-grid,
       .testimonials-grid,
@@ -1073,6 +1147,20 @@
   </style>
 </head>
 <body>
+  <div class="site-top-header" id="siteTopHeader" aria-label="Site navigation">
+    <div class="container topbar-inner">
+      <a class="topbar-brand" href="#top">The Gold Index Club</a>
+      <nav class="topbar-nav" aria-label="Main">
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#wins">Wins</a>
+        <a href="wins.html">Big Wins</a>
+        <a href="#payment">Pricing</a>
+        <a href="checkout.html">Join</a>
+      </nav>
+    </div>
+  </div>
+
   <header class="hero" id="top">
     <video class="hero-video" playsinline preload="auto">
       <source src="assets/hero.webm" type="video/webm" />
@@ -1110,7 +1198,7 @@
       <div class="hero-cta-stack">
         <p class="urgency-line hero-timed" style="--reveal-delay:640ms">Limited spots left</p>
         <div class="hero-actions">
-          <a href="signup.html" class="cta-btn hero-timed" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
+          <a href="checkout.html" class="cta-btn hero-timed" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
           <button class="replay-btn" id="replayVideoBtn" type="button">
             Replay Video &rarr;
           </button>
@@ -1352,7 +1440,7 @@
           <li>Weekly market outlook and strategy brief</li>
           <li>Direct education from Percival's trading framework</li>
         </ul>
-        <a href="signup.html" class="cta-btn cta-pulse">Secure Your Spot Now &rarr;</a>
+        <a href="checkout.html" class="cta-btn cta-pulse">Secure Your Spot Now &rarr;</a>
       </div>
     </div>
   </section>
@@ -1391,6 +1479,19 @@
     let heroStarted = false;
     let heroHiddenAtCut = false;
     let heroTimelineRaf = null;
+    const siteTopHeader = document.getElementById("siteTopHeader");
+    let siteHeaderLockedVisible = false;
+
+    function ensureSiteHeaderLockedVisible() {
+      siteHeaderLockedVisible = true;
+      siteTopHeader?.classList.add("is-header-locked");
+      siteTopHeader?.classList.remove("is-hidden-for-video");
+    }
+
+    function hideSiteHeaderForVideoPlayback() {
+      if (siteHeaderLockedVisible || isMobile) return;
+      siteTopHeader?.classList.add("is-hidden-for-video");
+    }
 
     function revealHeroContent() {
       if (heroContentShown) return;
@@ -1413,6 +1514,7 @@
       heroSection?.classList.remove("video-playing");
       heroSection?.classList.add("video-ended");
       revealHeroContent();
+      ensureSiteHeaderLockedVisible();
     }
 
     function resetHeroForNewPlayback() {
@@ -1437,6 +1539,7 @@
       }
       if (t >= HERO_REVEAL_TIME) {
         revealHeroContent();
+        ensureSiteHeaderLockedVisible();
       }
     }
 
@@ -1469,6 +1572,7 @@
       heroVideo.addEventListener("play", () => {
         heroSection?.classList.add("video-playing");
         heroSection?.classList.remove("video-ended");
+        hideSiteHeaderForVideoPlayback();
         startTimelineLoop();
       });
       heroVideo.addEventListener("pause", () => {
@@ -1541,6 +1645,7 @@
         heroSection?.classList.remove("video-playing");
         videoStartOverlay?.classList.remove("is-hidden");
         skipVideoBtn?.classList.remove("is-hidden");
+        siteTopHeader?.classList.remove("is-hidden-for-video");
         try {
           heroVideo.pause();
           heroVideo.currentTime = 0;
@@ -1561,6 +1666,7 @@
     } else {
       // Mobile: no video, no timed reveal. Show hero content immediately.
       revealHeroContent();
+      ensureSiteHeaderLockedVisible();
       heroSection?.classList.remove("video-playing");
       heroSection?.classList.remove("video-ended");
       skipVideoBtn?.classList.add("is-hidden");

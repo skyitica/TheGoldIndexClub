@@ -123,6 +123,10 @@
     input::placeholder {
       color: #555;
     }
+    input:read-only {
+      opacity: 0.85;
+      cursor: not-allowed;
+    }
 
     .btn {
       display: block;
@@ -152,6 +156,14 @@
       box-shadow: none;
     }
 
+    .btn-secondary {
+      margin-top: 0.65rem;
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
     .error-msg {
       color: var(--error);
       font-size: 0.78rem;
@@ -165,6 +177,8 @@
       font-size: 0.78rem;
       color: var(--text-muted);
     }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -177,33 +191,68 @@
 
   <main class="page">
     <div class="card">
-      <p class="card-label">Create account</p>
-      <h1>Join The Gold Index Club</h1>
-      <p class="subtitle">Create your account, then proceed to payment.</p>
+      <!-- After payment: finish account -->
+      <div id="paidFlow" class="hidden">
+        <p class="card-label">Payment received</p>
+        <h1>Create your password</h1>
+        <p class="subtitle" id="paidSubtitle">Use the same email you paid with. Then we link your membership.</p>
+        <div class="error-msg" id="errorMsgPaid"></div>
+        <div id="paidWait" class="hidden">
+          <p class="subtitle" id="paidWaitText">Confirming payment with Paystack…</p>
+          <button type="button" class="btn btn-secondary" id="retryPendingBtn">Check again</button>
+        </div>
+        <form id="paidForm" class="hidden" autocomplete="on">
+          <div class="field">
+            <label for="paidEmail">Email</label>
+            <input id="paidEmail" type="email" readonly required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="paidName">Full name</label>
+            <input id="paidName" type="text" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="paidPhone">Phone (WhatsApp)</label>
+            <input id="paidPhone" type="tel" required autocomplete="tel" />
+          </div>
+          <div class="field">
+            <label for="paidPassword">Password</label>
+            <input id="paidPassword" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
+          </div>
+          <button class="btn" type="submit" id="paidSubmitBtn">Create account &amp; unlock access &rarr;</button>
+        </form>
+        <p class="alt-link"><a href="checkout.html">Wrong email? Pay again with the correct email</a></p>
+      </div>
 
-      <div class="error-msg" id="errorMsg"></div>
+      <!-- Standard: account first, then checkout -->
+      <div id="standardFlow">
+        <p class="card-label">Create account</p>
+        <h1>Join The Gold Index Club</h1>
+        <p class="subtitle">Create your account, then go to checkout. Or <a href="checkout.html">pay first</a> if you prefer.</p>
 
-      <form id="signupForm" autocomplete="on">
-        <div class="field">
-          <label for="fullName">Full name</label>
-          <input id="fullName" type="text" placeholder="Percival Gold" required autocomplete="name" />
-        </div>
-        <div class="field">
-          <label for="phone">Phone number (WhatsApp)</label>
-          <input id="phone" type="tel" placeholder="+27 82 123 4567" required autocomplete="tel" />
-        </div>
-        <div class="field">
-          <label for="email">Email</label>
-          <input id="email" type="email" placeholder="you@example.com" required autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input id="password" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
-        </div>
-        <button class="btn" type="submit" id="submitBtn">Create Account &rarr;</button>
-      </form>
+        <div class="error-msg" id="errorMsg"></div>
 
-      <p class="alt-link">Already have an account? <a href="login.html">Log in</a></p>
+        <form id="signupForm" autocomplete="on">
+          <div class="field">
+            <label for="fullName">Full name</label>
+            <input id="fullName" type="text" placeholder="Percival Gold" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="phone">Phone number (WhatsApp)</label>
+            <input id="phone" type="tel" placeholder="+27 82 123 4567" required autocomplete="tel" />
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
+          </div>
+          <button class="btn" type="submit" id="submitBtn">Create Account &rarr;</button>
+        </form>
+
+        <p class="alt-link">Already have an account? <a href="login.html">Log in</a></p>
+      </div>
     </div>
   </main>
 
@@ -212,6 +261,125 @@
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+
+    function getPayReference() {
+      const params = new URLSearchParams(window.location.search);
+      const fromUrl = params.get("reference") || params.get("trxref");
+      if (fromUrl) {
+        try { sessionStorage.setItem("tgic_pay_ref", fromUrl); } catch (e) {}
+        return fromUrl;
+      }
+      try {
+        return sessionStorage.getItem("tgic_pay_ref") || "";
+      } catch (e) {
+        return "";
+      }
+    }
+
+    async function fetchPending(reference) {
+      const res = await sb.functions.invoke("get-pending-by-reference", {
+        body: { reference },
+      });
+      if (res.error) return { error: res.error.message };
+      if (res.data && res.data.error) return { error: res.data.error };
+      return res.data;
+    }
+
+    async function tryLinkPayment(reference) {
+      const res = await sb.functions.invoke("link-payment-to-user", {
+        body: { reference },
+      });
+      if (res.error) return { error: res.error.message };
+      if (res.data && res.data.error) return { error: res.data.error };
+      return { ok: true, data: res.data };
+    }
+
+    const paidFlow = document.getElementById("paidFlow");
+    const standardFlow = document.getElementById("standardFlow");
+    const paidWait = document.getElementById("paidWait");
+    const paidForm = document.getElementById("paidForm");
+    const paidWaitText = document.getElementById("paidWaitText");
+    const errorMsgPaid = document.getElementById("errorMsgPaid");
+    const retryPendingBtn = document.getElementById("retryPendingBtn");
+
+    let activeReference = "";
+
+    async function showPaidFlow(reference) {
+      activeReference = reference;
+      standardFlow.classList.add("hidden");
+      paidFlow.classList.remove("hidden");
+      paidWait.classList.remove("hidden");
+      paidForm.classList.add("hidden");
+      errorMsgPaid.textContent = "";
+
+      const data = await fetchPending(reference);
+      if (data.error) {
+        paidWaitText.textContent = data.error;
+        return;
+      }
+      if (!data.ready) {
+        paidWaitText.textContent = data.message || "Payment not confirmed yet.";
+        return;
+      }
+
+      paidWait.classList.add("hidden");
+      paidForm.classList.remove("hidden");
+      document.getElementById("paidEmail").value = data.email || "";
+      document.getElementById("paidName").value = data.full_name || "";
+      document.getElementById("paidPhone").value = data.phone_number || "";
+    }
+
+    retryPendingBtn.addEventListener("click", () => showPaidFlow(activeReference));
+
+    document.getElementById("paidForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("paidSubmitBtn");
+      errorMsgPaid.textContent = "";
+      btn.disabled = true;
+      btn.textContent = "Creating account…";
+
+      const email = document.getElementById("paidEmail").value.trim().toLowerCase();
+      const full_name = document.getElementById("paidName").value.trim();
+      const phone_number = document.getElementById("paidPhone").value.trim();
+      const password = document.getElementById("paidPassword").value;
+
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name, phone_number } },
+      });
+
+      if (error) {
+        errorMsgPaid.textContent = error.message;
+        if (error.message && error.message.toLowerCase().includes("registered")) {
+          errorMsgPaid.textContent += " Try logging in — your payment will link after login if the email matches.";
+        }
+        btn.disabled = false;
+        btn.innerHTML = "Create account &amp; unlock access &rarr;";
+        return;
+      }
+
+      if (data.session) {
+        const linkRes = await tryLinkPayment(activeReference);
+        if (!linkRes.ok) {
+          errorMsgPaid.textContent = linkRes.error || "Could not link payment.";
+          btn.disabled = false;
+          btn.innerHTML = "Create account &amp; unlock access &rarr;";
+          return;
+        }
+        try { sessionStorage.removeItem("tgic_pay_ref"); } catch (x) {}
+        window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+        return;
+      }
+
+      paidForm.innerHTML = `
+        <div style="text-align:center;padding:0.5rem 0;">
+          <p style="font-size:1rem;margin-bottom:0.6rem;">Confirm your email</p>
+          <p style="color:var(--text-muted);font-size:0.8rem;line-height:1.5;">
+            We sent a link to <strong>${email}</strong>. After you confirm, <a href="login.html">log in</a> on this device — your membership will connect automatically.
+          </p>
+        </div>`;
+    });
 
     const form = document.getElementById("signupForm");
     const errorMsg = document.getElementById("errorMsg");
@@ -250,26 +418,52 @@
         return;
       }
 
-      // If email confirmation is disabled, user is logged in immediately.
       if (data.session) {
         window.location.href = TGIC_CONFIG.CHECKOUT_URL;
       } else {
-        // Email confirmation enabled — show message.
         form.innerHTML = `
           <div style="text-align:center;padding:1rem 0;">
             <p style="font-size:1.1rem;margin-bottom:0.6rem;">Check your email</p>
             <p style="color:var(--text-muted);font-size:0.82rem;">
               We sent a confirmation link to <strong>${email}</strong>.<br>
-              Click it, then <a href="login.html">log in</a> to continue.
+              Click it, then <a href="login.html">log in</a> to continue to checkout.
             </p>
           </div>`;
       }
     });
 
-    // If already logged in, send to checkout or account.
-    sb.auth.getUser().then(({ data: { user } }) => {
-      if (user) window.location.href = TGIC_CONFIG.CHECKOUT_URL;
-    });
+    async function boot() {
+      const ref = getPayReference();
+      if (ref) {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          const linkRes = await tryLinkPayment(ref);
+          if (linkRes.ok) {
+            try { sessionStorage.removeItem("tgic_pay_ref"); } catch (x) {}
+            window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+            return;
+          }
+          standardFlow.classList.add("hidden");
+          paidFlow.classList.remove("hidden");
+          paidWait.classList.add("hidden");
+          paidForm.classList.add("hidden");
+          errorMsgPaid.textContent =
+            linkRes.error ||
+            "Could not link this payment to your logged-in account. Log out and finish signup with the same email you used at checkout, or use Account if you already paid on this email.";
+          return;
+        }
+        showPaidFlow(ref);
+        return;
+      }
+
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        window.location.href = TGIC_CONFIG.CHECKOUT_URL;
+        return;
+      }
+    }
+
+    boot();
   </script>
 </body>
 </html>

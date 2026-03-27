@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Log In | The Gold Index Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -215,12 +216,52 @@
         return;
       }
 
+      let payRef = "";
+      try {
+        payRef = sessionStorage.getItem("tgic_pay_ref") || "";
+      } catch (e) {}
+      if (payRef) {
+        const linkRes = await sb.functions.invoke("link-payment-to-user", {
+          body: { reference: payRef },
+        });
+        if (!linkRes.error && !linkRes.data?.error) {
+          try {
+            sessionStorage.removeItem("tgic_pay_ref");
+          } catch (e) {}
+        }
+      }
+
       window.location.href = TGIC_CONFIG.ACCOUNT_URL;
     });
 
+    (function stashPayRefFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const r = params.get("reference") || params.get("trxref");
+      if (r) {
+        try {
+          sessionStorage.setItem("tgic_pay_ref", r);
+        } catch (e) {}
+      }
+    })();
+
     // If already logged in, redirect.
-    sb.auth.getUser().then(({ data: { user } }) => {
-      if (user) window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+    sb.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      let payRef = "";
+      try {
+        payRef = sessionStorage.getItem("tgic_pay_ref") || "";
+      } catch (e) {}
+      if (payRef) {
+        const linkRes = await sb.functions.invoke("link-payment-to-user", {
+          body: { reference: payRef },
+        });
+        if (!linkRes.error && !linkRes.data?.error) {
+          try {
+            sessionStorage.removeItem("tgic_pay_ref");
+          } catch (e) {}
+        }
+      }
+      window.location.href = TGIC_CONFIG.ACCOUNT_URL;
     });
   </script>
 </body>

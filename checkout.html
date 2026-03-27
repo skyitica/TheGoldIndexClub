@@ -86,6 +86,13 @@
       margin-bottom: 0.2rem;
     }
 
+    .lead {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
     .price {
       font-family: "Cormorant Garamond", serif;
       font-size: 2rem;
@@ -121,6 +128,28 @@
       font-size: 0.6rem;
     }
 
+    .field { margin-bottom: 0.85rem; text-align: left; }
+    .field label {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 0.35rem;
+    }
+    .field input {
+      width: 100%;
+      padding: 0.65rem 0.8rem;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    .field input:focus { border-color: rgba(201,168,76,0.55); }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -155,6 +184,7 @@
       font-size: 0.78rem;
       margin-bottom: 1rem;
       min-height: 1.2em;
+      text-align: left;
     }
 
     .micro {
@@ -176,6 +206,9 @@
       vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+    .alt { text-align: center; margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -189,7 +222,7 @@
   <main class="page">
     <div class="card">
       <p class="card-label">Membership</p>
-      <h1>Complete Your Payment</h1>
+      <h1>Subscribe — R150/month</h1>
       <p class="price">R150<span class="price-suffix">/month</span></p>
 
       <ul class="benefits">
@@ -200,14 +233,37 @@
         <li>Education framed around Percival's approach</li>
       </ul>
 
-      <div class="error-msg" id="errorMsg"></div>
+      <!-- Guest pay-first -->
+      <div id="guestBlock">
+        <p class="lead">Enter your details for Paystack. After payment succeeds, you will create your password on the next screen (same email).</p>
+        <div class="error-msg" id="errorMsgGuest"></div>
+        <form id="guestForm">
+          <div class="field">
+            <label for="gName">Full name</label>
+            <input id="gName" type="text" required autocomplete="name" placeholder="Your name" />
+          </div>
+          <div class="field">
+            <label for="gPhone">Phone (WhatsApp)</label>
+            <input id="gPhone" type="tel" required autocomplete="tel" placeholder="+27 82 123 4567" />
+          </div>
+          <div class="field">
+            <label for="gEmail">Email</label>
+            <input id="gEmail" type="email" required autocomplete="email" placeholder="you@example.com" />
+          </div>
+          <button class="btn" type="submit" id="guestPayBtn">Continue to secure payment &rarr;</button>
+        </form>
+        <p class="alt">Already have an account? <a href="login.html">Log in</a> to pay from your dashboard.</p>
+      </div>
 
-      <button class="btn" id="payBtn" type="button">
-        Pay R150 &amp; Join &rarr;
-      </button>
+      <!-- Logged-in existing flow -->
+      <div id="memberBlock" class="hidden">
+        <p class="lead">You are signed in. Continue to Paystack to add or renew your subscription.</p>
+        <div class="error-msg" id="errorMsgMember"></div>
+        <button class="btn" id="memberPayBtn" type="button">Pay R150 &amp; Join &rarr;</button>
+      </div>
 
       <p class="micro">
-        Secure payment via Paystack. Your card will be charged R150 monthly. Cancel anytime from your account.
+        Secure payment via Paystack. After checkout, finish account setup to unlock your WhatsApp link. Cancel anytime from your account.
       </p>
     </div>
   </main>
@@ -218,51 +274,98 @@
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
 
-    const payBtn = document.getElementById("payBtn");
-    const errorMsg = document.getElementById("errorMsg");
+    const guestBlock = document.getElementById("guestBlock");
+    const memberBlock = document.getElementById("memberBlock");
+    const guestForm = document.getElementById("guestForm");
+    const guestPayBtn = document.getElementById("guestPayBtn");
+    const memberPayBtn = document.getElementById("memberPayBtn");
+    const errorMsgGuest = document.getElementById("errorMsgGuest");
+    const errorMsgMember = document.getElementById("errorMsgMember");
+
+    const callbackUrl = window.location.origin.replace(/\/$/, "") + "/signup.html";
 
     async function boot() {
       const { data: { session } } = await sb.auth.getSession();
 
-      if (!session) {
-        window.location.href = TGIC_CONFIG.SIGNUP_URL;
+      if (session) {
+        const { data: profile } = await sb
+          .from("profiles")
+          .select("subscription_status")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile?.subscription_status === "active") {
+          window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+          return;
+        }
+
+        guestBlock.classList.add("hidden");
+        memberBlock.classList.remove("hidden");
+
+        memberPayBtn.addEventListener("click", async () => {
+          memberPayBtn.disabled = true;
+          memberPayBtn.innerHTML = '<span class="spinner"></span>Redirecting…';
+          errorMsgMember.textContent = "";
+          try {
+            const res = await sb.functions.invoke("create-subscription", {
+              headers: { "x-callback-url": window.location.origin.replace(/\/$/, "") + "/" + TGIC_CONFIG.ACCOUNT_URL },
+            });
+            if (res.error) throw new Error(res.error.message || "Function error");
+            const result = res.data;
+            if (result.authorization_url) {
+              window.location.href = result.authorization_url;
+            } else {
+              throw new Error(result.error || "No payment URL received");
+            }
+          } catch (err) {
+            errorMsgMember.textContent = err.message || "Something went wrong.";
+            memberPayBtn.disabled = false;
+            memberPayBtn.innerHTML = "Pay R150 &amp; Join &rarr;";
+          }
+        });
         return;
       }
 
-      // Check if already subscribed.
-      const { data: profile } = await sb
-        .from("profiles")
-        .select("subscription_status")
-        .eq("id", session.user.id)
-        .single();
+      guestForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMsgGuest.textContent = "";
+        guestPayBtn.disabled = true;
+        guestPayBtn.innerHTML = '<span class="spinner"></span>Starting checkout…';
 
-      if (profile?.subscription_status === "active") {
-        window.location.href = TGIC_CONFIG.ACCOUNT_URL;
-        return;
-      }
-
-      payBtn.addEventListener("click", async () => {
-        payBtn.disabled = true;
-        payBtn.innerHTML = '<span class="spinner"></span>Redirecting to Paystack…';
-        errorMsg.textContent = "";
+        const full_name = document.getElementById("gName").value.trim();
+        const phone_number = document.getElementById("gPhone").value.trim();
+        const email = document.getElementById("gEmail").value.trim().toLowerCase();
 
         try {
-          const res = await sb.functions.invoke("create-subscription", {
-            headers: { "x-callback-url": window.location.origin + "/" + TGIC_CONFIG.ACCOUNT_URL },
+          const res = await sb.functions.invoke("create-guest-checkout", {
+            body: {
+              email,
+              full_name,
+              phone_number,
+              callback_url: callbackUrl,
+            },
           });
 
-          if (res.error) throw new Error(res.error.message || "Function error");
+          if (res.error) throw new Error(res.error.message || "Could not start checkout");
 
           const result = res.data;
+          if (result.error) throw new Error(result.error + (result.detail ? " — " + JSON.stringify(result.detail) : ""));
+
+          if (result.reference) {
+            try {
+              sessionStorage.setItem("tgic_pay_ref", result.reference);
+            } catch (ignore) {}
+          }
+
           if (result.authorization_url) {
             window.location.href = result.authorization_url;
           } else {
-            throw new Error(result.error || "No payment URL received");
+            throw new Error("No payment URL received");
           }
         } catch (err) {
-          errorMsg.textContent = err.message || "Something went wrong. Please try again.";
-          payBtn.disabled = false;
-          payBtn.innerHTML = "Pay R150 &amp; Join &rarr;";
+          errorMsgGuest.textContent = err.message || "Something went wrong.";
+          guestPayBtn.disabled = false;
+          guestPayBtn.innerHTML = "Continue to secure payment &rarr;";
         }
       });
     }
