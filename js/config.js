@@ -17,5 +17,5 @@ const TGIC_CONFIG = {
   LOGIN_URL: "login.html",
   CHECKOUT_URL: "checkout.html",
   ACCOUNT_URL: "account.html",
-  HOME_URL: "index.html",
+  HOME_URL: "/",
 };

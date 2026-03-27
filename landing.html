@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <!--
     PPC / Google Ads landing — focused conversion page.
-    Main marketing site: index.html (unchanged).
+    Main marketing site: / (index.html).
     Point ad final URLs here for clean message match and faster loads (no hero video).
   -->
   <style>
@@ -76,6 +76,28 @@
       color: var(--gold-light);
       font-size: 1.05rem;
       letter-spacing: 0.06em;
+    }
+
+    .lp-header-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .lp-nav-home {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #c8c8c8;
+      text-decoration: underline;
+      text-decoration-color: rgba(201, 168, 76, 0.5);
+      text-underline-offset: 6px;
+      text-decoration-thickness: 1px;
+    }
+
+    .lp-nav-home:hover {
+      color: var(--gold-light);
+      text-decoration-color: var(--gold-light);
     }
 
     .lp-nav-cta {
@@ -549,7 +571,10 @@
   <header class="lp-header">
     <div class="container lp-header-inner">
       <a class="lp-brand" href="landing.html">The Gold Index Club</a>
-      <a class="lp-nav-cta" href="checkout.html">Secure your spot</a>
+      <div class="lp-header-nav">
+        <a class="lp-nav-home" href="/">Home</a>
+        <a class="lp-nav-cta" href="checkout.html">Secure your spot</a>
+      </div>
     </div>
   </header>
 
@@ -561,7 +586,7 @@
       <p class="lp-urgency">Limited spots left</p>
       <div class="lp-cta-row">
         <a class="cta-primary" href="checkout.html">Secure your spot now &rarr;</a>
-        <a class="lp-secondary-link" href="index.html">View full site experience</a>
+        <a class="lp-secondary-link" href="/">View full site experience</a>
       </div>
       <p class="lp-micro">Not financial advice. Trading involves substantial risk. Past member-submitted results are not typical; individual outcomes vary.</p>
     </div>
@@ -729,7 +754,7 @@
     <div class="container footer-row">
       <span>&copy; 2025 The Gold Index Club</span>
       <nav class="footer-links" aria-label="Footer">
-        <a href="index.html">Main site</a>
+        <a href="/">Main site</a>
         <a href="wins.html">Big wins</a>
         <a href="#join">Pricing</a>
       </nav>

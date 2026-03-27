@@ -2241,7 +2241,8 @@
       }
 
       function boot() {
-        if (typeof supabase === "undefined" || !window.TGIC_CONFIG || !TGIC_CONFIG.SUPABASE_URL) {
+        // TGIC_CONFIG is a script global from js/config.js (not window.TGIC_CONFIG when declared with const/let).
+        if (typeof supabase === "undefined" || typeof TGIC_CONFIG === "undefined" || !TGIC_CONFIG.SUPABASE_URL) {
           return;
         }
         var sb = supabase.createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
