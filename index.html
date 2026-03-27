@@ -279,12 +279,48 @@
       transition: none !important;
     }
 
+    .hero-cta-stack {
+      margin-top: 0.2rem;
+    }
+
     .hero-actions {
       display: flex;
       align-items: center;
       gap: 0.9rem;
       flex-wrap: wrap;
-      margin-top: 0.2rem;
+      margin-top: 0.35rem;
+    }
+
+    .urgency-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      opacity: 0.92;
+    }
+
+    .urgency-line::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.55);
+      animation: urgencyBlink 2.4s ease-in-out infinite;
+    }
+
+    @keyframes urgencyBlink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.92); }
+    }
+
+    .pricing-wrap .urgency-line {
+      justify-content: center;
+      width: 100%;
+      margin: 0.25rem 0 0.85rem;
     }
 
     .replay-btn {
@@ -1070,11 +1106,14 @@
       <span class="section-label hero-timed" style="--reveal-delay:120ms">Premium Signal Desk</span>
       <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
       <p class="hero-subtitle hero-timed" style="--reveal-delay:520ms">Precision signals on US30 &amp; Gold - delivered before the move.</p>
-      <div class="hero-actions">
-        <a href="#payment" class="cta-btn hero-timed" style="--reveal-delay:720ms">Join The Club &rarr;</a>
-        <button class="replay-btn" id="replayVideoBtn" type="button">
-          Replay Video &rarr;
-        </button>
+      <div class="hero-cta-stack">
+        <p class="urgency-line hero-timed" style="--reveal-delay:640ms">Limited spots left</p>
+        <div class="hero-actions">
+          <a href="#payment" class="cta-btn hero-timed" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
+          <button class="replay-btn" id="replayVideoBtn" type="button">
+            Replay Video &rarr;
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1304,6 +1343,7 @@
         <span class="section-label">Membership</span>
         <h2 class="pricing-title">The Gold Index Club - Full Access</h2>
         <p class="price">R150/month</p>
+        <p class="urgency-line">Limited spots left</p>
         <ul class="benefits">
           <li>Daily US30 and XAUUSD trade setups</li>
           <li>Clear entries, exits, and stop-loss guidance</li>
@@ -1311,7 +1351,7 @@
           <li>Weekly market outlook and strategy brief</li>
           <li>Direct education from Percival's trading framework</li>
         </ul>
-        <a href="#payment" class="cta-btn cta-pulse">Get Access Now &rarr;</a>
+        <a href="#payment" class="cta-btn cta-pulse">Secure Your Spot Now &rarr;</a>
       </div>
     </div>
   </section>
