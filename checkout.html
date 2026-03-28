@@ -147,6 +147,14 @@
       vertical-align: middle;
     }
 
+    .checkout-spots {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin: 0.35rem 0 0.85rem;
+    }
+
     .benefits {
       list-style: none;
       text-align: left;
@@ -268,6 +276,7 @@
       <p class="card-label">Membership</p>
       <h1>Subscribe — R150/month</h1>
       <p class="price">R150<span class="price-suffix">/month</span></p>
+      <p class="checkout-spots" data-tgic-spots>46 spots left</p>
 
       <ul class="benefits">
         <li>Daily US30 and XAUUSD trade setups</li>
@@ -307,13 +316,14 @@
       </div>
 
       <p class="micro">
-        Secure payment via Paystack. After checkout, finish account setup to unlock your WhatsApp link. Cancel anytime from your account.
+        Secure payment via Paystack. After checkout, finish account setup to unlock your WhatsApp link. Manage your subscription from your account.
       </p>
     </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/spots.js"></script>
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);

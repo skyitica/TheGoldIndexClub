@@ -133,6 +133,15 @@
       margin-bottom: 1.5rem;
     }
 
+    .card-spots {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      text-align: center;
+      margin: -0.35rem 0 1rem;
+    }
+
     .field {
       margin-bottom: 1rem;
     }
@@ -242,6 +251,7 @@
 
   <main class="page">
     <div class="card">
+      <p class="card-spots" data-tgic-spots>46 spots left</p>
       <!-- After payment: finish account -->
       <div id="paidFlow" class="hidden">
         <p class="card-label">Payment received</p>
@@ -311,6 +321,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/spots.js"></script>
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
