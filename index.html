@@ -32,6 +32,8 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
+      max-width: 100%;
     }
 
     body {
@@ -40,6 +42,14 @@
       font-family: "DM Mono", monospace;
       line-height: 1.55;
       overflow-x: hidden;
+      max-width: 100%;
+      position: relative;
+    }
+
+    img,
+    video {
+      max-width: 100%;
+      height: auto;
     }
 
     a {
@@ -785,6 +795,9 @@
       left: 0;
       right: 0;
       bottom: 0.7rem;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
       overflow: hidden;
       border-top: 1px solid rgba(201, 168, 76, 0.17);
       border-bottom: 1px solid rgba(201, 168, 76, 0.17);
@@ -1140,8 +1153,11 @@
     }
 
     .footer-nav {
-      display: inline-flex;
-      gap: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem 1rem;
+      max-width: 100%;
       color: #a2a2a2;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1157,6 +1173,7 @@
       color: #666;
       font-size: 0.72rem;
       text-align: center;
+      overflow-wrap: anywhere;
     }
 
     @media (max-width: 920px) {

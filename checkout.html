@@ -20,6 +20,10 @@
       --container: 540px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
     body {
       min-height: 100vh;
       background: radial-gradient(circle at 50% -20%, rgba(201,168,76,0.1), transparent 42%), var(--bg);
@@ -28,6 +32,9 @@
       line-height: 1.55;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
+      max-width: 100%;
+      position: relative;
     }
     a { color: var(--gold-light); text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -110,71 +117,47 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 2rem 1.5rem;
+      text-align: left;
+    }
+
+    .checkout-hero {
       text-align: center;
+      margin-bottom: 1.35rem;
     }
 
-    .card-label {
-      color: var(--gold-light);
-      font-size: 0.62rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      margin-bottom: 0.5rem;
-    }
-
-    h1 {
+    h1.checkout-title {
       font-family: "Cormorant Garamond", serif;
       font-size: 1.85rem;
-      margin-bottom: 0.2rem;
+      font-weight: 600;
+      line-height: 1.2;
+      margin: 0;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
     }
 
     .lead {
       color: var(--text-muted);
       font-size: 0.82rem;
-      margin-bottom: 1.25rem;
-      text-align: left;
+      margin: 1rem 0 0;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 34rem;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .price {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 2rem;
-      color: var(--gold-light);
-      margin: 0.6rem 0 0.3rem;
-    }
+    @media (min-width: 769px) {
+      .card--checkout {
+        padding: 2.25rem 2.25rem 2rem;
+      }
 
-    .price-suffix {
-      font-size: 0.45em;
-      font-family: "DM Mono", monospace;
-      vertical-align: middle;
-    }
+      h1.checkout-title {
+        font-size: 2.05rem;
+      }
 
-    .checkout-spots {
-      font-size: 0.68rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gold-light);
-      margin: 0.35rem 0 0.85rem;
-    }
-
-    .benefits {
-      list-style: none;
-      text-align: left;
-      max-width: 380px;
-      margin: 1rem auto 1.5rem;
-      display: grid;
-      gap: 0.45rem;
-    }
-    .benefits li {
-      color: #c7c7c7;
-      font-size: 0.78rem;
-      padding-left: 1.2rem;
-      position: relative;
-    }
-    .benefits li::before {
-      content: "◆";
-      color: var(--gold);
-      position: absolute;
-      left: 0;
-      font-size: 0.6rem;
+      .checkout-hero {
+        margin-bottom: 1.5rem;
+      }
     }
 
     .field { margin-bottom: 0.85rem; text-align: left; }
@@ -237,10 +220,11 @@
     }
 
     .micro {
-      margin-top: 1.15rem;
-      font-size: 0.68rem;
+      margin-top: 1rem;
+      font-size: 0.65rem;
       color: #6a6a6a;
-      line-height: 1.5;
+      line-height: 1.45;
+      text-align: center;
     }
 
     .spinner {
@@ -257,7 +241,16 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .hidden { display: none !important; }
-    .alt { text-align: center; margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); }
+    .alt {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    #memberBlock:not(.hidden) .lead {
+      margin-top: 0.25rem;
+    }
   </style>
 </head>
 <body>
@@ -272,22 +265,14 @@
   </header>
 
   <main class="page">
-    <div class="card">
-      <p class="card-label">Membership</p>
-      <h1>Subscribe — R150/month</h1>
-      <p class="price">R150<span class="price-suffix">/month</span></p>
-      <p class="checkout-spots" data-tgic-spots>46 spots left</p>
-
-      <ul class="benefits">
-        <li>Daily US30 and XAUUSD trade setups</li>
-        <li>Clear entries, exits, and stop-loss guidance</li>
-        <li>Real-time updates in private members group</li>
-        <li>Education framed around Percival's approach</li>
-      </ul>
+    <div class="card card--checkout">
+      <div class="checkout-hero">
+        <h1 class="checkout-title">Subscribe — R150/month</h1>
+      </div>
 
       <!-- Guest pay-first -->
       <div id="guestBlock">
-        <p class="lead">Enter your details for Paystack. After payment succeeds, you will create your password on the next screen (same email). Use the WhatsApp number you will actually use in the group — we need it to grant access to the private members chat.</p>
+        <p class="lead">Pay with Paystack, then create your password on the next screen (same email).</p>
         <div class="error-msg" id="errorMsgGuest"></div>
         <form id="guestForm">
           <div class="field">
@@ -295,9 +280,8 @@
             <input id="gName" type="text" required autocomplete="name" placeholder="Your name" />
           </div>
           <div class="field">
-            <label for="gPhone">WhatsApp number</label>
+            <label for="gPhone">WhatsApp number (for your group invite)</label>
             <input id="gPhone" type="tel" required autocomplete="tel" placeholder="+27 82 123 4567" />
-            <p class="field-hint">Required for membership: this is the number we use to verify and invite you into the private WhatsApp group. It should match the account you will use in WhatsApp.</p>
           </div>
           <div class="field">
             <label for="gEmail">Email</label>
@@ -310,20 +294,17 @@
 
       <!-- Logged-in existing flow -->
       <div id="memberBlock" class="hidden">
-        <p class="lead">You are signed in. Continue to Paystack to add or renew your subscription.</p>
+        <p class="lead">Continue to Paystack to subscribe or renew.</p>
         <div class="error-msg" id="errorMsgMember"></div>
         <button class="btn" id="memberPayBtn" type="button">Pay R150 &amp; Join &rarr;</button>
       </div>
 
-      <p class="micro">
-        Secure payment via Paystack. After checkout, finish account setup to unlock your WhatsApp link. Manage your subscription from your account.
-      </p>
+      <p class="micro">Payments processed by Paystack.</p>
     </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/spots.js"></script>
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);

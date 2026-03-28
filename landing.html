@@ -35,6 +35,8 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
+      max-width: 100%;
     }
 
     body {
@@ -42,6 +44,15 @@
       color: var(--text-primary);
       font-family: "DM Mono", monospace;
       line-height: 1.55;
+      overflow-x: hidden;
+      max-width: 100%;
+      position: relative;
+    }
+
+    img,
+    video {
+      max-width: 100%;
+      height: auto;
     }
 
     a {
