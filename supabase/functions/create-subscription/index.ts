@@ -4,7 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY")!;
-const PAYSTACK_PLAN_CODE = Deno.env.get("PAYSTACK_PLAN_CODE")!;
+/** Paystack Plan Code (Subscriptions). Override via Supabase secret PAYSTACK_PLAN_CODE. */
+const PAYSTACK_PLAN_CODE =
+  Deno.env.get("PAYSTACK_PLAN_CODE") || "PLN_v8qdbqozhymbhnj";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
