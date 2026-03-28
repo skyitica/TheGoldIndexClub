@@ -326,6 +326,17 @@
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
 
+    /** After signup, normally redirect to checkout; use account URL when testing without payment. */
+    function postSignupDestination() {
+      try {
+        if (sessionStorage.getItem("tgic_skip_checkout") === "1") return TGIC_CONFIG.ACCOUNT_URL;
+      } catch (e) {}
+      if (typeof TGIC_CONFIG.SKIP_CHECKOUT_AFTER_SIGNUP !== "undefined" && TGIC_CONFIG.SKIP_CHECKOUT_AFTER_SIGNUP) {
+        return TGIC_CONFIG.ACCOUNT_URL;
+      }
+      return TGIC_CONFIG.CHECKOUT_URL;
+    }
+
     function getPayReference() {
       const params = new URLSearchParams(window.location.search);
       const fromUrl = params.get("reference") || params.get("trxref");
@@ -483,7 +494,7 @@
       }
 
       if (data.session) {
-        window.location.href = TGIC_CONFIG.CHECKOUT_URL;
+        window.location.href = postSignupDestination();
       } else {
         form.innerHTML = `
           <div style="text-align:center;padding:1rem 0;">
@@ -522,7 +533,7 @@
 
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
-        window.location.href = TGIC_CONFIG.CHECKOUT_URL;
+        window.location.href = postSignupDestination();
         return;
       }
     }

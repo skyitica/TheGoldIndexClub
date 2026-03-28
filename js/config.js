@@ -18,4 +18,8 @@ const TGIC_CONFIG = {
   CHECKOUT_URL: "checkout.html",
   ACCOUNT_URL: "account.html",
   HOME_URL: "/",
+
+  // When true: after email/password signup (session returned), go to account instead of checkout.
+  // Use only for your own testing — set back to false for production.
+  SKIP_CHECKOUT_AFTER_SIGNUP: false,
 };
