@@ -251,6 +251,33 @@
     #memberBlock:not(.hidden) .lead {
       margin-top: 0.25rem;
     }
+
+    .checkout-loading {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin: 0.35rem 0 1.25rem;
+    }
+
+    #guestForm .btn {
+      align-self: center;
+    }
+
+    #guestForm {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #memberBlock {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #memberBlock .error-msg {
+      width: 100%;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -270,8 +297,10 @@
         <h1 class="checkout-title">Subscribe — R150/month</h1>
       </div>
 
-      <!-- Guest pay-first -->
-      <div id="guestBlock">
+      <p id="checkoutLoading" class="checkout-loading">Loading…</p>
+
+      <!-- Guest pay-first (shown only when not signed in — after session check) -->
+      <div id="guestBlock" class="hidden">
         <p class="lead">Pay with Paystack, then create your password on the next screen (same email).</p>
         <div class="error-msg" id="errorMsgGuest"></div>
         <form id="guestForm">
@@ -318,48 +347,64 @@
     const errorMsgMember = document.getElementById("errorMsgMember");
 
     const callbackUrl = window.location.origin.replace(/\/$/, "") + "/signup.html";
+    const checkoutLoading = document.getElementById("checkoutLoading");
+
+    function hideCheckoutLoading() {
+      if (checkoutLoading) checkoutLoading.classList.add("hidden");
+    }
 
     async function boot() {
-      const { data: { session } } = await sb.auth.getSession();
+      try {
+        const { data: { session } } = await sb.auth.getSession();
 
-      if (session) {
-        const { data: profile } = await sb
-          .from("profiles")
-          .select("subscription_status")
-          .eq("id", session.user.id)
-          .single();
+        if (session) {
+          const { data: profile } = await sb
+            .from("profiles")
+            .select("subscription_status")
+            .eq("id", session.user.id)
+            .single();
 
-        if (profile?.subscription_status === "active") {
-          window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+          if (profile?.subscription_status === "active") {
+            window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+            return;
+          }
+
+          hideCheckoutLoading();
+          guestBlock.classList.add("hidden");
+          memberBlock.classList.remove("hidden");
+
+          memberPayBtn.addEventListener("click", async () => {
+            memberPayBtn.disabled = true;
+            memberPayBtn.innerHTML = '<span class="spinner"></span>Redirecting…';
+            errorMsgMember.textContent = "";
+            try {
+              const base = window.location.origin.replace(/\/$/, "");
+              const accountPath = TGIC_CONFIG.ACCOUNT_URL.replace(/^\//, "");
+              const res = await sb.functions.invoke("create-subscription", {
+                headers: { "x-callback-url": base + "/" + accountPath },
+              });
+              if (res.error) throw new Error(res.error.message || "Function error");
+              const result = res.data;
+              if (result.authorization_url) {
+                window.location.href = result.authorization_url;
+              } else {
+                throw new Error(result.error || "No payment URL received");
+              }
+            } catch (err) {
+              errorMsgMember.textContent = err.message || "Something went wrong.";
+              memberPayBtn.disabled = false;
+              memberPayBtn.innerHTML = "Pay R150 &amp; Join &rarr;";
+            }
+          });
           return;
         }
-
-        guestBlock.classList.add("hidden");
-        memberBlock.classList.remove("hidden");
-
-        memberPayBtn.addEventListener("click", async () => {
-          memberPayBtn.disabled = true;
-          memberPayBtn.innerHTML = '<span class="spinner"></span>Redirecting…';
-          errorMsgMember.textContent = "";
-          try {
-            const res = await sb.functions.invoke("create-subscription", {
-              headers: { "x-callback-url": window.location.origin.replace(/\/$/, "") + "/" + TGIC_CONFIG.ACCOUNT_URL },
-            });
-            if (res.error) throw new Error(res.error.message || "Function error");
-            const result = res.data;
-            if (result.authorization_url) {
-              window.location.href = result.authorization_url;
-            } else {
-              throw new Error(result.error || "No payment URL received");
-            }
-          } catch (err) {
-            errorMsgMember.textContent = err.message || "Something went wrong.";
-            memberPayBtn.disabled = false;
-            memberPayBtn.innerHTML = "Pay R150 &amp; Join &rarr;";
-          }
-        });
-        return;
+      } catch (e) {
+        console.error(e);
       }
+
+      hideCheckoutLoading();
+      guestBlock.classList.remove("hidden");
+      memberBlock.classList.add("hidden");
 
       guestForm.addEventListener("submit", async (e) => {
         e.preventDefault();

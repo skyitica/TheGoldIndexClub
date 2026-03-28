@@ -344,6 +344,12 @@
       return TGIC_CONFIG.CHECKOUT_URL;
     }
 
+    /** Must match an entry in Supabase → Auth → URL Configuration → Redirect URLs. */
+    function authEmailRedirect(path) {
+      const p = (path || "").replace(/^\//, "");
+      return window.location.origin.replace(/\/$/, "") + "/" + p;
+    }
+
     function getPayReference() {
       const params = new URLSearchParams(window.location.search);
       const fromUrl = params.get("reference") || params.get("trxref");
@@ -428,7 +434,10 @@
       const { data, error } = await sb.auth.signUp({
         email,
         password,
-        options: { data: { full_name, phone_number } },
+        options: {
+          emailRedirectTo: authEmailRedirect(TGIC_CONFIG.SIGNUP_URL),
+          data: { full_name, phone_number },
+        },
       });
 
       if (error) {
@@ -458,7 +467,7 @@
         <div style="text-align:center;padding:0.5rem 0;">
           <p style="font-size:1rem;margin-bottom:0.6rem;">Confirm your email</p>
           <p style="color:var(--text-muted);font-size:0.8rem;line-height:1.5;">
-            We sent a link to <strong>${email}</strong>. After you confirm, <a href="login.html">log in</a> on this device — your membership will connect automatically.
+            We sent a link to <strong>${email}</strong>. After you confirm, you’ll return here — then <a href="login.html">log in</a> if needed so we can link your payment.
           </p>
         </div>`;
     });
@@ -489,6 +498,7 @@
         email,
         password,
         options: {
+          emailRedirectTo: authEmailRedirect(TGIC_CONFIG.CHECKOUT_URL),
           data: { full_name: fullName, phone_number: phone },
         },
       });
@@ -506,9 +516,9 @@
         form.innerHTML = `
           <div style="text-align:center;padding:1rem 0;">
             <p style="font-size:1.1rem;margin-bottom:0.6rem;">Check your email</p>
-            <p style="color:var(--text-muted);font-size:0.82rem;">
-              We sent a confirmation link to <strong>${email}</strong>.<br>
-              Click it, then <a href="login.html">log in</a> to continue to checkout.
+            <p style="color:var(--text-muted);font-size:0.82rem;line-height:1.55;">
+              We sent a link to <strong>${email}</strong>. After you confirm, you’ll be taken to <strong>checkout</strong> to pay.<br>
+              Or <a href="login.html">log in</a> later and open Checkout from your account.
             </p>
           </div>`;
       }

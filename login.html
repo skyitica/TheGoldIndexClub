@@ -249,6 +249,42 @@
     const errorMsg = document.getElementById("errorMsg");
     const submitBtn = document.getElementById("submitBtn");
 
+    async function redirectAfterLogin(userId) {
+      let payRef = "";
+      try {
+        payRef = sessionStorage.getItem("tgic_pay_ref") || "";
+      } catch (err) {}
+      if (payRef) {
+        try {
+          const linkRes = await sb.functions.invoke("link-payment-to-user", {
+            body: { reference: payRef },
+          });
+          if (!linkRes.error && !linkRes.data?.error) {
+            try {
+              sessionStorage.removeItem("tgic_pay_ref");
+            } catch (e) {}
+          }
+        } catch (e) {}
+      }
+      try {
+        const { data: profile } = await sb
+          .from("profiles")
+          .select("subscription_status")
+          .eq("id", userId)
+          .single();
+        const st = profile?.subscription_status;
+        if (st === "active") {
+          window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+          return;
+        }
+        if (st === "none" || !st) {
+          window.location.href = TGIC_CONFIG.CHECKOUT_URL;
+          return;
+        }
+      } catch (e) {}
+      window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorMsg.textContent = "";
@@ -267,22 +303,9 @@
         return;
       }
 
-      let payRef = "";
-      try {
-        payRef = sessionStorage.getItem("tgic_pay_ref") || "";
-      } catch (e) {}
-      if (payRef) {
-        const linkRes = await sb.functions.invoke("link-payment-to-user", {
-          body: { reference: payRef },
-        });
-        if (!linkRes.error && !linkRes.data?.error) {
-          try {
-            sessionStorage.removeItem("tgic_pay_ref");
-          } catch (e) {}
-        }
+      if (data.user) {
+        await redirectAfterLogin(data.user.id);
       }
-
-      window.location.href = TGIC_CONFIG.ACCOUNT_URL;
     });
 
     (function stashPayRefFromUrl() {
@@ -295,24 +318,9 @@
       }
     })();
 
-    // If already logged in, redirect.
     sb.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      let payRef = "";
-      try {
-        payRef = sessionStorage.getItem("tgic_pay_ref") || "";
-      } catch (e) {}
-      if (payRef) {
-        const linkRes = await sb.functions.invoke("link-payment-to-user", {
-          body: { reference: payRef },
-        });
-        if (!linkRes.error && !linkRes.data?.error) {
-          try {
-            sessionStorage.removeItem("tgic_pay_ref");
-          } catch (e) {}
-        }
-      }
-      window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+      await redirectAfterLogin(user.id);
     });
   </script>
 </body>
