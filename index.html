@@ -1255,7 +1255,7 @@
     <div class="container topbar-inner">
       <a class="topbar-brand" href="#top">The Gold Index Club</a>
       <nav class="topbar-actions" aria-label="Main">
-        <a class="topbar-link" href="#payment">Pricing</a>
+        <a class="topbar-link tgic-when-logged-out" href="#payment">Pricing</a>
         <span class="topbar-guest-cluster tgic-when-logged-out">
           <a class="topbar-link" href="login.html">Log in</a>
           <a class="topbar-btn topbar-btn--join" href="checkout.html">Join</a>
@@ -1300,7 +1300,7 @@
       <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
       <p class="hero-subtitle hero-timed" style="--reveal-delay:520ms">Precision signals on US30 &amp; Gold - delivered before the move.</p>
       <div class="hero-cta-stack">
-        <p class="urgency-line hero-timed" data-tgic-spots style="--reveal-delay:640ms">46 spots left</p>
+        <p class="urgency-line hero-timed tgic-when-logged-out" data-tgic-spots style="--reveal-delay:640ms">46 spots left</p>
         <div class="hero-actions">
           <a href="checkout.html" class="cta-btn hero-timed tgic-when-logged-out" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
           <a href="account.html" class="cta-btn hero-timed tgic-when-logged-in tgic-auth-hidden" style="--reveal-delay:720ms">Dashboard &rarr;</a>
@@ -1489,7 +1489,7 @@
     </div>
   </section>
 
-  <section id="testimonials">
+  <section id="testimonials" class="tgic-when-logged-out">
     <div class="container">
       <span class="section-label">Testimonials</span>
       <h2 class="section-title">Trusted by Focused Traders</h2>
@@ -1553,13 +1553,13 @@
     </div>
   </section>
 
-  <section id="payment">
+  <section id="payment" class="tgic-when-logged-out">
     <div class="container">
       <div class="pricing-wrap">
         <span class="section-label">Membership</span>
         <h2 class="pricing-title">The Gold Index Club - Full Access</h2>
         <p class="price">R150/month</p>
-        <p class="urgency-line">Cancel anytime &middot; No lock-in</p>
+        <p class="urgency-line tgic-when-logged-out" data-tgic-spots>46 spots left</p>
         <ul class="benefits">
           <li>Daily US30 and XAUUSD trade setups</li>
           <li>Clear entries, exits, and stop-loss guidance</li>
@@ -1582,7 +1582,8 @@
           <a href="#how">How It Works</a>
           <a href="#wins">Wins</a>
           <a href="wins.html">Big Wins</a>
-          <a href="#payment">Pricing</a>
+          <a href="#payment" class="tgic-when-logged-out">Pricing</a>
+          <a href="account.html" class="tgic-when-logged-in tgic-auth-hidden">Dashboard</a>
           <a href="privacy.html">Privacy Policy</a>
           <a href="terms.html">Terms of Service</a>
         </nav>
