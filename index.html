@@ -59,6 +59,9 @@
       left: 0;
       right: 0;
       z-index: 12;
+      padding-top: env(safe-area-inset-top, 0);
+      padding-left: env(safe-area-inset-left, 0);
+      padding-right: env(safe-area-inset-right, 0);
       border-bottom: 1px solid var(--border);
       background: rgba(8, 8, 8, 0.92);
       backdrop-filter: blur(10px);
@@ -142,30 +145,6 @@
       white-space: nowrap;
       transition: border-color 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease,
         text-decoration-color 160ms ease;
-    }
-
-    @media (max-width: 480px) {
-      .topbar-brand {
-        font-size: 0.82rem;
-      }
-      .site-top-header .topbar-inner {
-        gap: 0.5rem;
-      }
-      .topbar-actions {
-        gap: 0.5rem 0.7rem;
-      }
-      .topbar-guest-cluster {
-        gap: 0.5rem 0.7rem;
-      }
-      .topbar-link {
-        font-size: 0.56rem;
-        letter-spacing: 0.06em;
-      }
-      .topbar-btn {
-        font-size: 0.54rem;
-        letter-spacing: 0.06em;
-        padding: 0.35rem 0.55rem;
-      }
     }
 
     .topbar-btn:hover {
@@ -1206,25 +1185,58 @@
     @media (max-width: 768px) {
       body { cursor: auto; }
 
-      .site-top-header .topbar-inner {
-        min-height: 52px;
-        flex-wrap: wrap;
+      /* Mobile header: brand on its own row, links on a second row — no cramped single line */
+      .site-top-header .container.topbar-inner {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 0.65rem;
+        min-height: 0;
+        padding-top: 0.65rem;
+        padding-bottom: 0.75rem;
       }
 
-      .topbar-actions {
+      .site-top-header .topbar-brand {
+        width: 100%;
+        text-align: center;
+        font-size: clamp(0.88rem, 3.8vw, 1rem);
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        line-height: 1.2;
+        padding-inline: 0.25rem;
+      }
+
+      .site-top-header .topbar-actions {
         width: 100%;
         justify-content: center;
-        gap: 0.55rem 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.65rem 1.1rem;
+        padding-top: 0.55rem;
+        border-top: 1px solid rgba(201, 168, 76, 0.14);
       }
 
-      .topbar-link {
-        font-size: 0.58rem;
+      .site-top-header .topbar-guest-cluster {
+        display: inline-flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0.65rem 1.1rem;
+      }
+
+      .site-top-header .topbar-link {
+        font-size: 0.64rem;
+        letter-spacing: 0.08em;
         text-underline-offset: 4px;
+        padding: 0.35rem 0.15rem;
       }
 
-      .topbar-btn {
-        font-size: 0.56rem;
-        padding: 0.38rem 0.72rem;
+      .site-top-header .topbar-btn {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        padding: 0.45rem 0.95rem;
+        min-height: 40px;
+        box-sizing: border-box;
       }
 
       .stats-grid,
@@ -1260,7 +1272,7 @@
       }
 
       .hero-content {
-        padding-block: 5.3rem 5.8rem;
+        padding-block: 6.25rem 5.8rem;
       }
 
       .ticker-track {
