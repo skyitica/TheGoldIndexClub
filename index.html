@@ -1237,6 +1237,17 @@
         font-size: 0.72rem;
       }
     }
+    /* About Percival */
+    #about { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    .about-grid { display: grid; grid-template-columns: 260px 1fr; gap: 3rem; align-items: start; margin-top: 2.5rem; }
+    .about-photo-box { width: 100%; aspect-ratio: 3/4; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .about-photo-label { color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .about-bio-text { font-size: 0.9rem; line-height: 1.75; margin-bottom: 2rem; }
+    .about-stats-row { display: flex; gap: 2rem; }
+    .about-stat { display: flex; flex-direction: column; gap: 0.2rem; }
+    .about-stat-num { font-family: "Cormorant Garamond", serif; font-size: 2rem; color: var(--gold-light); line-height: 1; }
+    .about-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } .about-photo-box { aspect-ratio: 16/9; } }
   </style>
 </head>
 <body>
@@ -1261,7 +1272,7 @@
     <div class="hero-texture" aria-hidden="true"></div>
     <canvas class="chart-line-bg" id="chartCanvas" aria-hidden="true"></canvas>
     <div class="trade-game" id="tradeGame">
-      <span class="trade-label">Predict:</span>
+      <span class="trade-label">Try a signal prediction:</span>
       <div class="trade-game-inner">
         <button class="trade-btn trade-btn--buy" id="tradeBuy" type="button">Buy ▲</button>
         <button class="trade-btn trade-btn--sell" id="tradeSell" type="button">Sell ▼</button>
@@ -1289,7 +1300,7 @@
       <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
       <p class="hero-subtitle hero-timed" style="--reveal-delay:520ms">Precision signals on US30 &amp; Gold - delivered before the move.</p>
       <div class="hero-cta-stack">
-        <p class="urgency-line hero-timed" style="--reveal-delay:640ms">Limited spots left</p>
+        <p class="urgency-line hero-timed" style="--reveal-delay:640ms">Cancel anytime &middot; No lock-in</p>
         <div class="hero-actions">
           <a href="checkout.html" class="cta-btn hero-timed tgic-when-logged-out" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
           <a href="account.html" class="cta-btn hero-timed tgic-when-logged-in tgic-auth-hidden" style="--reveal-delay:720ms">Dashboard &rarr;</a>
@@ -1341,15 +1352,15 @@
   <section class="stats-bar">
     <div class="container stats-grid">
       <article class="stat">
-        <div class="stat-value" data-target="92" data-suffix="%">0</div>
+        <div class="stat-value" data-target="92" data-suffix="%">92%</div>
         <div class="stat-label">Signal Accuracy</div>
       </article>
       <article class="stat">
-        <div class="stat-value" data-target="8" data-suffix=" Years">0</div>
+        <div class="stat-value" data-target="8" data-suffix=" Years">8 Years</div>
         <div class="stat-label">Trading Experience</div>
       </article>
       <article class="stat">
-        <div class="stat-value" data-target="2" data-suffix="">0</div>
+        <div class="stat-value" data-target="2" data-suffix="">2</div>
         <div class="stat-label">Instruments</div>
       </article>
     </div>
@@ -1456,6 +1467,28 @@
     </div>
   </section>
 
+  <section id="about">
+    <div class="container">
+      <span class="section-label">About</span>
+      <h2 class="section-title">Who Is Percival?</h2>
+      <div class="about-grid">
+        <div class="about-photo-placeholder">
+          <div class="about-photo-box">
+            <span class="about-photo-label">Photo Coming Soon</span>
+          </div>
+        </div>
+        <div class="about-bio">
+          <p class="about-bio-text muted">[Percival's bio goes here — add 2–3 sentences about your trading background, years of experience, instruments you specialise in, and what drives your approach. Example: "Percival is a self-taught trader with 8 years of live market experience across XAUUSD and US30. He built The Gold Index Club to share the same high-conviction setups he trades personally — with full context, not just entry prices."]</p>
+          <div class="about-stats-row">
+            <div class="about-stat"><span class="about-stat-num">8+</span><span class="about-stat-label">Years Trading</span></div>
+            <div class="about-stat"><span class="about-stat-num">2</span><span class="about-stat-label">Instruments</span></div>
+            <div class="about-stat"><span class="about-stat-num">92%</span><span class="about-stat-label">Signal Accuracy</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="testimonials">
     <div class="container">
       <span class="section-label">Testimonials</span>
@@ -1526,7 +1559,7 @@
         <span class="section-label">Membership</span>
         <h2 class="pricing-title">The Gold Index Club - Full Access</h2>
         <p class="price">R150/month</p>
-        <p class="urgency-line">Limited spots left</p>
+        <p class="urgency-line">Cancel anytime &middot; No lock-in</p>
         <ul class="benefits">
           <li>Daily US30 and XAUUSD trade setups</li>
           <li>Clear entries, exits, and stop-loss guidance</li>
@@ -1550,10 +1583,12 @@
           <a href="#wins">Wins</a>
           <a href="wins.html">Big Wins</a>
           <a href="#payment">Pricing</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
         </nav>
-        <div class="footer-copy">&copy; 2025 The Gold Index Club. All rights reserved.</div>
+        <div class="footer-copy">&copy; 2026 The Gold Index Club. All rights reserved.</div>
       </div>
-      <p class="risk">Trading involves risk. Past performance is not indicative of future results.</p>
+      <p class="risk">The Gold Index Club provides trade ideas and market commentary for educational purposes only. This is not financial advice. Percival is not a licensed financial advisor and is not registered with the FSCA. Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. You are solely responsible for your own trading decisions. Please read our <a href="terms.html" style="color:inherit;text-decoration:underline">Terms of Service</a> and <a href="privacy.html" style="color:inherit;text-decoration:underline">Privacy Policy</a> before subscribing.</p>
     </div>
   </footer>
 
