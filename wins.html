@@ -168,11 +168,9 @@
     }
 
     .win-media {
-      width: 100%;
-      height: clamp(200px, 26vw, 300px);
+      aspect-ratio: 16 / 10;
       border-bottom: 1px solid var(--border);
       overflow: hidden;
-      background: var(--bg-card);
     }
 
     .win-media img {
@@ -180,7 +178,7 @@
       height: 100%;
       display: block;
       object-fit: cover;
-      object-position: center;
+      object-position: top center;
     }
 
     .win-content {

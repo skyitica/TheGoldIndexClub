@@ -429,11 +429,8 @@
       overflow: hidden;
     }
 
-    /* Match main site: same thumbnail height + centered crop for all aspect ratios */
     .win-media {
-      width: 100%;
-      height: clamp(200px, 26vw, 300px);
-      background: #101010;
+      aspect-ratio: 16 / 10;
       overflow: hidden;
       border-bottom: 1px solid var(--border);
     }
@@ -442,7 +439,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center;
+      object-position: top center;
       display: block;
     }
 
