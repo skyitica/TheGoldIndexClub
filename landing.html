@@ -139,6 +139,16 @@
       overflow: hidden;
     }
 
+    .lp-candles-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.2;
+    }
+
     .lp-hero::before {
       content: "";
       position: absolute;
@@ -152,6 +162,7 @@
     .lp-hero-inner {
       position: relative;
       max-width: 42rem;
+      z-index: 1;
     }
 
     .lp-badge {
@@ -590,6 +601,7 @@
   </header>
 
   <div class="lp-hero">
+    <canvas class="lp-candles-bg" id="lpCandlesCanvas" aria-hidden="true"></canvas>
     <div class="container lp-hero-inner">
       <span class="lp-badge">US30 &amp; XAUUSD (Gold) signals</span>
       <h1 class="lp-h1">Trade with Percival's daily setups on the Dow and Gold.</h1>
@@ -773,5 +785,159 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/spots.js"></script>
+  <script>
+    (function () {
+      const canvas = document.getElementById("lpCandlesCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const GREEN = "#26a69a";
+      const RED = "#ef5350";
+      const GAP_PX = 1;
+      const DRAW_MS = 11000;
+      const HOLD_MS = 1500;
+      const FADE_MS = 900;
+
+      const PATTERN_KEYS = ["doubleTopBear", "headShouldersBear", "doubleBottomBull", "inverseHeadShouldersBull"];
+      const PATTERN_DEFS = {
+        doubleTopBear: [[0,.60],[.12,.42],[.24,.18],[.36,.42],[.48,.38],[.60,.18],[.72,.48],[.84,.68],[1,.86]],
+        headShouldersBear: [[0,.56],[.16,.34],[.24,.44],[.34,.16],[.44,.44],[.56,.30],[.66,.46],[.76,.56],[1,.84]],
+        doubleBottomBull: [[0,.40],[.12,.58],[.24,.82],[.36,.58],[.48,.62],[.60,.82],[.72,.52],[.84,.32],[1,.14]],
+        inverseHeadShouldersBull: [[0,.45],[.14,.62],[.26,.82],[.40,.74],[.52,.52],[.64,.72],[.76,.48],[.88,.32],[1,.12]]
+      };
+
+      let state = null;
+
+      function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function smoothstep(t) { const x = clamp(t, 0, 1); return x * x * (3 - 2 * x); }
+      function rand(a, b) { return a + Math.random() * (b - a); }
+
+      function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function sampleCurve(kp, n) {
+        const out = new Array(n);
+        for (let i = 0; i < n; i++) {
+          const t = i / (n - 1);
+          let j = 0;
+          while (j < kp.length - 2 && t > kp[j + 1][0]) j++;
+          const seg = (t - kp[j][0]) / Math.max(1e-6, kp[j + 1][0] - kp[j][0]);
+          out[i] = lerp(kp[j][1], kp[j + 1][1], smoothstep(seg));
+        }
+        return out;
+      }
+
+      function generateCandles(key, cw, ch) {
+        const bodyW = 5;
+        const slot = bodyW + GAP_PX;
+        const count = Math.max(24, Math.floor(cw / slot));
+        const pad = ch * 0.12;
+        const priceH = ch - pad * 2;
+        const curve = sampleCurve(PATTERN_DEFS[key], count);
+        const candles = [];
+        let prevClose = pad + curve[0] * priceH;
+
+        for (let i = 0; i < count; i++) {
+          const target = pad + curve[i] * priceH;
+          const close = clamp(target + rand(-priceH * 0.025, priceH * 0.025), pad * 0.4, ch - pad * 0.4);
+          const open = prevClose;
+          prevClose = close;
+          const bull = close < open;
+          const top = Math.min(open, close);
+          const bot = Math.max(open, close);
+          const bH = Math.max(1.5, bot - top);
+          const wickUp = rand(0.5, bH * 0.7 + 2);
+          const wickDn = rand(0.5, bH * 0.7 + 2);
+          candles.push({
+            x: slot * 0.5 + i * slot,
+            w: bodyW,
+            high: Math.max(2, top - wickUp),
+            low: Math.min(ch - 2, bot + wickDn),
+            open,
+            close,
+            bull
+          });
+        }
+        return candles;
+      }
+
+      function initPattern(index) {
+        const dpr = window.devicePixelRatio || 1;
+        const cw = canvas.width / dpr;
+        const ch = canvas.height / dpr;
+        const idx = typeof index === "number" ? index : 0;
+        const patternKey = PATTERN_KEYS[idx % PATTERN_KEYS.length];
+        state = {
+          patternIndex: idx % PATTERN_KEYS.length,
+          candles: generateCandles(patternKey, cw, ch),
+          startedAt: performance.now(),
+          fading: false,
+          fadeStart: 0
+        };
+      }
+
+      function draw(alpha, count) {
+        const dpr = window.devicePixelRatio || 1;
+        const cw = canvas.width / dpr;
+        const ch = canvas.height / dpr;
+        ctx.clearRect(0, 0, cw, ch);
+        if (!state) return;
+        const upto = Math.min(count, state.candles.length);
+        for (let i = 0; i < upto; i++) {
+          const c = state.candles[i];
+          const color = c.bull ? GREEN : RED;
+          ctx.globalAlpha = alpha * 0.82;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(c.x, c.high);
+          ctx.lineTo(c.x, c.low);
+          ctx.stroke();
+          const top = Math.min(c.open, c.close);
+          const bH = Math.max(1.5, Math.abs(c.open - c.close));
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = color;
+          ctx.fillRect(c.x - c.w / 2, top, c.w, bH);
+        }
+      }
+
+      function loop(now) {
+        if (!state) initPattern(0);
+        const t = now - state.startedAt;
+        const total = state.candles.length;
+        let alpha = 1;
+        let count = total;
+
+        if (t <= DRAW_MS) {
+          count = Math.floor((t / DRAW_MS) * total);
+        } else if (t > DRAW_MS + HOLD_MS && !state.fading) {
+          state.fading = true;
+          state.fadeStart = now;
+        }
+
+        if (state.fading) {
+          const elapsed = now - state.fadeStart;
+          alpha = Math.max(0, 1 - elapsed / FADE_MS);
+          if (elapsed >= FADE_MS) {
+            initPattern(state.patternIndex + 1);
+          }
+        }
+
+        draw(alpha, count);
+        requestAnimationFrame(loop);
+      }
+
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+      requestAnimationFrame(loop);
+    })();
+  </script>
 </body>
 </html>
