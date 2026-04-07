@@ -156,8 +156,32 @@
 
     .wins-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 1200px) {
+      .wins-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 960px) {
+      .wins-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .wins-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .wins-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .win-card {
@@ -257,8 +281,12 @@
         flex-wrap: wrap;
       }
 
-      .wins-grid {
-        grid-template-columns: 1fr;
+      .win-title {
+        font-size: 1.15rem;
+      }
+
+      .win-content {
+        padding: 0.75rem;
       }
 
       .top-row {
