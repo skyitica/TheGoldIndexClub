@@ -1299,14 +1299,28 @@
     /* About Percival */
     #about { padding: 5rem 0; border-bottom: 1px solid var(--border); }
     .about-grid { display: grid; grid-template-columns: 260px 1fr; gap: 3rem; align-items: start; margin-top: 2.5rem; }
-    .about-photo-box { width: 100%; aspect-ratio: 3/4; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-    .about-photo-label { color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .about-photo-box {
+      width: 100%;
+      aspect-ratio: 3/4;
+      border: 1px solid rgba(201, 168, 76, 0.32);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f0f0f;
+      box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
+    }
+    .about-photo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
     .about-bio-text { font-size: 0.9rem; line-height: 1.75; margin-bottom: 2rem; }
     .about-stats-row { display: flex; gap: 2rem; }
     .about-stat { display: flex; flex-direction: column; gap: 0.2rem; }
     .about-stat-num { font-family: "Cormorant Garamond", serif; font-size: 2rem; color: var(--gold-light); line-height: 1; }
     .about-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
-    @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } .about-photo-box { aspect-ratio: 16/9; } }
+    @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } .about-photo-box { aspect-ratio: 16/10; } }
   </style>
 </head>
 <body>
@@ -1425,6 +1439,46 @@
     </div>
   </section>
 
+  <section id="wins">
+    <div class="container">
+      <span class="section-label">Recent &amp; Top Wins</span>
+      <h2 class="section-title">Recent &amp; Top Wins</h2>
+      <p class="muted">Real results shared by members trading XAUUSD (Gold) with the club playbook.</p>
+      <div class="wins-grid">
+        <article class="win-card">
+          <div class="win-media">
+            <img src="assets/WhatsApp_Image_2026-03-27_at_01.25.18-e9b54af7-afab-479d-afda-7d761757037d_topcrop_no1.png" alt="Member result screenshot — top win #1" width="800" height="500" loading="lazy">
+          </div>
+          <div class="win-content">
+            <h3 class="win-title">Top Win #1</h3>
+            <p class="win-meta">XAUUSD Session Result</p>
+          </div>
+        </article>
+        <article class="win-card">
+          <div class="win-media">
+            <img src="assets/WhatsApp_Image_2026-03-27_at_10.13.41-57d71a70-b054-4d35-aec5-ddc4283254a3_topcrop_no2.png" alt="Member result screenshot — top win #2" width="800" height="500" loading="lazy">
+          </div>
+          <div class="win-content">
+            <h3 class="win-title">Top Win #2</h3>
+            <p class="win-meta">XAUUSD Session Result</p>
+          </div>
+        </article>
+        <article class="win-card">
+          <div class="win-media">
+            <img src="assets/WhatsApp_Image_2026-03-26_at_08.49.28-f2f5a8ac-6053-4f23-b369-5bad88d7592a_topcrop_no2.png" alt="Member result screenshot — top win #3" width="800" height="500" loading="lazy">
+          </div>
+          <div class="win-content">
+            <h3 class="win-title">Top Win #3</h3>
+            <p class="win-meta">XAUUSD Momentum Closeout</p>
+          </div>
+        </article>
+      </div>
+      <div class="wins-cta">
+        <a href="wins.html" class="wins-more-btn">See More Big Wins &rarr;</a>
+      </div>
+    </div>
+  </section>
+
   <section id="features">
     <div class="container">
       <span class="section-label">What You Get</span>
@@ -1533,7 +1587,7 @@
       <div class="about-grid">
         <div class="about-photo-placeholder">
           <div class="about-photo-box">
-            <span class="about-photo-label">Photo Coming Soon</span>
+            <img class="about-photo-img" src="assets/percival-photo.png" alt="Percival portrait" loading="lazy" width="768" height="1024">
           </div>
         </div>
         <div class="about-bio">
@@ -1568,46 +1622,6 @@
           <p class="quote">"Percival's US30 calls consistently put me in front of the move."</p>
           <p class="muted">S. Patel</p>
         </article>
-      </div>
-    </div>
-  </section>
-
-  <section id="wins">
-    <div class="container">
-      <span class="section-label">Student Wins</span>
-      <h2 class="section-title">Top 3 Member Results</h2>
-      <p class="muted">Real results shared by members trading XAUUSD (Gold) with the club playbook.</p>
-      <div class="wins-grid">
-        <article class="win-card">
-          <div class="win-media">
-            <img src="assets/WhatsApp_Image_2026-03-27_at_01.25.18-e9b54af7-afab-479d-afda-7d761757037d_topcrop_no1.png" alt="Member result screenshot — top win #1" width="800" height="500" loading="lazy">
-          </div>
-          <div class="win-content">
-            <h3 class="win-title">Top Win #1</h3>
-            <p class="win-meta">XAUUSD Session Result</p>
-          </div>
-        </article>
-        <article class="win-card">
-          <div class="win-media">
-            <img src="assets/WhatsApp_Image_2026-03-27_at_10.13.41-57d71a70-b054-4d35-aec5-ddc4283254a3_topcrop_no2.png" alt="Member result screenshot — top win #2" width="800" height="500" loading="lazy">
-          </div>
-          <div class="win-content">
-            <h3 class="win-title">Top Win #2</h3>
-            <p class="win-meta">XAUUSD Session Result</p>
-          </div>
-        </article>
-        <article class="win-card">
-          <div class="win-media">
-            <img src="assets/WhatsApp_Image_2026-03-26_at_08.49.28-f2f5a8ac-6053-4f23-b369-5bad88d7592a_topcrop_no2.png" alt="Member result screenshot — top win #3" width="800" height="500" loading="lazy">
-          </div>
-          <div class="win-content">
-            <h3 class="win-title">Top Win #3</h3>
-            <p class="win-meta">XAUUSD Momentum Closeout</p>
-          </div>
-        </article>
-      </div>
-      <div class="wins-cta">
-        <a href="wins.html" class="wins-more-btn">See More Big Wins &rarr;</a>
       </div>
     </div>
   </section>
