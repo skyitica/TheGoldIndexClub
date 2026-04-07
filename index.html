@@ -999,8 +999,10 @@
       box-shadow: 0 0 20px rgba(201, 168, 76, 0.15);
     }
 
+    /* Fixed height + center crop so phone screenshots and wide chart crops frame the same way */
     .win-media {
-      aspect-ratio: 16 / 10;
+      width: 100%;
+      height: clamp(200px, 26vw, 300px);
       background: linear-gradient(135deg, #101010, #1a1a1a);
       border-bottom: 1px solid var(--border);
       overflow: hidden;
@@ -1010,7 +1012,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: top center;
+      object-position: center;
       display: block;
     }
 
