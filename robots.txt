@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Keep private dashboard out of search.
+Disallow: /account.html
+
+Sitemap: https://thegoldindexclub.vercel.app/sitemap.xml
