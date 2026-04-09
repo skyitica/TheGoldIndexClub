@@ -326,11 +326,6 @@
         <p class="detail" id="nextDueDetail"></p>
         <p class="detail hidden" id="overdueDetail" style="color:var(--red);"></p>
 
-        <!-- Not subscribed CTA -->
-        <div class="hidden" id="subscribeBox" style="margin-top:0.8rem;">
-          <a class="btn-gold" href="checkout.html">Subscribe — R150/month &rarr;</a>
-        </div>
-
       </div>
 
       <!-- Phone number -->
@@ -497,9 +492,6 @@
         kpiNextDue.textContent = "—";
       }
 
-      if (!member) {
-        document.getElementById("subscribeBox").classList.remove("hidden");
-      }
       document.getElementById("kpiPaymentsMade").textContent = String((paymentRows || []).length);
       const months = member && member.current_plan_months ? Number(member.current_plan_months) : 1;
       document.getElementById("kpiPlanMonths").textContent = months + " month" + (months > 1 ? "s" : "");
