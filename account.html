@@ -427,6 +427,26 @@
       return d.toISOString().slice(0, 10);
     }
 
+    var DISPLAY_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    function formatDisplayDate(value) {
+      if (value == null || value === "" || value === "-") return "—";
+      var s = String(value).trim();
+      var ymd = s.slice(0, 10);
+      var m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) {
+        var dt = new Date(s);
+        if (!isNaN(dt.getTime())) {
+          ymd = dt.toISOString().slice(0, 10);
+          m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        }
+      }
+      if (!m) return s;
+      var mi = parseInt(m[2], 10) - 1;
+      var day = parseInt(m[3], 10);
+      if (mi < 0 || mi > 11 || isNaN(day)) return s;
+      return String(day).padStart(2, "0") + "/" + DISPLAY_MONTHS[mi] + "/" + m[1];
+    }
+
     function deriveMemberStatus(member) {
       if (!member) return { label: "Pending acceptance", badgeClass: "badge-none", overdue: false };
       const today = toYmd(new Date());
@@ -444,7 +464,7 @@
         return;
       }
       box.innerHTML = rows.map(function (row) {
-        const paid = row.paid_on ? new Date(row.paid_on).toLocaleDateString("en-ZA") : "—";
+        const paid = row.paid_on ? formatDisplayDate(row.paid_on) : "—";
         const amount = row.total_amount || row.amount || 150;
         const monthsCount = row.months_count || 1;
         const discount = row.discount_percent || 0;
@@ -475,11 +495,10 @@
       const kpiNextDue = document.getElementById("kpiNextDue");
       const overdueEl = document.getElementById("overdueDetail");
       if (member && member.next_due_date) {
-        const dueDate = new Date(member.next_due_date);
-        const dueLabel = dueDate.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+        const dueLabel = formatDisplayDate(member.next_due_date);
         periodEl.textContent = member.group_access ? "Your group access is enabled." : "Your account is awaiting approval.";
         nextDueEl.textContent = "Next payment due: " + dueLabel;
-        kpiNextDue.textContent = dueDate.toLocaleDateString("en-ZA");
+        kpiNextDue.textContent = dueLabel;
         if (statusState.overdue) {
           overdueEl.classList.remove("hidden");
           overdueEl.textContent = "Payment overdue. Please pay your monthly fee to restore account status.";

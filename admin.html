@@ -270,6 +270,26 @@
       });
     }
 
+    var DISPLAY_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    function formatDisplayDate(value) {
+      if (value == null || value === "" || value === "-") return "—";
+      var s = String(value).trim();
+      var ymd = s.slice(0, 10);
+      var m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) {
+        var dt = new Date(s);
+        if (!isNaN(dt.getTime())) {
+          ymd = dt.toISOString().slice(0, 10);
+          m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        }
+      }
+      if (!m) return s;
+      var mi = parseInt(m[2], 10) - 1;
+      var day = parseInt(m[3], 10);
+      if (mi < 0 || mi > 11 || isNaN(day)) return s;
+      return String(day).padStart(2, "0") + "/" + DISPLAY_MONTHS[mi] + "/" + m[1];
+    }
+
     function addOneMonthIso(isoDate) {
       const d = new Date((isoDate || dateOnlyString(new Date())) + "T00:00:00");
       d.setMonth(d.getMonth() + 1);
@@ -492,9 +512,9 @@
             <td><span class="cell-ellipsis" title="${esc(row.full_name)}">${esc(row.full_name)}</span></td>
             <td><span class="cell-ellipsis" title="${esc(row.email)}">${esc(row.email)}</span></td>
             <td><span class="cell-ellipsis" title="${esc(row.whatsapp)}">${esc(row.whatsapp)}</span></td>
-            <td>${esc(row.join_date)}</td>
-            <td>${esc(row.next_due_date)}</td>
-            <td>${esc(row.date_paid || "-")}</td>
+            <td>${esc(formatDisplayDate(row.join_date))}</td>
+            <td>${esc(formatDisplayDate(row.next_due_date))}</td>
+            <td>${esc(formatDisplayDate(row.date_paid))}</td>
             <td><span class="status-badge ${statusClass(dStatus)}">${esc(dStatus)}</span></td>
             <td>${accessLabel}</td>
             <td><span class="cell-ellipsis" title="${esc(extensionReq)}">${esc(extensionReq)}</span></td>
