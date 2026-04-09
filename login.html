@@ -249,7 +249,7 @@
     const errorMsg = document.getElementById("errorMsg");
     const submitBtn = document.getElementById("submitBtn");
 
-    async function redirectAfterLogin(userId) {
+    async function redirectAfterLogin(user) {
       let payRef = "";
       try {
         payRef = sessionStorage.getItem("tgic_pay_ref") || "";
@@ -270,7 +270,7 @@
         const { data: profile } = await sb
           .from("profiles")
           .select("subscription_status")
-          .eq("id", userId)
+          .eq("id", user.id)
           .single();
         const st = profile?.subscription_status;
         if (st === "active") {
@@ -278,7 +278,16 @@
           return;
         }
         if (st === "none" || !st) {
-          window.location.href = TGIC_CONFIG.CHECKOUT_URL;
+          const { data: members } = await sb
+            .from("members")
+            .select("id")
+            .eq("email", user.email)
+            .limit(1);
+          if (members && members.length) {
+            window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+          } else {
+            window.location.href = TGIC_CONFIG.CHECKOUT_URL;
+          }
           return;
         }
       } catch (e) {}
@@ -304,7 +313,7 @@
       }
 
       if (data.user) {
-        await redirectAfterLogin(data.user.id);
+        await redirectAfterLogin(data.user);
       }
     });
 
@@ -320,7 +329,7 @@
 
     sb.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      await redirectAfterLogin(user.id);
+      await redirectAfterLogin(user);
     });
   </script>
 </body>

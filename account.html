@@ -19,7 +19,7 @@
       --red: #ef5350;
       --text-primary: #f0f0f0;
       --text-muted: #888888;
-      --container: 620px;
+      --container: 1180px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html {
@@ -105,10 +105,40 @@
 
     .page {
       flex: 1;
-      padding: 2.2rem 1rem 3rem;
+      padding: 1.4rem 1rem 2rem;
       width: 100%;
       max-width: var(--container);
       margin: 0 auto;
+    }
+    .hero-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin: 0.4rem 0 1rem;
+    }
+    .kpi {
+      background: #0f0f0f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+    }
+    .kpi-label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.62rem;
+    }
+    .kpi-value {
+      margin-top: 0.35rem;
+      font-size: 1.15rem;
+      color: #fff;
     }
 
     h1 {
@@ -158,33 +188,19 @@
     .badge-cancelled { background: rgba(239,83,80,0.12); color: var(--red); border: 1px solid rgba(239,83,80,0.25); }
     .badge-past-due { background: rgba(255,180,0,0.12); color: #ffb400; border: 1px solid rgba(255,180,0,0.25); }
     .badge-none { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--border); }
+    .badge-overdue { background: rgba(239,83,80,0.14); color: var(--red); border: 1px solid rgba(239,83,80,0.35); }
 
     .detail { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.3rem; }
 
-    .wa-link-box {
-      margin-top: 0.7rem;
-      padding: 0.85rem 1rem;
-      background: rgba(38,166,154,0.06);
-      border: 1px solid rgba(38,166,154,0.25);
-      border-radius: 10px;
-    }
-    .wa-link-box p { font-size: 0.78rem; margin-bottom: 0.45rem; color: #c7c7c7; }
-    .wa-link-box a {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.55rem 1rem;
+    .history-list { margin-top: 0.65rem; display: grid; gap: 0.5rem; }
+    .history-item {
+      border: 1px solid var(--border);
       border-radius: 8px;
-      border: 1px solid rgba(38,166,154,0.4);
-      background: rgba(38,166,154,0.1);
-      color: var(--green);
-      font-size: 0.78rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      text-decoration: none;
-      transition: background 180ms ease;
+      padding: 0.6rem 0.7rem;
+      background: #0c0c0c;
+      font-size: 0.74rem;
+      color: #cecece;
     }
-    .wa-link-box a:hover { background: rgba(38,166,154,0.2); }
 
     .btn-row { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.85rem; }
 
@@ -203,9 +219,6 @@
     }
     .btn-sm:hover { border-color: var(--gold); color: var(--gold-light); }
     .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-danger { border-color: rgba(239,83,80,0.35); color: var(--red); }
-    .btn-danger:hover { border-color: var(--red); }
-
     .btn-gold {
       padding: 0.65rem 1.2rem;
       border-radius: 8px;
@@ -266,6 +279,12 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .hidden { display: none !important; }
+    @media (max-width: 900px) {
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px) {
+      .kpis { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -285,8 +304,17 @@
     </div>
 
     <div id="dashboard" class="hidden">
-      <h1>Your Account</h1>
+      <div class="hero-row">
+        <h1>Your Dashboard</h1>
+        <a class="btn-gold" href="/?fullsite=1">View Full Site &rarr;</a>
+      </div>
       <p class="greeting" id="greetingText"></p>
+      <section class="kpis">
+        <div class="kpi"><p class="kpi-label">Status</p><p class="kpi-value" id="kpiStatus">Pending acceptance</p></div>
+        <div class="kpi"><p class="kpi-label">Next Payment Due</p><p class="kpi-value" id="kpiNextDue">—</p></div>
+        <div class="kpi"><p class="kpi-label">Payments Made</p><p class="kpi-value" id="kpiPaymentsMade">0</p></div>
+        <div class="kpi"><p class="kpi-label">Current Plan</p><p class="kpi-value" id="kpiPlanMonths">1 month</p></div>
+      </section>
 
       <!-- Subscription status -->
       <div class="section">
@@ -295,23 +323,14 @@
           <span class="badge" id="statusBadge"></span>
         </div>
         <p class="detail" id="periodDetail"></p>
-
-        <!-- WhatsApp link (shown only when active) -->
-        <div class="wa-link-box hidden" id="waBox">
-          <p>Your private WhatsApp invite link:</p>
-          <a id="waLink" href="#" target="_blank" rel="noopener">Join WhatsApp Group &rarr;</a>
-        </div>
+        <p class="detail" id="nextDueDetail"></p>
+        <p class="detail hidden" id="overdueDetail" style="color:var(--red);"></p>
 
         <!-- Not subscribed CTA -->
         <div class="hidden" id="subscribeBox" style="margin-top:0.8rem;">
           <a class="btn-gold" href="checkout.html">Subscribe — R150/month &rarr;</a>
         </div>
 
-        <!-- Cancel button (shown only when active) -->
-        <div class="btn-row hidden" id="cancelRow">
-          <button class="btn-sm btn-danger" id="cancelBtn" type="button">Cancel subscription</button>
-        </div>
-        <p class="msg" id="cancelMsg"></p>
       </div>
 
       <!-- Phone number -->
@@ -342,6 +361,12 @@
         <p class="detail" id="accountName"></p>
       </div>
 
+      <div class="section">
+        <p class="section-label">Payment History</p>
+        <p class="detail">Every payment received for this account appears below.</p>
+        <div id="paymentHistory" class="history-list"></div>
+      </div>
+
     </div>
   </main>
 
@@ -370,10 +395,62 @@
         return;
       }
 
-      renderDashboard(user, profile, session);
+      const { data: members, error: membersError } = await sb
+        .from("members")
+          .select("id, full_name, email, whatsapp, join_date, next_due_date, date_paid, status, group_access, amount, current_plan_months, last_discount_percent, last_payment_total")
+        .eq("email", user.email)
+        .order("id", { ascending: false })
+        .limit(1);
+
+      if (membersError) {
+        loadingState.textContent = membersError.message || "Could not load member data.";
+        return;
+      }
+      const member = members && members.length ? members[0] : null;
+
+      let paymentRows = [];
+      if (member) {
+        const { data: payments } = await sb
+          .from("member_payments")
+          .select("paid_on, amount, reference, months_count, discount_percent, total_amount")
+          .eq("member_id", member.id)
+          .order("paid_on", { ascending: false });
+        paymentRows = payments || [];
+      }
+
+      renderDashboard(user, profile, member, paymentRows);
     }
 
-    function renderDashboard(user, profile, session) {
+    function toYmd(d) {
+      return d.toISOString().slice(0, 10);
+    }
+
+    function deriveMemberStatus(member) {
+      if (!member) return { label: "Pending acceptance", badgeClass: "badge-none", overdue: false };
+      const today = toYmd(new Date());
+      const overdue = !!(member.next_due_date && member.next_due_date < today);
+      if (overdue) return { label: "Payment overdue", badgeClass: "badge-overdue", overdue: true };
+      if (member.group_access) return { label: "Account active", badgeClass: "badge-active", overdue: false };
+      return { label: "Pending acceptance", badgeClass: "badge-none", overdue: false };
+    }
+
+    function renderPaymentHistory(rows) {
+      const box = document.getElementById("paymentHistory");
+      if (!rows || !rows.length) {
+        box.innerHTML = '<div class="history-item">No payments logged yet.</div>';
+        return;
+      }
+      box.innerHTML = rows.map(function (row) {
+        const paid = row.paid_on ? new Date(row.paid_on).toLocaleDateString("en-ZA") : "—";
+        const amount = row.total_amount || row.amount || 150;
+        const monthsCount = row.months_count || 1;
+        const discount = row.discount_percent || 0;
+        const ref = row.reference || "—";
+        return '<div class="history-item">Paid: <strong>' + paid + '</strong> | Amount: <strong>R' + amount + '</strong> | Months: <strong>' + monthsCount + '</strong> | Discount: <strong>' + discount + '%</strong> | Ref: <strong>' + ref + '</strong></div>';
+      }).join("");
+    }
+
+    function renderDashboard(user, profile, member, paymentRows) {
       loadingState.classList.add("hidden");
       dashboard.classList.remove("hidden");
 
@@ -384,67 +461,42 @@
       document.getElementById("accountName").textContent = "Name: " + (profile.full_name || "—");
       document.getElementById("currentPhone").textContent = profile.phone_number || "Not set";
 
-      // Status badge.
       const badge = document.getElementById("statusBadge");
-      const status = profile.subscription_status || "none";
-      const labels = { active: "Active", cancelled: "Cancelled", past_due: "Past Due", none: "No Subscription" };
-      badge.textContent = labels[status] || status;
-      badge.className = "badge badge-" + (status === "none" ? "none" : status.replace("_", "-"));
+      const statusState = deriveMemberStatus(member);
+      badge.textContent = statusState.label;
+      badge.className = "badge " + statusState.badgeClass;
+      document.getElementById("kpiStatus").textContent = statusState.label;
 
-      // Period detail.
       const periodEl = document.getElementById("periodDetail");
-      if (profile.current_period_end) {
-        const end = new Date(profile.current_period_end);
-        periodEl.textContent = status === "cancelled"
-          ? "Access until " + end.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" })
-          : "Next billing: " + end.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+      const nextDueEl = document.getElementById("nextDueDetail");
+      const kpiNextDue = document.getElementById("kpiNextDue");
+      const overdueEl = document.getElementById("overdueDetail");
+      if (member && member.next_due_date) {
+        const dueDate = new Date(member.next_due_date);
+        const dueLabel = dueDate.toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+        periodEl.textContent = member.group_access ? "Your group access is enabled." : "Your account is awaiting approval.";
+        nextDueEl.textContent = "Next payment due: " + dueLabel;
+        kpiNextDue.textContent = dueDate.toLocaleDateString("en-ZA");
+        if (statusState.overdue) {
+          overdueEl.classList.remove("hidden");
+          overdueEl.textContent = "Payment overdue. Please pay your monthly fee to restore account status.";
+        } else {
+          overdueEl.classList.add("hidden");
+          overdueEl.textContent = "";
+        }
       } else {
-        periodEl.textContent = "";
+        periodEl.textContent = "Pending acceptance. Your payment confirmation is still under review.";
+        nextDueEl.textContent = "";
+        kpiNextDue.textContent = "—";
       }
 
-      const isActive = status === "active";
-      const hasPeriod = profile.current_period_end && new Date(profile.current_period_end) > new Date();
-
-      // Subscribe box (if not active).
-      if (!isActive && !hasPeriod) {
+      if (!member || statusState.overdue) {
         document.getElementById("subscribeBox").classList.remove("hidden");
       }
-
-      // Cancel button (if active).
-      if (isActive) {
-        document.getElementById("cancelRow").classList.remove("hidden");
-      }
-
-      // WhatsApp link (if active or within period).
-      if (isActive || hasPeriod) {
-        fetchInviteLink(session);
-      }
-
-      // Cancel handler.
-      const cancelBtn = document.getElementById("cancelBtn");
-      const cancelMsg = document.getElementById("cancelMsg");
-      cancelBtn.addEventListener("click", async () => {
-        if (!confirm("Are you sure you want to cancel your subscription? You'll keep access until the end of your current billing period.")) return;
-        cancelBtn.disabled = true;
-        cancelBtn.textContent = "Cancelling…";
-        cancelMsg.textContent = "";
-
-        try {
-          const res = await sb.functions.invoke("cancel-subscription");
-          if (res.error) throw new Error(res.error.message);
-
-          cancelMsg.className = "msg msg-ok";
-          cancelMsg.textContent = "Subscription cancelled. Access continues until your current period ends.";
-          cancelBtn.textContent = "Cancelled";
-          badge.textContent = "Cancelled";
-          badge.className = "badge badge-cancelled";
-        } catch (err) {
-          cancelMsg.className = "msg msg-err";
-          cancelMsg.textContent = err.message || "Failed to cancel. Please try again.";
-          cancelBtn.disabled = false;
-          cancelBtn.textContent = "Cancel subscription";
-        }
-      });
+      document.getElementById("kpiPaymentsMade").textContent = String((paymentRows || []).length);
+      const months = member && member.current_plan_months ? Number(member.current_plan_months) : 1;
+      document.getElementById("kpiPlanMonths").textContent = months + " month" + (months > 1 ? "s" : "");
+      renderPaymentHistory(paymentRows || []);
 
       // Phone change handler.
       const phoneChangeBtn = document.getElementById("phoneChangeBtn");
@@ -472,22 +524,6 @@
           phoneChangeBtn.textContent = "Submitted";
         }
       });
-    }
-
-    async function fetchInviteLink(session) {
-      try {
-        const res = await sb.functions.invoke("get-invite-link");
-        if (res.error) throw new Error(res.error.message);
-        const data = res.data;
-        if (data.invite_link) {
-          const waBox = document.getElementById("waBox");
-          const waLink = document.getElementById("waLink");
-          waBox.classList.remove("hidden");
-          waLink.href = data.invite_link;
-        }
-      } catch {
-        // Link not available yet — silently skip.
-      }
     }
 
     // Logout.

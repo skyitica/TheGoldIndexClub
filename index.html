@@ -2358,7 +2358,18 @@
         }
         var sb = supabase.createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
         sb.auth.getSession().then(function (res) {
-          applyAuthUi(!!(res.data && res.data.session && res.data.session.user));
+          var loggedIn = !!(res.data && res.data.session && res.data.session.user);
+          applyAuthUi(loggedIn);
+          if (loggedIn) {
+            var allowFullSite = false;
+            try {
+              var params = new URLSearchParams(window.location.search);
+              allowFullSite = params.get("fullsite") === "1";
+            } catch (err) {}
+            if (!allowFullSite) {
+              window.location.replace(TGIC_CONFIG.ACCOUNT_URL);
+            }
+          }
         });
         sb.auth.onAuthStateChange(function (_evt, session) {
           applyAuthUi(!!(session && session.user));

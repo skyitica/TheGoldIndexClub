@@ -191,9 +191,9 @@
     }
 
     function deriveStatus(member, todayStr) {
+      if (member.next_due_date && member.next_due_date <= todayStr) return "Overdue";
       const raw = (member.status || "Pending").toLowerCase();
       if (raw === "paid") return "Paid";
-      if (member.next_due_date && member.next_due_date < todayStr) return "Overdue";
       return "Pending";
     }
 
@@ -215,13 +215,105 @@
       });
     }
 
+    function addOneMonthIso(isoDate) {
+      const d = new Date((isoDate || dateOnlyString(new Date())) + "T00:00:00");
+      d.setMonth(d.getMonth() + 1);
+      return dateOnlyString(d);
+    }
+
+    function addMonthsIso(isoDate, months) {
+      const d = new Date((isoDate || dateOnlyString(new Date())) + "T00:00:00");
+      d.setMonth(d.getMonth() + Number(months || 1));
+      return dateOnlyString(d);
+    }
+
+    function pricingForMonths(months) {
+      const m = Number(months || 1);
+      const monthly = 150;
+      const subtotal = monthly * m;
+      let discountPercent = 0;
+      if (m >= 2 && m <= 6) discountPercent = 10;
+      if (m > 6) discountPercent = 25;
+      const total = Math.round(subtotal * (1 - discountPercent / 100));
+      return { monthly, subtotal, total, discountPercent };
+    }
+
     async function markPaid(id) {
       const today = dateOnlyString(new Date());
+      const { data: member, error: fetchErr } = await sb
+        .from("members")
+        .select("id, next_due_date, month_number, amount, whatsapp")
+        .eq("id", id)
+        .single();
+      if (fetchErr || !member) throw (fetchErr || new Error("Member not found"));
+
+      const nextDue = addOneMonthIso(member.next_due_date || today);
+      const nextMonthNumber = Number(member.month_number || 1) + 1;
+
       const { error } = await sb
         .from("members")
-        .update({ date_paid: today, status: "Paid" })
+        .update({
+          date_paid: today,
+          status: "Paid",
+          next_due_date: nextDue,
+          month_number: nextMonthNumber,
+        })
         .eq("id", id);
       if (error) throw error;
+
+      const { error: payErr } = await sb.from("member_payments").insert({
+        member_id: id,
+        paid_on: today,
+        amount: member.amount || 150,
+        reference: member.whatsapp || "",
+        months_count: 1,
+        discount_percent: 0,
+        total_amount: member.amount || 150,
+      });
+      if (payErr) throw payErr;
+    }
+
+    async function extendMembership(id, months) {
+      const m = Number(months || 1);
+      if (!m || m < 1) throw new Error("Invalid month count.");
+      const today = dateOnlyString(new Date());
+      const pricing = pricingForMonths(m);
+
+      const { data: member, error: fetchErr } = await sb
+        .from("members")
+        .select("id, next_due_date, month_number, whatsapp")
+        .eq("id", id)
+        .single();
+      if (fetchErr || !member) throw (fetchErr || new Error("Member not found"));
+
+      const baseDate = member.next_due_date && member.next_due_date > today ? member.next_due_date : today;
+      const nextDue = addMonthsIso(baseDate, m);
+      const nextMonthNumber = Number(member.month_number || 1) + m;
+
+      const { error } = await sb
+        .from("members")
+        .update({
+          date_paid: today,
+          status: "Paid",
+          next_due_date: nextDue,
+          month_number: nextMonthNumber,
+          current_plan_months: m,
+          last_discount_percent: pricing.discountPercent,
+          last_payment_total: pricing.total,
+        })
+        .eq("id", id);
+      if (error) throw error;
+
+      const { error: payErr } = await sb.from("member_payments").insert({
+        member_id: id,
+        paid_on: today,
+        amount: pricing.monthly,
+        reference: member.whatsapp || "",
+        months_count: m,
+        discount_percent: pricing.discountPercent,
+        total_amount: pricing.total,
+      });
+      if (payErr) throw payErr;
     }
 
     async function toggleAccess(id, current) {
@@ -273,6 +365,7 @@
             <td>
               <button class="btn js-paid" data-id="${row.id}">Mark Paid</button>
               <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${accessBtnLabel}</button>
+              <button class="btn js-extend" data-id="${row.id}">Extend</button>
             </td>
           </tr>
         `;
@@ -317,6 +410,21 @@
           await toggleAccess(id, current);
           await loadMembers();
           notice.textContent = "Group access updated.";
+        }
+        if (target.classList.contains("js-extend")) {
+          const id = Number(target.dataset.id || "0");
+          if (!id) return;
+          const raw = window.prompt("Extend by how many months? (1-24)", "1");
+          if (raw === null) return;
+          const months = Number(raw);
+          if (!months || months < 1 || months > 24) {
+            notice.textContent = "Enter a valid month count between 1 and 24.";
+            return;
+          }
+          target.setAttribute("disabled", "disabled");
+          await extendMembership(id, months);
+          await loadMembers();
+          notice.textContent = "Membership extended by " + months + " month(s).";
         }
       } catch (err) {
         notice.textContent = "Update failed: " + (err.message || "unknown error");

@@ -438,6 +438,11 @@
             <label for="password">Create password</label>
             <input id="password" type="password" autocomplete="new-password" placeholder="At least 6 characters" />
           </div>
+          <div class="field">
+            <label for="months">How many months</label>
+            <input id="months" type="number" min="1" max="24" step="1" value="1" />
+          </div>
+          <p class="detail" style="margin:-0.2rem 0 0.8rem;">Discounts: 2-6 months = 10% off total. 7+ months = 25% off total.</p>
           <button class="btn" type="submit">Continue &rarr;</button>
         </form>
       </section>
@@ -466,7 +471,7 @@
           </div>
           <div class="detail-row">
             <div class="detail-key">Amount</div>
-            <div class="detail-value">R150</div>
+            <div class="detail-value" id="amountValue">R150 (1 month)</div>
             <div></div>
           </div>
           <div class="detail-row">
@@ -475,6 +480,7 @@
             <button type="button" class="copy-btn" data-copy-target="paymentReference">Copy</button>
           </div>
         </div>
+        <p class="detail" id="planSummary" style="margin-top:0.7rem;"></p>
 
         <p class="notice">Important: the EFT reference must be the client's own WhatsApp number (the same number entered above). Invite access is sent by email only after payment reflects, which may take a few hours on business days.</p>
 
@@ -523,12 +529,16 @@
     const emailInput = document.getElementById("email");
     const whatsappInput = document.getElementById("whatsapp");
     const passwordInput = document.getElementById("password");
+    const monthsInput = document.getElementById("months");
 
     let checkoutData = {
       fullName: "",
       email: "",
       whatsapp: "",
       password: "",
+      months: 1,
+      discountPercent: 0,
+      totalAmount: 150,
       reference: "",
     };
 
@@ -585,10 +595,26 @@
       return d;
     }
 
+    function addMonths(date, months) {
+      const d = new Date(date);
+      d.setMonth(d.getMonth() + Number(months || 1));
+      return d;
+    }
+
+    function pricingForMonths(months) {
+      const m = Number(months || 1);
+      const subtotal = 150 * m;
+      let discountPercent = 0;
+      if (m >= 2 && m <= 6) discountPercent = 10;
+      if (m > 6) discountPercent = 25;
+      const total = Math.round(subtotal * (1 - discountPercent / 100));
+      return { subtotal, total, discountPercent };
+    }
+
     async function insertMemberSignup() {
       const today = new Date();
       const joinDate = toDateOnly(today);
-      const nextDueDate = toDateOnly(addOneMonth(today));
+      const nextDueDate = toDateOnly(addMonths(today, checkoutData.months));
 
       // Avoid duplicate pending rows for the same member details.
       const { data: existing } = await sb
@@ -605,6 +631,10 @@
         whatsapp: checkoutData.whatsapp,
         join_date: joinDate,
         next_due_date: nextDueDate,
+        amount: 150,
+        current_plan_months: checkoutData.months,
+        last_discount_percent: checkoutData.discountPercent,
+        last_payment_total: checkoutData.totalAmount,
         status: "Pending",
         group_access: false,
       });
@@ -658,9 +688,10 @@
       const email = emailInput.value.trim().toLowerCase();
       const whatsapp = whatsappInput.value.trim();
       const password = passwordInput.value;
+      const months = Number(monthsInput.value || "1");
 
-      if (!fullName || !email || !whatsapp || !password) {
-        errorMsg.textContent = "Please complete full name, email, WhatsApp number, and password.";
+      if (!fullName || !email || !whatsapp || !password || !months) {
+        errorMsg.textContent = "Please complete full name, email, WhatsApp number, password, and months.";
         return;
       }
       if (!validEmail(email)) {
@@ -671,14 +702,36 @@
         errorMsg.textContent = "Password must be at least 6 characters.";
         return;
       }
+      if (months < 1 || months > 24) {
+        errorMsg.textContent = "Please choose between 1 and 24 months.";
+        return;
+      }
+
+      const pricing = pricingForMonths(months);
 
       checkoutData = {
         fullName: fullName,
         email: email,
         whatsapp: whatsapp,
         password: password,
+        months: months,
+        discountPercent: pricing.discountPercent,
+        totalAmount: pricing.total,
         reference: whatsapp,
       };
+
+      const amountEl = document.getElementById("amountValue");
+      if (amountEl) {
+        amountEl.textContent = "R" + pricing.total + " (" + months + " month" + (months > 1 ? "s" : "") + ")";
+      }
+      const planEl = document.getElementById("planSummary");
+      if (planEl) {
+        if (pricing.discountPercent > 0) {
+          planEl.textContent = "Subtotal R" + pricing.subtotal + " - " + pricing.discountPercent + "% discount = R" + pricing.total + ".";
+        } else {
+          planEl.textContent = "Total due: R" + pricing.total + ".";
+        }
+      }
 
       paymentReference.textContent = checkoutData.reference;
       setStep(2);
@@ -714,6 +767,9 @@
           email: checkoutData.email,
           whatsapp_number: checkoutData.whatsapp,
           reference: checkoutData.reference,
+          months: checkoutData.months,
+          discount_percent: checkoutData.discountPercent,
+          total_amount: checkoutData.totalAmount,
           source: "checkout-manual-eft",
         });
 
