@@ -23,7 +23,7 @@ const TGIC_CONFIG = {
   // Use only for your own testing — set back to false for production.
   SKIP_CHECKOUT_AFTER_SIGNUP: false,
 
-  // Same as Edge secret TGIC_EMAIL_SERVER_SECRET. Sent as header X-TGIC-Email-Secret (not Authorization — gateway needs a JWT there).
+  // Same as Edge secret TGIC_EMAIL_SERVER_SECRET. Sent in the notify-member JSON body (not Authorization).
   // Used by admin for notify-member emails. Leave empty to skip.
   TGIC_EMAIL_SERVER_SECRET: "GoldIndex2026Secret!",
 };

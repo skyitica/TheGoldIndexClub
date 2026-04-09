@@ -396,9 +396,12 @@
             "Content-Type": "application/json",
             Authorization: "Bearer " + TGIC_CONFIG.SUPABASE_ANON_KEY,
             apikey: TGIC_CONFIG.SUPABASE_ANON_KEY,
-            "X-TGIC-Email-Secret": secret,
           },
-          body: JSON.stringify({ type: type, member_id: memberId }),
+          body: JSON.stringify({
+            type: type,
+            member_id: memberId,
+            tgic_email_server_secret: secret,
+          }),
         });
         var rawText = await res.text();
         var data = {};

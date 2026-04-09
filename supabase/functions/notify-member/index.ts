@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendResendEmail } from "../_shared/resend.ts";
-import { verifyTgicEmailServerSecret } from "../_shared/tgic-email-auth.ts";
+import { verifyTgicEmailServerRequest } from "../_shared/tgic-email-auth.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -15,6 +15,7 @@ const corsHeaders = {
 type Body = {
   type?: string;
   member_id?: number;
+  tgic_email_server_secret?: string;
 };
 
 serve(async (req) => {
@@ -29,19 +30,19 @@ serve(async (req) => {
     });
   }
 
-  if (!verifyTgicEmailServerSecret(req, SERVER_SECRET)) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
   let body: Body;
   try {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON" }), {
       status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  if (!verifyTgicEmailServerRequest(req, body as Record<string, unknown>, SERVER_SECRET)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
