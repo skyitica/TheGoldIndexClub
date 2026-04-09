@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f7f7f7; --bg-card: #fff; --border: #d8d8d8; --gold:#9a7b2f; --gold-light:#7a5f20;
+      --bg: #f7f7f7; --bg-card: #fff; --border: #d1d1d1; --gold:#6f5416; --gold-light:#5b430f;
       --text:#121212; --muted:#555; --ok:#2e7d32; --err:#c62828; --container:680px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
@@ -19,23 +19,24 @@
     .topbar-inner{max-width:var(--container);margin:0 auto;min-height:56px;display:flex;align-items:center;justify-content:space-between}
     .brand{font-family:"Cormorant Garamond",serif;color:var(--gold-light);text-decoration:none}
     .links{display:flex;gap:1rem}
-    .links a{color:#444;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;text-decoration:underline;text-underline-offset:6px}
-    .page{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem}
-    .card{width:100%;max-width:var(--container);background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.35rem}
-    h1{font-family:"Cormorant Garamond",serif;font-size:1.9rem;margin-bottom:.35rem}
-    .muted{color:var(--muted);font-size:.78rem;margin-bottom:.8rem}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
-    .row{border:1px solid var(--border);border-radius:8px;padding:.6rem;background:#fff}
-    .k{color:#aaa;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem}
-    .v{font-size:.84rem}
-    .field{margin:.8rem 0}
-    .field label{display:block;font-size:.68rem;text-transform:uppercase;color:#aaa;margin-bottom:.35rem}
-    .field input{width:100%;padding:.62rem .72rem;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.75rem 1.1rem;border:1px solid var(--gold);border-radius:8px;background:#fff;color:var(--gold-light);font-family:inherit;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .links a{color:#2f2f2f;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;text-decoration:underline;text-underline-offset:6px}
+    .page{flex:1;display:flex;align-items:center;justify-content:center;padding:.55rem}
+    .card{width:100%;max-width:var(--container);background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:.9rem}
+    h1{font-family:"Cormorant Garamond",serif;font-size:1.55rem;margin-bottom:.2rem}
+    .muted{color:var(--muted);font-size:.7rem;margin-bottom:.45rem}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:.42rem}
+    .row{border:1px solid var(--border);border-radius:8px;padding:.42rem;background:#fff}
+    .k{color:#555;font-size:.56rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.12rem}
+    .v{font-size:.75rem;color:#1c1c1c}
+    .field{margin:.5rem 0}
+    .field label{display:block;font-size:.6rem;text-transform:uppercase;color:#4b4b4b;margin-bottom:.22rem}
+    .field input{width:100%;padding:.45rem .55rem;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.52rem .85rem;border:1px solid var(--gold);border-radius:8px;background:#fff;color:var(--gold-light);font-family:inherit;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
     .btn:disabled{opacity:.5;cursor:not-allowed}
-    .msg{margin-top:.6rem;font-size:.76rem;min-height:1.1em}
+    .msg{margin-top:.35rem;font-size:.66rem;min-height:1.1em}
     .ok{color:var(--ok)} .err{color:var(--err)}
-    .copy{border:1px solid rgba(201,168,76,.5);background:transparent;color:var(--gold-light);border-radius:7px;padding:.25rem .45rem;font-size:.62rem;cursor:pointer;margin-left:.5rem}
+    .copy{border:1px solid rgba(111,84,22,.45);background:#fafafa;color:var(--gold-light);border-radius:7px;padding:.16rem .34rem;font-size:.56rem;cursor:pointer;margin-left:.35rem}
+    @media(min-width:900px){html,body{height:100%;overflow:hidden}.card{max-height:calc(100vh - 92px);overflow:auto}}
     @media(max-width:720px){.grid{grid-template-columns:1fr}}
   </style>
 </head>

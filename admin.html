@@ -30,7 +30,7 @@
       line-height: 1.45;
       padding: 1.2rem;
     }
-    .wrap { width: min(1200px, 100%); margin: 0 auto; }
+    .wrap { width: min(1600px, 100%); margin: 0 auto; }
     h1 {
       font-family: "Cormorant Garamond", serif;
       font-size: clamp(1.6rem, 3vw, 2.2rem);
@@ -87,13 +87,13 @@
     .table-wrap {
       border: 1px solid var(--border);
       border-radius: 10px;
-      overflow: auto;
+      overflow: hidden;
       background: #0d0d0d;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1320px;
+      table-layout: fixed;
     }
     th, td {
       padding: 0.4rem 0.45rem;
@@ -101,7 +101,8 @@
       text-align: left;
       font-size: 0.68rem;
       vertical-align: middle;
-      white-space: nowrap;
+      white-space: normal;
+      word-break: break-word;
       line-height: 1.2;
     }
     th {
@@ -138,12 +139,21 @@
       cursor: pointer;
     }
     .btn:hover { border-color: #ecd38f; }
-    .btn + .btn { margin-left: 0.35rem; }
+    .btn + .btn { margin-left: 0.28rem; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
     .notice {
       margin-top: 0.8rem;
       font-size: 0.74rem;
       color: var(--muted);
       min-height: 1.2em;
+    }
+    @media (max-width: 1200px) {
+      th, td { font-size: 0.64rem; padding: 0.34rem 0.35rem; }
+      .btn { font-size: 0.56rem; padding: 0.2rem 0.32rem; }
     }
     @media (max-width: 980px) {
       .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -432,6 +442,11 @@
       if (error) throw error;
     }
 
+    async function deleteMember(id) {
+      const { error } = await sb.from("members").delete().eq("id", id);
+      if (error) throw error;
+    }
+
     function renderSummary(rows) {
       const today = new Date();
       const todayStr = dateOnlyString(today);
@@ -475,10 +490,13 @@
             <td>${accessLabel}</td>
             <td>${esc(extensionReq)}</td>
             <td>
+              <div class="actions">
               <button class="btn js-paid" data-id="${row.id}">Mark Paid</button>
               <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${accessBtnLabel}</button>
               <button class="btn js-extend" data-id="${row.id}">Extend</button>
               <button class="btn js-reduce" data-id="${row.id}">Reduce</button>
+              <button class="btn js-delete" data-id="${row.id}" data-name="${esc(row.full_name)}">Delete</button>
+              </div>
             </td>
           </tr>
         `;
@@ -589,6 +607,19 @@
           await reduceMembership(id, months);
           await loadMembers();
           notice.textContent = "Removed " + months + " month(s) from membership.";
+        }
+        if (target.classList.contains("js-delete")) {
+          const id = Number(target.dataset.id || "0");
+          const memberName = target.dataset.name || "this member";
+          if (!id) return;
+          const ok1 = window.confirm("Delete " + memberName + "? This removes their member record.");
+          if (!ok1) return;
+          const ok2 = window.confirm("Final confirmation: this cannot be undone. Delete now?");
+          if (!ok2) return;
+          target.setAttribute("disabled", "disabled");
+          await deleteMember(id);
+          await loadMembers();
+          notice.textContent = "Member deleted successfully.";
         }
       } catch (err) {
         notice.textContent = "Update failed: " + (err.message || "unknown error");
