@@ -22,7 +22,8 @@ jobs:
           set -e
           URL="${SUPABASE_URL%/}/functions/v1/run-scheduled-member-emails"
           curl -sS -X POST "$URL" \
-            -H "Authorization: Bearer ${TGIC_EMAIL_SERVER_SECRET}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "X-TGIC-Email-Secret: ${TGIC_EMAIL_SERVER_SECRET}" \
             -H "Content-Type: application/json" \
             -d '{}'

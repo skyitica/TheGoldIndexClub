@@ -394,8 +394,9 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + secret,
+            Authorization: "Bearer " + TGIC_CONFIG.SUPABASE_ANON_KEY,
             apikey: TGIC_CONFIG.SUPABASE_ANON_KEY,
+            "X-TGIC-Email-Secret": secret,
           },
           body: JSON.stringify({ type: type, member_id: memberId }),
         });
@@ -413,11 +414,6 @@
           else msg = "HTTP " + res.status + ": " + msg;
           if (data && data.hint) msg = msg + " — " + data.hint;
           if (data && data.skipped) msg = msg + " (server email provider not configured?)";
-          if (res.status === 401) {
-            msg =
-              msg +
-              " — Fix: same TGIC_EMAIL_SERVER_SECRET as Supabase; apikey in config should be the anon JWT (eyJ…), not sb_publishable only, if the gateway rejects it.";
-          }
           return { ok: false, error: msg };
         }
         return { ok: true, data: data };

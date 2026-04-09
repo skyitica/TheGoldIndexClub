@@ -5,8 +5,8 @@
 const TGIC_CONFIG = {
   // Supabase — project: yonnoepfovbeeiaqvyqw
   SUPABASE_URL: "https://yonnoepfovbeeiaqvyqw.supabase.co",
-  // Publishable (client-safe) key from Supabase dashboard.
-  // If auth fails, copy the legacy "anon" JWT from Project Settings → API and paste here instead.
+  // Supabase anon/public key (Project Settings → API). Used as apikey + Bearer for Edge Functions.
+  // If function calls return 401 "Invalid Token", use the legacy anon JWT (eyJ…) instead of sb_publishable.
   SUPABASE_ANON_KEY: "sb_publishable_7U257mFcB_WWNWjfsx2zAg_0Yqoy6UW",
 
   // Formspree endpoint for manual EFT confirmation notifications (example: https://formspree.io/f/xxxxabcd)
@@ -23,7 +23,7 @@ const TGIC_CONFIG = {
   // Use only for your own testing — set back to false for production.
   SKIP_CHECKOUT_AFTER_SIGNUP: false,
 
-  // Same string as Supabase Edge Function secret TGIC_EMAIL_SERVER_SECRET (Project Settings → Edge Functions → Secrets).
-  // Used by admin only to trigger notify-member (payment confirmed, extension denied). Leave empty to skip those emails.
+  // Same as Edge secret TGIC_EMAIL_SERVER_SECRET. Sent as header X-TGIC-Email-Secret (not Authorization — gateway needs a JWT there).
+  // Used by admin for notify-member emails. Leave empty to skip.
   TGIC_EMAIL_SERVER_SECRET: "GoldIndex2026Secret!",
 };
