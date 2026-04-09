@@ -399,14 +399,26 @@
           },
           body: JSON.stringify({ type: type, member_id: memberId }),
         });
-        var data = await res.json().catch(function () {
-          return {};
-        });
+        var rawText = await res.text();
+        var data = {};
+        try {
+          data = rawText ? JSON.parse(rawText) : {};
+        } catch (parseErr) {
+          data = {};
+        }
         if (!res.ok) {
-          var errParts = [(data && data.error) || res.statusText || "Request failed"];
-          if (data && data.hint) errParts.push(data.hint);
-          if (data && data.skipped) errParts.push("(Email provider not configured on server.)");
-          return { ok: false, error: errParts.join(" ") };
+          var msg = (data && data.error) || res.statusText || "";
+          if (!msg && rawText) msg = rawText.slice(0, 280);
+          if (!msg) msg = "HTTP " + res.status;
+          else msg = "HTTP " + res.status + ": " + msg;
+          if (data && data.hint) msg = msg + " — " + data.hint;
+          if (data && data.skipped) msg = msg + " (server email provider not configured?)";
+          if (res.status === 401) {
+            msg =
+              msg +
+              " — Fix: same TGIC_EMAIL_SERVER_SECRET as Supabase; apikey in config should be the anon JWT (eyJ…), not sb_publishable only, if the gateway rejects it.";
+          }
+          return { ok: false, error: msg };
         }
         return { ok: true, data: data };
       } catch (e) {
