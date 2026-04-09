@@ -510,13 +510,24 @@
       return dateOnlyString(d);
     }
 
+    var MAX_ADMIN_EXTEND_MONTHS = 719;
+
+    function discountPercentForMonths(m) {
+      const n = Math.floor(Number(m) || 0);
+      if (n <= 1) return 0;
+      if (n === 2) return 5;
+      if (n === 3) return 10;
+      if (n === 4) return 15;
+      if (n === 5) return 20;
+      if (n >= 6) return 25;
+      return 0;
+    }
+
     function pricingForMonths(months) {
-      const m = Number(months || 1);
+      const m = Math.floor(Number(months || 1));
       const monthly = 150;
       const subtotal = monthly * m;
-      let discountPercent = 0;
-      if (m >= 2 && m <= 6) discountPercent = 10;
-      if (m > 6) discountPercent = 25;
+      const discountPercent = discountPercentForMonths(m);
       const total = Math.round(subtotal * (1 - discountPercent / 100));
       return { monthly, subtotal, total, discountPercent };
     }
@@ -874,11 +885,14 @@
         if (target.classList.contains("js-extend")) {
           const id = Number(target.dataset.id || "0");
           if (!id) return;
-          const raw = window.prompt("Extend by how many months? (1-24)", "1");
+          const raw = window.prompt("Extend by how many months? (1-" + MAX_ADMIN_EXTEND_MONTHS + ")", "1");
           if (raw === null) return;
-          const months = Number(raw);
-          if (!months || months < 1 || months > 24) {
-            notice.textContent = "Enter a valid month count between 1 and 24.";
+          const months = Math.floor(Number(raw));
+          if (!months || months < 1 || months > MAX_ADMIN_EXTEND_MONTHS) {
+            notice.textContent =
+              months >= 720
+                ? "You might be dead by the time this runs out"
+                : "Enter a valid month count between 1 and " + MAX_ADMIN_EXTEND_MONTHS + ".";
             return;
           }
           target.setAttribute("disabled", "disabled");
@@ -889,11 +903,11 @@
         if (target.classList.contains("js-reduce")) {
           const id = Number(target.dataset.id || "0");
           if (!id) return;
-          const raw = window.prompt("Remove how many months? (1-24)", "1");
+          const raw = window.prompt("Remove how many months? (1-" + MAX_ADMIN_EXTEND_MONTHS + ")", "1");
           if (raw === null) return;
-          const months = Number(raw);
-          if (!months || months < 1 || months > 24) {
-            notice.textContent = "Enter a valid month count between 1 and 24.";
+          const months = Math.floor(Number(raw));
+          if (!months || months < 1 || months > MAX_ADMIN_EXTEND_MONTHS) {
+            notice.textContent = "Enter a valid month count between 1 and " + MAX_ADMIN_EXTEND_MONTHS + ".";
             return;
           }
           target.setAttribute("disabled", "disabled");

@@ -36,6 +36,11 @@
     .msg{margin-top:.35rem;font-size:.66rem;min-height:1.1em}
     .ok{color:var(--ok)} .err{color:var(--err)}
     .copy{border:1px solid rgba(111,84,22,.45);background:#fafafa;color:var(--gold-light);border-radius:7px;padding:.16rem .34rem;font-size:.56rem;cursor:pointer;margin-left:.35rem}
+    .sent-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:1rem}
+    .sent-panel{max-width:22rem;width:100%;background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.25rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.12)}
+    .sent-title{font-family:"Cormorant Garamond",serif;font-size:1.35rem;color:var(--gold-light);margin-bottom:.5rem}
+    .sent-body{font-size:.78rem;color:var(--muted);line-height:1.45;margin-bottom:1rem}
+    .hidden{display:none!important}
     @media(min-width:900px){html,body{height:100%;overflow:hidden}.card{max-height:calc(100vh - 92px);overflow:auto}}
     @media(max-width:720px){.grid{grid-template-columns:1fr}}
   </style>
@@ -63,15 +68,22 @@
 
       <div class="field">
         <label for="months">Months to extend</label>
-        <input id="months" type="number" min="1" max="24" step="1" value="1" />
+        <input id="months" type="number" min="1" max="719" step="1" value="1" />
       </div>
-      <p class="muted" id="discountInfo">Total due: R150. Discounts: 2-6 months = 10% off. 7+ months = 25% off.</p>
+      <p class="muted" id="discountInfo">Total due: R150. Tiered discounts from 2 months (5%) up to 25% at 6+ months; max 719 months per request.</p>
 
       <button class="btn" id="paidBtn" type="button">I've Paid for Extension</button>
-      <button class="btn" id="continueBtn" type="button" style="display:none;margin-left:.45rem;">Continue to Dashboard</button>
       <p class="msg" id="msg"></p>
     </div>
   </main>
+
+  <div id="requestSentOverlay" class="sent-overlay hidden" role="alert" aria-live="polite">
+    <div class="sent-panel">
+      <p class="sent-title">Request sent</p>
+      <p class="sent-body">Your extension request has been sent. Taking you to your dashboard…</p>
+      <button type="button" class="btn" id="sentGoNowBtn">Go to dashboard now</button>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
@@ -83,7 +95,32 @@
     const monthsEl = document.getElementById("months");
     const msg = document.getElementById("msg");
     const paidBtn = document.getElementById("paidBtn");
-    const continueBtn = document.getElementById("continueBtn");
+    const requestSentOverlay = document.getElementById("requestSentOverlay");
+    const sentGoNowBtn = document.getElementById("sentGoNowBtn");
+    let sentRedirectTimer = null;
+    let sentRedirectUrl = TGIC_CONFIG.ACCOUNT_URL || "account.html";
+
+    function clearSentRedirect() {
+      if (sentRedirectTimer) {
+        clearTimeout(sentRedirectTimer);
+        sentRedirectTimer = null;
+      }
+    }
+
+    function showRequestSentThenRedirect(targetUrl) {
+      clearSentRedirect();
+      sentRedirectUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL || "account.html";
+      requestSentOverlay.classList.remove("hidden");
+      sentRedirectTimer = setTimeout(function () {
+        sentRedirectTimer = null;
+        window.location.href = sentRedirectUrl;
+      }, 2800);
+    }
+
+    sentGoNowBtn.addEventListener("click", function () {
+      clearSentRedirect();
+      window.location.href = sentRedirectUrl;
+    });
     const emailVal = document.getElementById("emailVal");
     const refVal = document.getElementById("refVal");
     const amountVal = document.getElementById("amountVal");
@@ -91,12 +128,23 @@
 
     let userCtx = { email: "", whatsapp: "", full_name: "", member_id: null };
 
+    var MAX_EXT_MONTHS = 719;
+
+    function discountPercentForMonths(m) {
+      const n = Math.floor(Number(m) || 0);
+      if (n <= 1) return 0;
+      if (n === 2) return 5;
+      if (n === 3) return 10;
+      if (n === 4) return 15;
+      if (n === 5) return 20;
+      if (n >= 6) return 25;
+      return 0;
+    }
+
     function pricingForMonths(months) {
-      const m = Number(months || 1);
+      const m = Math.floor(Number(months || 1));
       const subtotal = 150 * m;
-      let discountPercent = 0;
-      if (m >= 2 && m <= 6) discountPercent = 10;
-      if (m > 6) discountPercent = 25;
+      const discountPercent = discountPercentForMonths(m);
       const total = Math.round(subtotal * (1 - discountPercent / 100));
       return { months: m, subtotal, total, discountPercent };
     }
@@ -107,7 +155,7 @@
       if (q.discountPercent > 0) {
         discountInfo.textContent = "Subtotal R" + q.subtotal + " - " + q.discountPercent + "% discount = R" + q.total + ".";
       } else {
-        discountInfo.textContent = "Total due: R" + q.total + ". Discounts: 2-6 months = 10% off. 7+ months = 25% off.";
+        discountInfo.textContent = "Total due: R" + q.total + ". Tiered discounts from 2 months (5%) up to 25% at 6+ months; max " + MAX_EXT_MONTHS + " months per request.";
       }
       return q;
     }
@@ -156,10 +204,25 @@
     monthsEl.addEventListener("input", refreshQuote);
 
     paidBtn.addEventListener("click", async function () {
-      const q = refreshQuote();
       msg.textContent = "";
+      msg.className = "msg";
+      const rawMonths = String(monthsEl.value || "").trim();
+      const mCount = parseInt(rawMonths, 10);
+      if (!rawMonths || isNaN(mCount) || mCount < 1) {
+        msg.className = "msg err";
+        msg.textContent = "Enter a valid number of months (1–" + MAX_EXT_MONTHS + ").";
+        return;
+      }
+      if (mCount > MAX_EXT_MONTHS) {
+        msg.className = "msg err";
+        msg.textContent = "You might be dead by the time this runs out";
+        return;
+      }
+      const q = pricingForMonths(mCount);
+      refreshQuote();
       paidBtn.disabled = true;
       paidBtn.textContent = "Submitting…";
+      let succeeded = false;
       try {
         if (!FORMSPREE_URL) throw new Error("Formspree URL not configured.");
         const res = await fetch(FORMSPREE_URL, {
@@ -178,20 +241,18 @@
         });
         if (!res.ok) throw new Error("Could not submit extension request.");
         await saveExtensionRequest(q);
-        msg.className = "msg ok";
-        msg.textContent = "Extension request submitted.";
-        continueBtn.style.display = "inline-flex";
+        succeeded = true;
+        paidBtn.textContent = "I've Paid for Extension";
+        showRequestSentThenRedirect(TGIC_CONFIG.ACCOUNT_URL || "account.html");
       } catch (e) {
         msg.className = "msg err";
         msg.textContent = e.message || "Submission failed.";
       } finally {
-        paidBtn.disabled = false;
-        paidBtn.textContent = "I've Paid for Extension";
+        if (!succeeded) {
+          paidBtn.disabled = false;
+          paidBtn.textContent = "I've Paid for Extension";
+        }
       }
-    });
-
-    continueBtn.addEventListener("click", function () {
-      window.location.href = "account.html";
     });
 
     boot();

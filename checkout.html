@@ -252,6 +252,42 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .hidden { display: none !important; }
+
+    .sent-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .sent-panel {
+      max-width: 22rem;
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+    .sent-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.35rem;
+      color: var(--gold-light);
+      margin-bottom: 0.5rem;
+    }
+    .sent-body {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 1rem;
+    }
+    .sent-skip {
+      margin-top: 0.25rem;
+    }
     .alt {
       text-align: center;
       margin-top: 1rem;
@@ -430,7 +466,6 @@
     <div class="card card--checkout">
       <div class="checkout-hero">
         <h1 class="checkout-title">Manual EFT Checkout — R150</h1>
-        <p class="lead">Complete the 3 steps below. Use your own WhatsApp number as the EFT reference.</p>
       </div>
 
       <div class="steps" aria-label="Checkout steps">
@@ -452,7 +487,7 @@
             <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
           </div>
           <div class="field">
-            <label for="whatsapp">WhatsApp number (this becomes your EFT reference)</label>
+            <label for="whatsapp">WhatsApp number</label>
             <input id="whatsapp" type="tel" autocomplete="tel" placeholder="+27 82 123 4567" />
           </div>
           <div class="field">
@@ -461,9 +496,13 @@
           </div>
           <div class="field">
             <label for="months">How many months</label>
-            <input id="months" type="number" min="1" max="24" step="1" value="1" />
+            <input id="months" type="number" min="1" max="719" step="1" value="1" />
           </div>
-          <p class="detail" style="margin:-0.2rem 0 0.8rem;">Discounts: 2-6 months = 10% off total. 7+ months = 25% off total.</p>
+          <div class="detail" style="margin:-0.2rem 0 0.85rem;line-height:1.5;">
+            <p style="margin-bottom:0.45rem;">Discounts start after one month: when a member buys <strong>2 months</strong>, the discount is <strong>5%</strong>.</p>
+            <p style="margin-bottom:0.25rem;">3 months = 10% off<br />4 months = 15% off<br />5 months = 20% off<br />6 months = 25% off</p>
+            <p style="margin:0;">The cap is <strong>25%</strong>. Members can buy as many months as they want in one checkout, up to <strong>719 months</strong>.</p>
+          </div>
           <button class="btn" type="submit">Continue &rarr;</button>
         </form>
       </section>
@@ -526,6 +565,14 @@
     </div>
   </main>
 
+  <div id="requestSentOverlay" class="sent-overlay hidden" role="alert" aria-live="polite">
+    <div class="sent-panel">
+      <p class="sent-title">Request sent</p>
+      <p class="sent-body">Your payment confirmation has been received. Taking you to your dashboard…</p>
+      <button type="button" class="btn sent-skip" id="sentGoNowBtn">Go to dashboard now</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script>
@@ -541,6 +588,32 @@
     const confirmEmail = document.getElementById("confirmEmail");
     const confirmReference = document.getElementById("confirmReference");
     const continueDashboardBtn = document.getElementById("continueDashboardBtn");
+    const requestSentOverlay = document.getElementById("requestSentOverlay");
+    const sentGoNowBtn = document.getElementById("sentGoNowBtn");
+    let sentRedirectTimer = null;
+    let sentRedirectUrl = TGIC_CONFIG.ACCOUNT_URL;
+
+    function clearSentRedirect() {
+      if (sentRedirectTimer) {
+        clearTimeout(sentRedirectTimer);
+        sentRedirectTimer = null;
+      }
+    }
+
+    function showRequestSentThenRedirect(targetUrl) {
+      clearSentRedirect();
+      sentRedirectUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL;
+      requestSentOverlay.classList.remove("hidden");
+      sentRedirectTimer = setTimeout(function () {
+        sentRedirectTimer = null;
+        window.location.href = sentRedirectUrl;
+      }, 2800);
+    }
+
+    sentGoNowBtn.addEventListener("click", function () {
+      clearSentRedirect();
+      window.location.href = sentRedirectUrl;
+    });
 
     const step1 = document.getElementById("step1");
     const step2 = document.getElementById("step2");
@@ -629,12 +702,23 @@
       return d;
     }
 
+    var MAX_CHECKOUT_MONTHS = 719;
+
+    function discountPercentForMonths(m) {
+      const n = Math.floor(Number(m) || 0);
+      if (n <= 1) return 0;
+      if (n === 2) return 5;
+      if (n === 3) return 10;
+      if (n === 4) return 15;
+      if (n === 5) return 20;
+      if (n >= 6) return 25;
+      return 0;
+    }
+
     function pricingForMonths(months) {
-      const m = Number(months || 1);
+      const m = Math.floor(Number(months || 1));
       const subtotal = 150 * m;
-      let discountPercent = 0;
-      if (m >= 2 && m <= 6) discountPercent = 10;
-      if (m > 6) discountPercent = 25;
+      const discountPercent = discountPercentForMonths(m);
       const total = Math.round(subtotal * (1 - discountPercent / 100));
       return { subtotal, total, discountPercent };
     }
@@ -750,9 +834,10 @@
       const email = emailInput.value.trim().toLowerCase();
       const whatsapp = whatsappInput.value.trim();
       const password = passwordInput.value;
-      const months = Number(monthsInput.value || "1");
+      const monthsRaw = String(monthsInput.value || "").trim();
+      const months = parseInt(monthsRaw, 10);
 
-      if (!fullName || !email || !whatsapp || !password || !months) {
+      if (!fullName || !email || !whatsapp || !password || !monthsRaw) {
         errorMsg.textContent = "Please complete full name, email, WhatsApp number, password, and months.";
         return;
       }
@@ -764,8 +849,12 @@
         errorMsg.textContent = "Password must be at least 6 characters.";
         return;
       }
-      if (months < 1 || months > 24) {
-        errorMsg.textContent = "Please choose between 1 and 24 months.";
+      if (isNaN(months) || months < 1) {
+        errorMsg.textContent = "Enter a valid number of months (1–" + MAX_CHECKOUT_MONTHS + ").";
+        return;
+      }
+      if (months > MAX_CHECKOUT_MONTHS) {
+        errorMsg.textContent = "You might be dead by the time this runs out";
         return;
       }
 
@@ -820,6 +909,7 @@
       confirmPaymentBtn.disabled = true;
       confirmPaymentBtn.innerHTML = '<span class="spinner"></span>Sending confirmation…';
 
+      let succeeded = false;
       try {
         await insertMemberSignup();
         const userId = await ensureAccountAndLogin();
@@ -838,12 +928,16 @@
 
         confirmEmail.textContent = checkoutData.email;
         confirmReference.textContent = checkoutData.reference;
-        setStep(3);
+        succeeded = true;
+        confirmPaymentBtn.textContent = "I've Made the Payment";
+        showRequestSentThenRedirect(TGIC_CONFIG.ACCOUNT_URL);
       } catch (err) {
         errorMsg.textContent = err.message || "Could not submit confirmation.";
       } finally {
-        confirmPaymentBtn.disabled = false;
-        confirmPaymentBtn.textContent = "I've Made the Payment";
+        if (!succeeded) {
+          confirmPaymentBtn.disabled = false;
+          confirmPaymentBtn.textContent = "I've Made the Payment";
+        }
       }
     });
 
