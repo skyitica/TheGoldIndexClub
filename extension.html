@@ -68,6 +68,7 @@
       <p class="muted" id="discountInfo">Total due: R150. Discounts: 2-6 months = 10% off. 7+ months = 25% off.</p>
 
       <button class="btn" id="paidBtn" type="button">I've Paid for Extension</button>
+      <button class="btn" id="continueBtn" type="button" style="display:none;margin-left:.45rem;">Continue to Dashboard</button>
       <p class="msg" id="msg"></p>
     </div>
   </main>
@@ -82,6 +83,7 @@
     const monthsEl = document.getElementById("months");
     const msg = document.getElementById("msg");
     const paidBtn = document.getElementById("paidBtn");
+    const continueBtn = document.getElementById("continueBtn");
     const emailVal = document.getElementById("emailVal");
     const refVal = document.getElementById("refVal");
     const amountVal = document.getElementById("amountVal");
@@ -177,8 +179,8 @@
         if (!res.ok) throw new Error("Could not submit extension request.");
         await saveExtensionRequest(q);
         msg.className = "msg ok";
-        msg.textContent = "Extension request submitted. Redirecting to dashboard...";
-        setTimeout(function () { window.location.href = "account.html"; }, 1200);
+        msg.textContent = "Extension request submitted.";
+        continueBtn.style.display = "inline-flex";
       } catch (e) {
         msg.className = "msg err";
         msg.textContent = e.message || "Submission failed.";
@@ -186,6 +188,10 @@
         paidBtn.disabled = false;
         paidBtn.textContent = "I've Paid for Extension";
       }
+    });
+
+    continueBtn.addEventListener("click", function () {
+      window.location.href = "account.html";
     });
 
     boot();

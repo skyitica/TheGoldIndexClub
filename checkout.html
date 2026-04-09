@@ -518,6 +518,9 @@
           <p class="line"><strong>Email:</strong> <span id="confirmEmail"></span></p>
           <p class="line"><strong>Reference:</strong> <span id="confirmReference"></span></p>
         </div>
+        <div class="step-actions" style="margin-top:0.75rem;">
+          <button type="button" class="btn" id="continueDashboardBtn">Continue to Dashboard</button>
+        </div>
         <p class="micro">If you do not see an email after payment reflects, check spam/junk, then contact support.</p>
       </section>
     </div>
@@ -537,6 +540,7 @@
     const paymentReference = document.getElementById("paymentReference");
     const confirmEmail = document.getElementById("confirmEmail");
     const confirmReference = document.getElementById("confirmReference");
+    const continueDashboardBtn = document.getElementById("continueDashboardBtn");
 
     const step1 = document.getElementById("step1");
     const step2 = document.getElementById("step2");
@@ -832,15 +836,16 @@
         confirmEmail.textContent = checkoutData.email;
         confirmReference.textContent = checkoutData.reference;
         setStep(3);
-        setTimeout(function () {
-          window.location.href = TGIC_CONFIG.ACCOUNT_URL;
-        }, 1500);
       } catch (err) {
         errorMsg.textContent = err.message || "Could not submit confirmation.";
       } finally {
         confirmPaymentBtn.disabled = false;
         confirmPaymentBtn.textContent = "I've Made the Payment";
       }
+    });
+
+    continueDashboardBtn.addEventListener("click", function () {
+      window.location.href = TGIC_CONFIG.ACCOUNT_URL;
     });
   </script>
 </body>

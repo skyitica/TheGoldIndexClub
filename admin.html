@@ -500,11 +500,11 @@
             <td><span class="cell-ellipsis" title="${esc(extensionReq)}">${esc(extensionReq)}</span></td>
             <td>
               <div class="actions">
-              <button class="btn js-paid" data-id="${row.id}">PAID</button>
-              <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${row.group_access ? "REVOKE" : "GRANT"}</button>
-              <button class="btn js-extend" data-id="${row.id}">EXT</button>
-              <button class="btn js-reduce" data-id="${row.id}">RED</button>
-              <button class="btn js-delete" data-id="${row.id}" data-name="${esc(row.full_name)}">DEL</button>
+              <button class="btn js-paid" data-id="${row.id}">Mark Paid</button>
+              <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${accessBtnLabel}</button>
+              <button class="btn js-extend" data-id="${row.id}">Extend</button>
+              <button class="btn js-reduce" data-id="${row.id}">Reduce</button>
+              <button class="btn js-delete" data-id="${row.id}" data-name="${esc(row.full_name)}">Delete</button>
               </div>
             </td>
           </tr>
