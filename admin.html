@@ -250,7 +250,7 @@
       const nextDue = addOneMonthIso(member.next_due_date || today);
       const nextMonthNumber = Number(member.month_number || 1) + 1;
 
-      const { error } = await sb
+      let upd = await sb
         .from("members")
         .update({
           date_paid: today,
@@ -259,9 +259,9 @@
           month_number: nextMonthNumber,
         })
         .eq("id", id);
-      if (error) throw error;
+      if (upd.error) throw upd.error;
 
-      const { error: payErr } = await sb.from("member_payments").insert({
+      let payRes = await sb.from("member_payments").insert({
         member_id: id,
         paid_on: today,
         amount: member.amount || 150,
@@ -270,7 +270,15 @@
         discount_percent: 0,
         total_amount: member.amount || 150,
       });
-      if (payErr) throw payErr;
+      if (payRes.error && /column .* does not exist/i.test(payRes.error.message || "")) {
+        payRes = await sb.from("member_payments").insert({
+          member_id: id,
+          paid_on: today,
+          amount: member.amount || 150,
+          reference: member.whatsapp || "",
+        });
+      }
+      if (payRes.error) throw payRes.error;
     }
 
     async function extendMembership(id, months) {
@@ -290,7 +298,7 @@
       const nextDue = addMonthsIso(baseDate, m);
       const nextMonthNumber = Number(member.month_number || 1) + m;
 
-      const { error } = await sb
+      let upd = await sb
         .from("members")
         .update({
           date_paid: today,
@@ -302,9 +310,20 @@
           last_payment_total: pricing.total,
         })
         .eq("id", id);
-      if (error) throw error;
+      if (upd.error && /column .* does not exist/i.test(upd.error.message || "")) {
+        upd = await sb
+          .from("members")
+          .update({
+            date_paid: today,
+            status: "Paid",
+            next_due_date: nextDue,
+            month_number: nextMonthNumber,
+          })
+          .eq("id", id);
+      }
+      if (upd.error) throw upd.error;
 
-      const { error: payErr } = await sb.from("member_payments").insert({
+      let payRes = await sb.from("member_payments").insert({
         member_id: id,
         paid_on: today,
         amount: pricing.monthly,
@@ -313,7 +332,15 @@
         discount_percent: pricing.discountPercent,
         total_amount: pricing.total,
       });
-      if (payErr) throw payErr;
+      if (payRes.error && /column .* does not exist/i.test(payRes.error.message || "")) {
+        payRes = await sb.from("member_payments").insert({
+          member_id: id,
+          paid_on: today,
+          amount: pricing.total,
+          reference: member.whatsapp || "",
+        });
+      }
+      if (payRes.error) throw payRes.error;
     }
 
     async function toggleAccess(id, current) {

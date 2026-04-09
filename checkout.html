@@ -625,7 +625,7 @@
         .limit(1);
       if (existing && existing.length) return;
 
-      const { error } = await sb.from("members").insert({
+      const payload = {
         full_name: checkoutData.fullName,
         email: checkoutData.email,
         whatsapp: checkoutData.whatsapp,
@@ -637,8 +637,23 @@
         last_payment_total: checkoutData.totalAmount,
         status: "Pending",
         group_access: false,
-      });
-      if (error) throw new Error(error.message || "Could not save member signup.");
+      };
+      let ins = await sb.from("members").insert(payload);
+      if (ins.error && /column .* does not exist/i.test(ins.error.message || "")) {
+        // Backward compatibility when latest migration hasn't been run yet.
+        const legacyPayload = {
+          full_name: checkoutData.fullName,
+          email: checkoutData.email,
+          whatsapp: checkoutData.whatsapp,
+          join_date: joinDate,
+          next_due_date: nextDueDate,
+          amount: 150,
+          status: "Pending",
+          group_access: false,
+        };
+        ins = await sb.from("members").insert(legacyPayload);
+      }
+      if (ins.error) throw new Error(ins.error.message || "Could not save member signup.");
     }
 
     async function ensureAccountAndLogin() {

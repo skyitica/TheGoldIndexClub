@@ -397,7 +397,7 @@
 
       const { data: members, error: membersError } = await sb
         .from("members")
-          .select("id, full_name, email, whatsapp, join_date, next_due_date, date_paid, status, group_access, amount, current_plan_months, last_discount_percent, last_payment_total")
+        .select("*")
         .eq("email", user.email)
         .order("id", { ascending: false })
         .limit(1);
@@ -412,7 +412,7 @@
       if (member) {
         const { data: payments } = await sb
           .from("member_payments")
-          .select("paid_on, amount, reference, months_count, discount_percent, total_amount")
+          .select("*")
           .eq("member_id", member.id)
           .order("paid_on", { ascending: false });
         paymentRows = payments || [];
