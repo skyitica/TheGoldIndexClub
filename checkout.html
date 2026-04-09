@@ -489,6 +489,7 @@
           <div class="field">
             <label for="whatsapp">WhatsApp number</label>
             <input id="whatsapp" type="tel" autocomplete="tel" placeholder="+27 82 123 4567" />
+            <p class="detail" style="margin-top:0.35rem;font-size:0.68rem;line-height:1.4;">Use the same number you use for WhatsApp — it will be your <strong>EFT reference</strong> on the bank details step.</p>
           </div>
           <div class="field">
             <label for="password">Create password</label>
@@ -504,6 +505,9 @@
       </section>
 
       <section id="step2" class="hidden">
+        <p class="detail" style="margin-bottom:0.75rem;line-height:1.5;">
+          <strong>Pay by EFT</strong> into the bank account below. Transfer the total amount shown using these exact account details on your banking app or at the branch.
+        </p>
         <div class="details">
           <div class="detail-row">
             <div class="detail-key">Bank</div>
@@ -538,7 +542,12 @@
         </div>
         <p class="detail" id="planSummary" style="margin-top:0.7rem;"></p>
 
-        <p class="notice">Important: the EFT reference must be the client's own WhatsApp number (the same number entered above). Invite access is sent by email only after payment reflects, which may take a few hours on business days.</p>
+        <p class="notice">
+          <strong>Reference (required):</strong> You <strong>must</strong> use <strong>your phone number</strong> exactly as shown under <strong>Payment Reference</strong> as the EFT payment reference. If you use any other text or a wrong number, we may not be able to match your payment to your membership and the transfer could be treated as void or left unallocated.
+        </p>
+        <p class="detail" style="margin-top:0.55rem;font-size:0.68rem;line-height:1.45;">
+          Invite access is sent by email only after your payment reflects, which may take a few hours on business days.
+        </p>
 
         <div class="step-actions">
           <button type="button" class="btn btn-secondary" id="backToStep1">Back</button>
@@ -921,6 +930,21 @@
           total_amount: checkoutData.totalAmount,
           source: "checkout-manual-eft",
         });
+
+        try {
+          const sessRes = await sb.auth.getSession();
+          var tok = sessRes.data && sessRes.data.session && sessRes.data.session.access_token;
+          if (tok) {
+            var fnBase = TGIC_CONFIG.SUPABASE_URL.replace(/\/$/, "");
+            fetch(fnBase + "/functions/v1/send-checkout-submitted-email", {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + tok,
+                apikey: TGIC_CONFIG.SUPABASE_ANON_KEY,
+              },
+            }).catch(function () {});
+          }
+        } catch (e) {}
 
         confirmEmail.textContent = checkoutData.email;
         confirmReference.textContent = checkoutData.reference;

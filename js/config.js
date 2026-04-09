@@ -22,4 +22,8 @@ const TGIC_CONFIG = {
   // When true: after email/password signup (session returned), go to account instead of checkout.
   // Use only for your own testing — set back to false for production.
   SKIP_CHECKOUT_AFTER_SIGNUP: false,
+
+  // Same string as Supabase Edge Function secret TGIC_EMAIL_SERVER_SECRET (Project Settings → Edge Functions → Secrets).
+  // Used by admin only to trigger notify-member (payment confirmed, extension denied). Leave empty to skip those emails.
+  TGIC_EMAIL_SERVER_SECRET: "",
 };

@@ -190,6 +190,28 @@
     .badge-none { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--border); }
     .badge-overdue { background: rgba(239,83,80,0.14); color: var(--red); border: 1px solid rgba(239,83,80,0.35); }
 
+    .extension-denial-banner {
+      border: 1px solid rgba(239, 83, 80, 0.45);
+      background: rgba(239, 83, 80, 0.1);
+      border-radius: 14px;
+      padding: 1rem 1.15rem;
+      margin-bottom: 1rem;
+    }
+    .extension-denial-banner .extension-denial-label {
+      color: #ffab91;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 0.5rem;
+    }
+    .extension-denial-banner .extension-denial-text {
+      font-size: 0.8rem;
+      color: #ececec;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      margin-bottom: 0.65rem;
+    }
+
     .detail { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.3rem; }
 
     .history-list { margin-top: 0.65rem; display: grid; gap: 0.5rem; }
@@ -309,6 +331,13 @@
         <a class="btn-gold" href="/?fullsite=1">View Full Site &rarr;</a>
       </div>
       <p class="greeting" id="greetingText"></p>
+
+      <div id="extensionDenialBanner" class="extension-denial-banner hidden">
+        <p class="extension-denial-label">Extension request update</p>
+        <p class="extension-denial-text" id="extensionDenialText"></p>
+        <button type="button" class="btn-sm" id="extensionDenialDismiss">Dismiss</button>
+      </div>
+
       <section class="kpis">
         <div class="kpi"><p class="kpi-label">Status</p><p class="kpi-value" id="kpiStatus">Pending acceptance</p></div>
         <div class="kpi"><p class="kpi-label">Next Payment Due</p><p class="kpi-value" id="kpiNextDue">—</p></div>
@@ -519,6 +548,32 @@
       const months = member && member.current_plan_months ? Number(member.current_plan_months) : 1;
       document.getElementById("kpiPlanMonths").textContent = months + " month" + (months > 1 ? "s" : "");
       renderPaymentHistory(paymentRows || []);
+
+      const denialBanner = document.getElementById("extensionDenialBanner");
+      const denialTextEl = document.getElementById("extensionDenialText");
+      const denialDismiss = document.getElementById("extensionDenialDismiss");
+      if (member && member.extension_denial_notice && String(member.extension_denial_notice).trim()) {
+        denialTextEl.textContent = String(member.extension_denial_notice).trim();
+        denialBanner.classList.remove("hidden");
+        denialDismiss.onclick = async function () {
+          denialDismiss.disabled = true;
+          const { error } = await sb
+            .from("members")
+            .update({ extension_denial_notice: null })
+            .eq("id", member.id);
+          denialDismiss.disabled = false;
+          if (error) {
+            denialTextEl.textContent = (denialTextEl.textContent || "") + "\n\n(Could not dismiss: " + (error.message || "error") + ")";
+            return;
+          }
+          denialBanner.classList.add("hidden");
+          denialTextEl.textContent = "";
+        };
+      } else {
+        denialBanner.classList.add("hidden");
+        denialTextEl.textContent = "";
+        denialDismiss.onclick = null;
+      }
 
       if (member) {
         document.getElementById("extensionSection").classList.remove("hidden");

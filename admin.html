@@ -383,6 +383,34 @@
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
 
+    async function tgicNotifyMemberEmail(type, memberId) {
+      var secret = TGIC_CONFIG.TGIC_EMAIL_SERVER_SECRET;
+      if (!secret || !memberId) {
+        return { ok: false, skipped: true, error: "TGIC_EMAIL_SERVER_SECRET not set in config" };
+      }
+      var url = TGIC_CONFIG.SUPABASE_URL.replace(/\/$/, "") + "/functions/v1/notify-member";
+      try {
+        var res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + secret,
+            apikey: TGIC_CONFIG.SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ type: type, member_id: memberId }),
+        });
+        var data = await res.json().catch(function () {
+          return {};
+        });
+        if (!res.ok) {
+          return { ok: false, error: (data && data.error) || res.statusText || "Request failed" };
+        }
+        return { ok: true, data: data };
+      } catch (e) {
+        return { ok: false, error: e.message || "Network error" };
+      }
+    }
+
     const membersBody = document.getElementById("membersBody");
     const notice = document.getElementById("notice");
     const kpiTotal = document.getElementById("kpiTotal");
@@ -555,6 +583,9 @@
           requested_extension_months: null,
           requested_extension_discount: null,
           requested_extension_total: null,
+          extension_denial_notice: null,
+          due_reminder_sent_on: null,
+          overdue_reminder_sent_on: null,
         })
         .eq("id", id);
       if (upd.error) throw upd.error;
@@ -577,6 +608,7 @@
         });
       }
       if (payRes.error) throw payRes.error;
+      await tgicNotifyMemberEmail("payment_confirmed", id);
     }
 
     async function extendMembership(id, months) {
@@ -610,6 +642,9 @@
           requested_extension_months: null,
           requested_extension_discount: null,
           requested_extension_total: null,
+          extension_denial_notice: null,
+          due_reminder_sent_on: null,
+          overdue_reminder_sent_on: null,
         })
         .eq("id", id);
       if (upd.error && /column .* does not exist/i.test(upd.error.message || "")) {
@@ -624,6 +659,9 @@
             requested_extension_months: null,
             requested_extension_discount: null,
             requested_extension_total: null,
+            extension_denial_notice: null,
+            due_reminder_sent_on: null,
+            overdue_reminder_sent_on: null,
           })
           .eq("id", id);
       }
@@ -647,6 +685,7 @@
         });
       }
       if (payRes.error) throw payRes.error;
+      await tgicNotifyMemberEmail("payment_confirmed", id);
     }
 
     async function reduceMembership(id, months) {
@@ -677,9 +716,41 @@
           requested_extension_months: null,
           requested_extension_discount: null,
           requested_extension_total: null,
+          extension_denial_notice: null,
+          due_reminder_sent_on: null,
+          overdue_reminder_sent_on: null,
         })
         .eq("id", id);
       if (upd.error) throw upd.error;
+    }
+
+    var EXTENSION_DENIAL_DEFAULT =
+      "We could not approve your extension request because we have not received a matching payment yet (or the EFT reference did not match your account). Please pay using the bank details on the extension page and use your phone number as the payment reference. When your payment reflects, you can submit a new extension request.";
+
+    async function denyExtensionRequest(id) {
+      const custom = window.prompt(
+        "Optional extra note for the member (shown below the standard message). Leave blank for standard text only:",
+        ""
+      );
+      if (custom === null) return false;
+      var notice = EXTENSION_DENIAL_DEFAULT;
+      if (custom && String(custom).trim()) {
+        notice = notice + "\n\n" + String(custom).trim();
+      }
+      var payload = {
+        pending_extension: false,
+        requested_extension_months: null,
+        requested_extension_discount: null,
+        requested_extension_total: null,
+        extension_denial_notice: notice,
+      };
+      var upd = await sb.from("members").update(payload).eq("id", id);
+      if (upd.error && /column .* does not exist/i.test(upd.error.message || "")) {
+        throw new Error("Run migration 011_extension_denial_notice.sql in Supabase, then try again.");
+      }
+      if (upd.error) throw upd.error;
+      await tgicNotifyMemberEmail("extension_denied", id);
+      return true;
     }
 
     async function toggleAccess(id, current) {
@@ -794,6 +865,8 @@
               <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${accessBtnLabel}</button>
               <button class="btn js-extend" data-id="${row.id}">Extend</button>
               <button class="btn js-reduce" data-id="${row.id}">Reduce</button>
+              ${row.pending_extension ? `<button type="button" class="btn js-deny-ext" data-id="${row.id}" data-name="${esc(row.full_name)}">Deny extension</button>` : ""}
+              <button type="button" class="btn js-no-pay-email" data-id="${row.id}" data-name="${esc(row.full_name)}">No payment email</button>
               <button class="btn js-delete" data-id="${row.id}" data-name="${esc(row.full_name)}">Delete</button>
               </div>
             </td>
@@ -882,6 +955,28 @@
           await loadMembers();
           notice.textContent = "Group access updated.";
         }
+        if (target.classList.contains("js-deny-ext")) {
+          const id = Number(target.dataset.id || "0");
+          const denyName = target.getAttribute("data-name") || "this member";
+          if (!id) return;
+          const ok = window.confirm(
+            "Deny extension request for " + denyName + "? Their pending request will be cleared and they will see a message on their dashboard."
+          );
+          if (!ok) return;
+          target.setAttribute("disabled", "disabled");
+          try {
+            const done = await denyExtensionRequest(id);
+            if (done) {
+              await loadMembers();
+              notice.textContent = "Extension request denied; member will see a dashboard notice.";
+            }
+          } catch (denyErr) {
+            notice.textContent = "Deny failed: " + (denyErr.message || "unknown error");
+          } finally {
+            target.removeAttribute("disabled");
+          }
+        }
+
         if (target.classList.contains("js-extend")) {
           const id = Number(target.dataset.id || "0");
           if (!id) return;
@@ -915,6 +1010,33 @@
           await loadMembers();
           notice.textContent = "Removed " + months + " month(s) from membership.";
         }
+        if (target.classList.contains("js-no-pay-email")) {
+          const id = Number(target.dataset.id || "0");
+          const noPayName = target.getAttribute("data-name") || "this member";
+          if (!id) return;
+          const ok1 = window.confirm(
+            "Send a \"payment not found\" email to " +
+              noPayName +
+              "?\n\nUse when ~24 hours have passed and no matching deposit appeared. They will be told we could not find their payment and to pay again with the correct phone-number reference."
+          );
+          if (!ok1) return;
+          const ok2 = window.confirm('Final confirmation: send the "payment not found" email now?');
+          if (!ok2) return;
+          target.setAttribute("disabled", "disabled");
+          try {
+            const sent = await tgicNotifyMemberEmail("payment_not_found", id);
+            if (sent.skipped) {
+              notice.textContent = "Email not sent: set TGIC_EMAIL_SERVER_SECRET in js/config.js (same as Supabase Edge secret).";
+            } else if (!sent.ok) {
+              notice.textContent = "Email failed: " + (sent.error || "unknown error");
+            } else {
+              notice.textContent = "Payment-not-found email sent to " + noPayName + ".";
+            }
+          } finally {
+            target.removeAttribute("disabled");
+          }
+        }
+
         if (target.classList.contains("js-delete")) {
           const id = Number(target.dataset.id || "0");
           const memberName = target.dataset.name || "this member";

@@ -55,7 +55,7 @@
   <main class="page">
     <div class="card">
       <h1>Extend Membership</h1>
-      <p class="muted">This checkout uses your logged-in account details. Pay by EFT, then confirm below.</p>
+      <p class="muted">This checkout uses your logged-in account details. <strong>Pay by EFT</strong> into the bank account below, then confirm when done.</p>
 
       <div class="grid">
         <div class="row"><p class="k">Email</p><p class="v" id="emailVal">—</p></div>
@@ -65,6 +65,10 @@
         <div class="row"><p class="k">Branch Code</p><p class="v">679000</p></div>
         <div class="row"><p class="k">Amount Due</p><p class="v" id="amountVal">R150 (1 month)</p></div>
       </div>
+
+      <p class="muted" style="margin-top:0.5rem;line-height:1.45;border:1px solid rgba(111,84,22,.35);border-radius:8px;padding:0.5rem 0.55rem;background:#fafafa;color:#333;">
+        <strong>EFT reference:</strong> Use <strong>your phone number</strong> exactly as shown under <strong>Reference (your WhatsApp)</strong>. Wrong or missing references may mean we cannot match your payment and the transfer could be void or unallocated.
+      </p>
 
       <div class="field">
         <label for="months">Months to extend</label>
@@ -177,17 +181,24 @@
 
     async function saveExtensionRequest(q) {
       if (!userCtx.member_id) return;
-      let upd = await sb
-        .from("members")
-        .update({
-          pending_extension: true,
-          requested_extension_months: q.months,
-          requested_extension_discount: q.discountPercent,
-          requested_extension_total: q.total,
-        })
-        .eq("id", userCtx.member_id);
-
-      // Backward compatibility before migration runs.
+      var withNotice = {
+        pending_extension: true,
+        requested_extension_months: q.months,
+        requested_extension_discount: q.discountPercent,
+        requested_extension_total: q.total,
+        extension_denial_notice: null,
+      };
+      var baseOnly = {
+        pending_extension: true,
+        requested_extension_months: q.months,
+        requested_extension_discount: q.discountPercent,
+        requested_extension_total: q.total,
+      };
+      let upd = await sb.from("members").update(withNotice).eq("id", userCtx.member_id);
+      if (upd.error && /extension_denial_notice|column .* does not exist/i.test(upd.error.message || "")) {
+        upd = await sb.from("members").update(baseOnly).eq("id", userCtx.member_id);
+      }
+      // Backward compatibility before extension-request migration runs.
       if (upd.error && /column .* does not exist/i.test(upd.error.message || "")) {
         return;
       }
