@@ -201,37 +201,6 @@
       font-size: 0.74rem;
       color: #cecece;
     }
-    .extension-box {
-      margin-top: 0.65rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: #0c0c0c;
-      padding: 0.75rem;
-    }
-    .extension-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.6rem;
-      margin-top: 0.6rem;
-    }
-    .extension-row {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.55rem 0.6rem;
-      background: #111;
-    }
-    .extension-key {
-      color: #a9a9a9;
-      font-size: 0.62rem;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      margin-bottom: 0.22rem;
-    }
-    .extension-val {
-      color: #f0f0f0;
-      font-size: 0.8rem;
-      word-break: break-word;
-    }
 
     .btn-row { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.85rem; }
 
@@ -315,7 +284,6 @@
     }
     @media (max-width: 520px) {
       .kpis { grid-template-columns: 1fr; }
-      .extension-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -401,39 +369,8 @@
 
       <div class="section hidden" id="extensionSection">
         <p class="section-label">Membership Extension</p>
-        <p class="detail">Extend your plan by selecting months below. Discounts apply automatically.</p>
-        <p class="detail">2-6 months = 10% off total. 7+ months = 25% off total.</p>
-
-        <div class="field" style="margin-top:0.7rem;">
-          <label for="extensionMonths">Months to extend</label>
-          <input id="extensionMonths" type="number" min="1" max="24" step="1" value="1" />
-        </div>
-
-        <div class="extension-box">
-          <div class="extension-grid">
-            <div class="extension-row">
-              <p class="extension-key">Total due</p>
-              <p class="extension-val" id="extensionTotal">R150</p>
-            </div>
-            <div class="extension-row">
-              <p class="extension-key">Discount</p>
-              <p class="extension-val" id="extensionDiscount">0%</p>
-            </div>
-            <div class="extension-row">
-              <p class="extension-key">Account number</p>
-              <p class="extension-val">14586714314</p>
-            </div>
-            <div class="extension-row">
-              <p class="extension-key">Reference (your WhatsApp)</p>
-              <p class="extension-val" id="extensionReference">—</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn-sm" id="extensionSubmitBtn" type="button">I've Paid for Extension</button>
-        </div>
-        <p class="msg" id="extensionMsg"></p>
+        <p class="detail">Open the dedicated extension checkout screen for your logged-in account.</p>
+        <a class="btn-gold" href="extension.html">Extend Membership &rarr;</a>
       </div>
 
     </div>
@@ -444,7 +381,6 @@
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
-    const FORMSPREE_URL = (typeof TGIC_CONFIG !== "undefined" && TGIC_CONFIG.FORMSPREE_CHECKOUT_URL) || "";
 
     const loadingState = document.getElementById("loadingState");
     const dashboard = document.getElementById("dashboard");
@@ -504,37 +440,6 @@
       return { label: "Pending acceptance", badgeClass: "badge-none", overdue: false };
     }
 
-    function pricingForMonths(months) {
-      const m = Number(months || 1);
-      const subtotal = 150 * m;
-      let discountPercent = 0;
-      if (m >= 2 && m <= 6) discountPercent = 10;
-      if (m > 6) discountPercent = 25;
-      const total = Math.round(subtotal * (1 - discountPercent / 100));
-      return { subtotal, total, discountPercent };
-    }
-
-    function renderExtensionQuote(months) {
-      const m = Math.max(1, Math.min(24, Number(months || 1)));
-      const pricing = pricingForMonths(m);
-      document.getElementById("extensionTotal").textContent =
-        "R" + pricing.total + " (" + m + " month" + (m > 1 ? "s" : "") + ")";
-      document.getElementById("extensionDiscount").textContent = pricing.discountPercent + "%";
-      return { months: m, pricing: pricing };
-    }
-
-    async function submitExtensionRequest(payload) {
-      if (!FORMSPREE_URL) throw new Error("Extension endpoint not configured.");
-      const res = await fetch(FORMSPREE_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Could not send extension request.");
-    }
 
     function renderPaymentHistory(rows) {
       const box = document.getElementById("paymentHistory");
@@ -601,45 +506,7 @@
       renderPaymentHistory(paymentRows || []);
 
       if (member) {
-        const extensionSection = document.getElementById("extensionSection");
-        const extensionMonths = document.getElementById("extensionMonths");
-        const extensionMsg = document.getElementById("extensionMsg");
-        const extensionSubmitBtn = document.getElementById("extensionSubmitBtn");
-        const extensionReference = document.getElementById("extensionReference");
-        extensionSection.classList.remove("hidden");
-        extensionReference.textContent = member.whatsapp || profile.phone_number || "Not set";
-
-        renderExtensionQuote(extensionMonths.value);
-        extensionMonths.addEventListener("input", function () {
-          renderExtensionQuote(extensionMonths.value);
-        });
-
-        extensionSubmitBtn.addEventListener("click", async function () {
-          extensionMsg.textContent = "";
-          const q = renderExtensionQuote(extensionMonths.value);
-          extensionSubmitBtn.disabled = true;
-          extensionSubmitBtn.textContent = "Submitting…";
-          try {
-            await submitExtensionRequest({
-              source: "account-extension-request",
-              full_name: profile.full_name || "",
-              email: user.email,
-              whatsapp_number: member.whatsapp || profile.phone_number || "",
-              reference: member.whatsapp || profile.phone_number || "",
-              months: q.months,
-              discount_percent: q.pricing.discountPercent,
-              total_amount: q.pricing.total,
-            });
-            extensionMsg.className = "msg msg-ok";
-            extensionMsg.textContent = "Extension request submitted. We'll confirm once payment reflects.";
-          } catch (err) {
-            extensionMsg.className = "msg msg-err";
-            extensionMsg.textContent = err.message || "Could not submit extension request.";
-          } finally {
-            extensionSubmitBtn.disabled = false;
-            extensionSubmitBtn.textContent = "I've Paid for Extension";
-          }
-        });
+        document.getElementById("extensionSection").classList.remove("hidden");
       }
 
       // Phone change handler.

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="assets/logo-favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Membership Extension | The Gold Index Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a; --bg-card: #111; --border: #1e1e1e; --gold:#c9a84c; --gold-light:#e8c97a;
+      --text:#f0f0f0; --muted:#888; --ok:#81c784; --err:#ef5350; --container:680px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;background:radial-gradient(circle at 50% -20%,rgba(201,168,76,.1),transparent 42%),var(--bg);color:var(--text);font-family:"DM Mono",monospace;display:flex;flex-direction:column}
+    .topbar{border-bottom:1px solid var(--border);padding:0 1rem;background:rgba(8,8,8,.94)}
+    .topbar-inner{max-width:var(--container);margin:0 auto;min-height:56px;display:flex;align-items:center;justify-content:space-between}
+    .brand{font-family:"Cormorant Garamond",serif;color:var(--gold-light);text-decoration:none}
+    .links{display:flex;gap:1rem}
+    .links a{color:#c8c8c8;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;text-decoration:underline;text-underline-offset:6px}
+    .page{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .card{width:100%;max-width:var(--container);background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.35rem}
+    h1{font-family:"Cormorant Garamond",serif;font-size:1.9rem;margin-bottom:.35rem}
+    .muted{color:var(--muted);font-size:.78rem;margin-bottom:.8rem}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+    .row{border:1px solid var(--border);border-radius:8px;padding:.6rem;background:#0d0d0d}
+    .k{color:#aaa;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem}
+    .v{font-size:.84rem}
+    .field{margin:.8rem 0}
+    .field label{display:block;font-size:.68rem;text-transform:uppercase;color:#aaa;margin-bottom:.35rem}
+    .field input{width:100%;padding:.62rem .72rem;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.75rem 1.1rem;border:1px solid var(--gold);border-radius:8px;background:#0d0d0d;color:var(--gold-light);font-family:inherit;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .msg{margin-top:.6rem;font-size:.76rem;min-height:1.1em}
+    .ok{color:var(--ok)} .err{color:var(--err)}
+    .copy{border:1px solid rgba(201,168,76,.5);background:transparent;color:var(--gold-light);border-radius:7px;padding:.25rem .45rem;font-size:.62rem;cursor:pointer;margin-left:.5rem}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">The Gold Index Club</a>
+      <nav class="links"><a href="account.html">Dashboard</a><a href="/?fullsite=1">Full Site</a></nav>
+    </div>
+  </header>
+  <main class="page">
+    <div class="card">
+      <h1>Extend Membership</h1>
+      <p class="muted">This checkout uses your logged-in account details. Pay by EFT, then confirm below.</p>
+
+      <div class="grid">
+        <div class="row"><p class="k">Email</p><p class="v" id="emailVal">—</p></div>
+        <div class="row"><p class="k">Reference (your WhatsApp)</p><p class="v" id="refVal">—</p></div>
+        <div class="row"><p class="k">Bank</p><p class="v">Discovery Bank</p></div>
+        <div class="row"><p class="k">Account Number</p><p class="v"><span id="accVal">14586714314</span><button class="copy" data-copy="accVal" type="button">Copy</button></p></div>
+        <div class="row"><p class="k">Branch Code</p><p class="v">679000</p></div>
+        <div class="row"><p class="k">Amount Due</p><p class="v" id="amountVal">R150 (1 month)</p></div>
+      </div>
+
+      <div class="field">
+        <label for="months">Months to extend</label>
+        <input id="months" type="number" min="1" max="24" step="1" value="1" />
+      </div>
+      <p class="muted" id="discountInfo">Total due: R150. Discounts: 2-6 months = 10% off. 7+ months = 25% off.</p>
+
+      <button class="btn" id="paidBtn" type="button">I've Paid for Extension</button>
+      <p class="msg" id="msg"></p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+    const FORMSPREE_URL = (typeof TGIC_CONFIG !== "undefined" && TGIC_CONFIG.FORMSPREE_CHECKOUT_URL) || "";
+
+    const monthsEl = document.getElementById("months");
+    const msg = document.getElementById("msg");
+    const paidBtn = document.getElementById("paidBtn");
+    const emailVal = document.getElementById("emailVal");
+    const refVal = document.getElementById("refVal");
+    const amountVal = document.getElementById("amountVal");
+    const discountInfo = document.getElementById("discountInfo");
+
+    let userCtx = { email: "", whatsapp: "", full_name: "" };
+
+    function pricingForMonths(months) {
+      const m = Number(months || 1);
+      const subtotal = 150 * m;
+      let discountPercent = 0;
+      if (m >= 2 && m <= 6) discountPercent = 10;
+      if (m > 6) discountPercent = 25;
+      const total = Math.round(subtotal * (1 - discountPercent / 100));
+      return { months: m, subtotal, total, discountPercent };
+    }
+
+    function refreshQuote() {
+      const q = pricingForMonths(monthsEl.value);
+      amountVal.textContent = "R" + q.total + " (" + q.months + " month" + (q.months > 1 ? "s" : "") + ")";
+      if (q.discountPercent > 0) {
+        discountInfo.textContent = "Subtotal R" + q.subtotal + " - " + q.discountPercent + "% discount = R" + q.total + ".";
+      } else {
+        discountInfo.textContent = "Total due: R" + q.total + ". Discounts: 2-6 months = 10% off. 7+ months = 25% off.";
+      }
+      return q;
+    }
+
+    async function boot() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = TGIC_CONFIG.LOGIN_URL; return; }
+      const user = session.user;
+      emailVal.textContent = user.email || "—";
+
+      const { data: profile } = await sb.from("profiles").select("full_name, phone_number").eq("id", user.id).maybeSingle();
+      const { data: members } = await sb.from("members").select("*").eq("email", user.email).order("id", { ascending: false }).limit(1);
+      const member = members && members.length ? members[0] : null;
+      const whatsapp = (member && member.whatsapp) || (profile && profile.phone_number) || "";
+      refVal.textContent = whatsapp || "Not set";
+      userCtx = { email: user.email || "", whatsapp: whatsapp, full_name: (profile && profile.full_name) || "" };
+      refreshQuote();
+    }
+
+    document.querySelectorAll("[data-copy]").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        const target = document.getElementById(btn.getAttribute("data-copy"));
+        try { await navigator.clipboard.writeText((target && target.textContent) || ""); msg.className = "msg ok"; msg.textContent = "Copied."; }
+        catch { msg.className = "msg err"; msg.textContent = "Copy failed."; }
+      });
+    });
+    monthsEl.addEventListener("input", refreshQuote);
+
+    paidBtn.addEventListener("click", async function () {
+      const q = refreshQuote();
+      msg.textContent = "";
+      paidBtn.disabled = true;
+      paidBtn.textContent = "Submitting…";
+      try {
+        if (!FORMSPREE_URL) throw new Error("Formspree URL not configured.");
+        const res = await fetch(FORMSPREE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            source: "account-extension-checkout",
+            full_name: userCtx.full_name,
+            email: userCtx.email,
+            whatsapp_number: userCtx.whatsapp,
+            reference: userCtx.whatsapp,
+            months: q.months,
+            discount_percent: q.discountPercent,
+            total_amount: q.total
+          })
+        });
+        if (!res.ok) throw new Error("Could not submit extension request.");
+        msg.className = "msg ok";
+        msg.textContent = "Extension request submitted. Redirecting to dashboard...";
+        setTimeout(function () { window.location.href = "account.html"; }, 1200);
+      } catch (e) {
+        msg.className = "msg err";
+        msg.textContent = e.message || "Submission failed.";
+      } finally {
+        paidBtn.disabled = false;
+        paidBtn.textContent = "I've Paid for Extension";
+      }
+    });
+
+    boot();
+  </script>
+</body>
+</html>
