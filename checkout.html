@@ -409,7 +409,7 @@
     <div class="card card--checkout">
       <div class="checkout-hero">
         <h1 class="checkout-title">Manual EFT Checkout — R150</h1>
-        <p class="lead">Complete the 3 steps below. Use your WhatsApp number as the exact payment reference.</p>
+        <p class="lead">Complete the 3 steps below. Use your own WhatsApp number as the EFT reference.</p>
       </div>
 
       <div class="steps" aria-label="Checkout steps">
@@ -431,8 +431,12 @@
             <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
           </div>
           <div class="field">
-            <label for="whatsapp">WhatsApp number</label>
+            <label for="whatsapp">WhatsApp number (this becomes your EFT reference)</label>
             <input id="whatsapp" type="tel" autocomplete="tel" placeholder="+27 82 123 4567" />
+          </div>
+          <div class="field">
+            <label for="password">Create password</label>
+            <input id="password" type="password" autocomplete="new-password" placeholder="At least 6 characters" />
           </div>
           <button class="btn" type="submit">Continue &rarr;</button>
         </form>
@@ -472,7 +476,7 @@
           </div>
         </div>
 
-        <p class="notice">WhatsApp group invite access is sent by email only after payment reflects. This may take a few hours on business days.</p>
+        <p class="notice">Important: the EFT reference must be the client's own WhatsApp number (the same number entered above). Invite access is sent by email only after payment reflects, which may take a few hours on business days.</p>
 
         <div class="step-actions">
           <button type="button" class="btn btn-secondary" id="backToStep1">Back</button>
@@ -518,11 +522,13 @@
     const fullNameInput = document.getElementById("fullName");
     const emailInput = document.getElementById("email");
     const whatsappInput = document.getElementById("whatsapp");
+    const passwordInput = document.getElementById("password");
 
     let checkoutData = {
       fullName: "",
       email: "",
       whatsapp: "",
+      password: "",
       reference: "",
     };
 
@@ -584,6 +590,15 @@
       const joinDate = toDateOnly(today);
       const nextDueDate = toDateOnly(addOneMonth(today));
 
+      // Avoid duplicate pending rows for the same member details.
+      const { data: existing } = await sb
+        .from("members")
+        .select("id")
+        .eq("email", checkoutData.email)
+        .eq("whatsapp", checkoutData.whatsapp)
+        .limit(1);
+      if (existing && existing.length) return;
+
       const { error } = await sb.from("members").insert({
         full_name: checkoutData.fullName,
         email: checkoutData.email,
@@ -596,6 +611,44 @@
       if (error) throw new Error(error.message || "Could not save member signup.");
     }
 
+    async function ensureAccountAndLogin() {
+      // If account already exists, sign in directly.
+      let signInRes = await sb.auth.signInWithPassword({
+        email: checkoutData.email,
+        password: checkoutData.password,
+      });
+      if (!signInRes.error && signInRes.data?.session) return;
+
+      // If sign-in fails, try creating the account, then sign in.
+      const signUpRes = await sb.auth.signUp({
+        email: checkoutData.email,
+        password: checkoutData.password,
+        options: {
+          data: {
+            full_name: checkoutData.fullName,
+            phone_number: checkoutData.whatsapp,
+          },
+        },
+      });
+
+      if (
+        signUpRes.error &&
+        !/already registered|already been registered|user already exists/i.test(signUpRes.error.message || "")
+      ) {
+        throw new Error(signUpRes.error.message || "Could not create your account.");
+      }
+
+      if (signUpRes.data?.session) return;
+
+      signInRes = await sb.auth.signInWithPassword({
+        email: checkoutData.email,
+        password: checkoutData.password,
+      });
+      if (signInRes.error || !signInRes.data?.session) {
+        throw new Error("Account created, but auto-login failed. Please log in once on the login page.");
+      }
+    }
+
     detailsForm.addEventListener("submit", function (e) {
       e.preventDefault();
       errorMsg.textContent = "";
@@ -604,13 +657,18 @@
       const fullName = fullNameInput.value.trim();
       const email = emailInput.value.trim().toLowerCase();
       const whatsapp = whatsappInput.value.trim();
+      const password = passwordInput.value;
 
-      if (!fullName || !email || !whatsapp) {
-        errorMsg.textContent = "Please complete full name, email, and WhatsApp number.";
+      if (!fullName || !email || !whatsapp || !password) {
+        errorMsg.textContent = "Please complete full name, email, WhatsApp number, and password.";
         return;
       }
       if (!validEmail(email)) {
         errorMsg.textContent = "Please enter a valid email address.";
+        return;
+      }
+      if (password.length < 6) {
+        errorMsg.textContent = "Password must be at least 6 characters.";
         return;
       }
 
@@ -618,6 +676,7 @@
         fullName: fullName,
         email: email,
         whatsapp: whatsapp,
+        password: password,
         reference: whatsapp,
       };
 
@@ -648,6 +707,7 @@
 
       try {
         await insertMemberSignup();
+        await ensureAccountAndLogin();
 
         await sendFormspreeNotification({
           full_name: checkoutData.fullName,
@@ -660,6 +720,9 @@
         confirmEmail.textContent = checkoutData.email;
         confirmReference.textContent = checkoutData.reference;
         setStep(3);
+        setTimeout(function () {
+          window.location.href = TGIC_CONFIG.ACCOUNT_URL;
+        }, 1500);
       } catch (err) {
         errorMsg.textContent = err.message || "Could not submit confirmation.";
       } finally {
