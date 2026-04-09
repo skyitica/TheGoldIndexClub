@@ -349,6 +349,7 @@
       <table>
         <thead>
           <tr>
+            <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>WhatsApp</th>
@@ -732,6 +733,7 @@
           : "No";
         return `
           <tr>
+            <td>${esc(String(row.id != null ? row.id : ""))}</td>
             <td><span class="cell-ellipsis" title="${esc(row.full_name)}">${esc(row.full_name)}</span></td>
             <td><span class="cell-ellipsis" title="${esc(row.email)}">${esc(row.email)}</span></td>
             <td><span class="cell-ellipsis" title="${esc(row.whatsapp)}">${esc(row.whatsapp)}</span></td>
