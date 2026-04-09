@@ -662,7 +662,7 @@
         email: checkoutData.email,
         password: checkoutData.password,
       });
-      if (!signInRes.error && signInRes.data?.session) return;
+      if (!signInRes.error && signInRes.data?.session) return signInRes.data.user?.id || null;
 
       // If sign-in fails, try creating the account, then sign in.
       const signUpRes = await sb.auth.signUp({
@@ -683,7 +683,7 @@
         throw new Error(signUpRes.error.message || "Could not create your account.");
       }
 
-      if (signUpRes.data?.session) return;
+      if (signUpRes.data?.session) return signUpRes.data.user?.id || null;
 
       signInRes = await sb.auth.signInWithPassword({
         email: checkoutData.email,
@@ -691,6 +691,25 @@
       });
       if (signInRes.error || !signInRes.data?.session) {
         throw new Error("Account created, but auto-login failed. Please log in once on the login page.");
+      }
+      return signInRes.data.user?.id || null;
+    }
+
+    async function attachMemberToUser(userId) {
+      if (!userId) return;
+      // Link latest matching member row to this authenticated user.
+      const { data: row } = await sb
+        .from("members")
+        .select("id")
+        .eq("email", checkoutData.email)
+        .eq("whatsapp", checkoutData.whatsapp)
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!row?.id) return;
+      const upd = await sb.from("members").update({ user_id: userId }).eq("id", row.id);
+      if (upd.error && !/column .* does not exist/i.test(upd.error.message || "")) {
+        throw new Error(upd.error.message || "Could not link member to account.");
       }
     }
 
@@ -775,7 +794,8 @@
 
       try {
         await insertMemberSignup();
-        await ensureAccountAndLogin();
+        const userId = await ensureAccountAndLogin();
+        await attachMemberToUser(userId);
 
         await sendFormspreeNotification({
           full_name: checkoutData.fullName,
