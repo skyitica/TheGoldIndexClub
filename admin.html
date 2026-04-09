@@ -275,7 +275,7 @@
           <input id="dbgFieldName" type="text" placeholder="e.g. phone_number, next_due_date, month_number" />
         </label>
         <label>Field value (raw)
-          <input id="dbgFieldValue" type="text" placeholder="e.g. 2026-04-20, 5, true, +2782..." />
+          <input id="dbgFieldValue" type="text" placeholder="e.g. 09/Apr/2026 for dates, 5, true, +2782..." />
         </label>
         <label>Type
           <select id="dbgFieldType">
@@ -295,8 +295,8 @@
         <label>Quick phone
           <input id="dbgPhoneValue" type="text" placeholder="e.g. +27821234567" />
         </label>
-        <label>Quick due date (YYYY-MM-DD)
-          <input id="dbgDueValue" type="text" placeholder="e.g. 2026-05-04" />
+        <label>Quick due date (dd/MMM/yyyy)
+          <input id="dbgDueValue" type="text" placeholder="e.g. 04/May/2026" />
         </label>
         <label>Quick month number
           <input id="dbgMonthNoValue" type="number" min="1" placeholder="e.g. 8" />
@@ -320,11 +320,11 @@
         <label>WhatsApp
           <input id="dbgNewWhatsapp" type="text" placeholder="+27820000000" />
         </label>
-        <label>Join date (YYYY-MM-DD)
-          <input id="dbgNewJoinDate" type="text" placeholder="2026-04-04" />
+        <label>Join date (dd/MMM/yyyy)
+          <input id="dbgNewJoinDate" type="text" placeholder="e.g. 04/Apr/2026" />
         </label>
-        <label>Next due date (YYYY-MM-DD)
-          <input id="dbgNewNextDue" type="text" placeholder="2026-05-04" />
+        <label>Next due date (dd/MMM/yyyy)
+          <input id="dbgNewNextDue" type="text" placeholder="e.g. 04/May/2026" />
         </label>
         <label>Amount
           <input id="dbgNewAmount" type="number" min="0" value="150" />
@@ -462,6 +462,40 @@
       var day = parseInt(m[3], 10);
       if (mi < 0 || mi > 11 || isNaN(day)) return s;
       return String(day).padStart(2, "0") + "/" + DISPLAY_MONTHS[mi] + "/" + m[1];
+    }
+
+    var MONTH_ABBREVS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+    var DEBUG_DATE_MEMBER_FIELDS = { join_date: true, next_due_date: true, date_paid: true };
+
+    function parseDisplayDateToIso(input) {
+      var s = String(input || "").trim();
+      if (!s) return "";
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      var m = s.match(/^(\d{1,2})\/([A-Za-z]{3})\/(\d{4})$/);
+      if (!m) {
+        throw new Error("Date must be dd/MMM/yyyy (e.g. 09/Apr/2026) or YYYY-MM-DD.");
+      }
+      var day = parseInt(m[1], 10);
+      var monKey = m[2].slice(0, 3).toLowerCase();
+      var mi = MONTH_ABBREVS.indexOf(monKey);
+      if (mi < 0) {
+        throw new Error("Invalid month. Use 3-letter English abbrev (Jan, Feb, Apr, ...).");
+      }
+      var y = parseInt(m[3], 10);
+      var d = new Date(y, mi, day);
+      if (d.getFullYear() !== y || d.getMonth() !== mi || d.getDate() !== day) {
+        throw new Error("Invalid calendar date.");
+      }
+      return dateOnlyString(d);
+    }
+
+    function normalizeDebugDateField(fieldName, value) {
+      if (value == null || value === "") return value;
+      if (!DEBUG_DATE_MEMBER_FIELDS[fieldName]) return value;
+      if (typeof value !== "string") return value;
+      var t = value.trim();
+      if (!t) return value;
+      return parseDisplayDateToIso(t);
     }
 
     function addOneMonthIso(isoDate) {
@@ -935,7 +969,8 @@
         const forcedType = document.getElementById("dbgFieldType").value || "auto";
         if (!memberId) throw new Error("Enter a valid member id.");
         if (!fieldName) throw new Error("Enter a field name.");
-        const parsed = parseDebugValue(raw, forcedType);
+        let parsed = parseDebugValue(raw, forcedType);
+        parsed = normalizeDebugDateField(fieldName, parsed);
         await debugUpdateField(memberId, fieldName, parsed);
         await loadMembers();
         notice.textContent = "Updated member " + memberId + " field " + fieldName + ".";
@@ -955,7 +990,7 @@
         const status = String(document.getElementById("dbgStatusValue").value || "").trim();
         const payload = {};
         if (phone) payload.whatsapp = phone;
-        if (due) payload.next_due_date = due;
+        if (due) payload.next_due_date = parseDisplayDateToIso(due);
         if (monthNoRaw) payload.month_number = Number(monthNoRaw);
         if (status) payload.status = status;
         if (!Object.keys(payload).length) throw new Error("Enter at least one quick value.");
@@ -976,8 +1011,8 @@
       document.getElementById("dbgNewName").value = "Debug Member " + token;
       document.getElementById("dbgNewEmail").value = "debug+" + token + "@example.com";
       document.getElementById("dbgNewWhatsapp").value = "+2782" + token;
-      document.getElementById("dbgNewJoinDate").value = join;
-      document.getElementById("dbgNewNextDue").value = next;
+      document.getElementById("dbgNewJoinDate").value = formatDisplayDate(join);
+      document.getElementById("dbgNewNextDue").value = formatDisplayDate(next);
       document.getElementById("dbgNewAmount").value = "150";
       document.getElementById("dbgNewStatus").value = "Pending";
       document.getElementById("dbgNewAccess").value = "false";
@@ -991,8 +1026,8 @@
           full_name: String(document.getElementById("dbgNewName").value || "").trim(),
           email: String(document.getElementById("dbgNewEmail").value || "").trim(),
           whatsapp: String(document.getElementById("dbgNewWhatsapp").value || "").trim(),
-          join_date: String(document.getElementById("dbgNewJoinDate").value || "").trim(),
-          next_due_date: String(document.getElementById("dbgNewNextDue").value || "").trim(),
+          join_date: parseDisplayDateToIso(document.getElementById("dbgNewJoinDate").value),
+          next_due_date: parseDisplayDateToIso(document.getElementById("dbgNewNextDue").value),
           amount: Number(document.getElementById("dbgNewAmount").value || "150"),
           status: String(document.getElementById("dbgNewStatus").value || "Pending").trim() || "Pending",
           group_access: document.getElementById("dbgNewAccess").value === "true",
