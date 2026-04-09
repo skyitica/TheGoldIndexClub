@@ -18,6 +18,7 @@
       --text-primary: #f0f0f0;
       --text-muted: #888888;
       --error: #ef5350;
+      --ok: #81c784;
       --container: 540px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -161,7 +162,7 @@
       }
     }
 
-    .field { margin-bottom: 0.85rem; text-align: left; }
+    .field { margin-bottom: 0.9rem; text-align: left; }
     .field label {
       display: block;
       font-size: 0.68rem;
@@ -249,8 +250,29 @@
       color: var(--text-muted);
     }
 
-    #memberBlock:not(.hidden) .lead {
-      margin-top: 0.25rem;
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .step-pill {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      text-align: center;
+      padding: 0.45rem 0.25rem;
+      font-size: 0.66rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8b8b8b;
+      background: #0d0d0d;
+    }
+
+    .step-pill.is-active {
+      border-color: rgba(201, 168, 76, 0.7);
+      color: var(--gold-light);
+      background: rgba(201, 168, 76, 0.08);
     }
 
     .checkout-loading {
@@ -260,24 +282,115 @@
       margin: 0.35rem 0 1.25rem;
     }
 
-    #guestForm .btn {
-      align-self: center;
+    .details {
+      margin-top: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
     }
 
-    #guestForm {
-      display: flex;
-      flex-direction: column;
-    }
-
-    #memberBlock {
-      display: flex;
-      flex-direction: column;
+    .detail-row {
+      display: grid;
+      grid-template-columns: 160px 1fr auto;
+      gap: 0.75rem;
       align-items: center;
+      padding: 0.72rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      background: #0c0c0c;
     }
 
-    #memberBlock .error-msg {
-      width: 100%;
-      text-align: center;
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-key {
+      color: #a9a9a9;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .detail-value {
+      color: #efefef;
+      font-size: 0.86rem;
+      word-break: break-word;
+    }
+
+    .copy-btn {
+      border: 1px solid rgba(201, 168, 76, 0.5);
+      background: transparent;
+      color: var(--gold-light);
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.34rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--gold-light);
+    }
+
+    .notice {
+      margin-top: 0.95rem;
+      border: 1px solid rgba(201, 168, 76, 0.35);
+      border-radius: 9px;
+      background: rgba(201, 168, 76, 0.08);
+      padding: 0.8rem 0.85rem;
+      font-size: 0.74rem;
+      color: #d7d0ba;
+      line-height: 1.55;
+    }
+
+    .step-actions {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: #cfcfcf;
+      animation: none;
+    }
+
+    .confirmation {
+      border: 1px solid rgba(129, 199, 132, 0.45);
+      background: rgba(129, 199, 132, 0.08);
+      border-radius: 10px;
+      padding: 0.9rem;
+      margin-top: 0.8rem;
+    }
+
+    .confirmation .line {
+      font-size: 0.8rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .confirmation .line:last-child {
+      margin-bottom: 0;
+    }
+
+    .ok {
+      color: var(--ok);
+      font-size: 0.78rem;
+      margin-top: 0.7rem;
+      min-height: 1.2em;
+    }
+
+    @media (max-width: 680px) {
+      .detail-row {
+        grid-template-columns: 1fr;
+      }
+
+      .copy-btn {
+        justify-self: start;
+      }
     }
   </style>
 </head>
@@ -295,163 +408,232 @@
   <main class="page">
     <div class="card card--checkout">
       <div class="checkout-hero">
-        <h1 class="checkout-title">Subscribe — R150/month</h1>
+        <h1 class="checkout-title">Manual EFT Checkout — R150</h1>
+        <p class="lead">Complete the 3 steps below. Use your WhatsApp number as the exact payment reference.</p>
       </div>
 
-      <p id="checkoutLoading" class="checkout-loading">Loading…</p>
+      <div class="steps" aria-label="Checkout steps">
+        <div class="step-pill is-active" id="pill1">Step 1: Details</div>
+        <div class="step-pill" id="pill2">Step 2: EFT</div>
+        <div class="step-pill" id="pill3">Step 3: Confirm</div>
+      </div>
 
-      <!-- Guest pay-first (shown only when not signed in — after session check) -->
-      <div id="guestBlock" class="hidden">
-        <p class="lead">Pay with Paystack, then create your password on the next screen (same email).</p>
-        <div class="error-msg" id="errorMsgGuest"></div>
-        <form id="guestForm">
+      <div class="error-msg" id="errorMsg"></div>
+
+      <section id="step1">
+        <form id="detailsForm" novalidate>
           <div class="field">
-            <label for="gName">Full name</label>
-            <input id="gName" type="text" required autocomplete="name" placeholder="Your name" />
+            <label for="fullName">Full name</label>
+            <input id="fullName" type="text" autocomplete="name" placeholder="Your full name" />
           </div>
           <div class="field">
-            <label for="gPhone">WhatsApp number (for your group invite)</label>
-            <input id="gPhone" type="tel" required autocomplete="tel" placeholder="+27 82 123 4567" />
+            <label for="email">Email address</label>
+            <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
           </div>
           <div class="field">
-            <label for="gEmail">Email</label>
-            <input id="gEmail" type="email" required autocomplete="email" placeholder="you@example.com" />
+            <label for="whatsapp">WhatsApp number</label>
+            <input id="whatsapp" type="tel" autocomplete="tel" placeholder="+27 82 123 4567" />
           </div>
-          <button class="btn" type="submit" id="guestPayBtn">Continue to secure payment &rarr;</button>
+          <button class="btn" type="submit">Continue &rarr;</button>
         </form>
-        <p class="alt">Already have an account? <a href="login.html">Log in</a> to pay from your dashboard.</p>
-      </div>
+      </section>
 
-      <!-- Logged-in existing flow -->
-      <div id="memberBlock" class="hidden">
-        <p class="lead">Continue to Paystack to subscribe or renew.</p>
-        <div class="error-msg" id="errorMsgMember"></div>
-        <button class="btn" id="memberPayBtn" type="button">Pay R150 &amp; Join &rarr;</button>
-      </div>
+      <section id="step2" class="hidden">
+        <div class="details">
+          <div class="detail-row">
+            <div class="detail-key">Bank</div>
+            <div class="detail-value">Discovery Bank</div>
+            <div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-key">Account Name</div>
+            <div class="detail-value">The Gold Index Club</div>
+            <div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-key">Account Number</div>
+            <div class="detail-value" id="accountNumber">14586714314</div>
+            <button type="button" class="copy-btn" data-copy-target="accountNumber">Copy</button>
+          </div>
+          <div class="detail-row">
+            <div class="detail-key">Branch Code</div>
+            <div class="detail-value">679000</div>
+            <div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-key">Amount</div>
+            <div class="detail-value">R150</div>
+            <div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-key">Payment Reference</div>
+            <div class="detail-value" id="paymentReference"></div>
+            <button type="button" class="copy-btn" data-copy-target="paymentReference">Copy</button>
+          </div>
+        </div>
 
-      <p class="micro">Payments processed by Paystack.</p>
+        <p class="notice">WhatsApp group invite access is sent by email only after payment reflects. This may take a few hours on business days.</p>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" id="backToStep1">Back</button>
+          <button type="button" class="btn" id="confirmPaymentBtn">I've Made the Payment</button>
+        </div>
+        <p class="ok" id="copyStatus"></p>
+      </section>
+
+      <section id="step3" class="hidden">
+        <p class="lead" style="margin-top:0;">Payment confirmation received. Watch your inbox for next steps and your invite update.</p>
+        <div class="confirmation">
+          <p class="line"><strong>Email:</strong> <span id="confirmEmail"></span></p>
+          <p class="line"><strong>Reference:</strong> <span id="confirmReference"></span></p>
+        </div>
+        <p class="micro">If you do not see an email after payment reflects, check spam/junk, then contact support.</p>
+      </section>
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script>
-    const { createClient } = supabase;
-    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+    const detailsForm = document.getElementById("detailsForm");
+    const errorMsg = document.getElementById("errorMsg");
+    const copyStatus = document.getElementById("copyStatus");
+    const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
+    const backToStep1 = document.getElementById("backToStep1");
+    const paymentReference = document.getElementById("paymentReference");
+    const confirmEmail = document.getElementById("confirmEmail");
+    const confirmReference = document.getElementById("confirmReference");
 
-    const guestBlock = document.getElementById("guestBlock");
-    const memberBlock = document.getElementById("memberBlock");
-    const guestForm = document.getElementById("guestForm");
-    const guestPayBtn = document.getElementById("guestPayBtn");
-    const memberPayBtn = document.getElementById("memberPayBtn");
-    const errorMsgGuest = document.getElementById("errorMsgGuest");
-    const errorMsgMember = document.getElementById("errorMsgMember");
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const step3 = document.getElementById("step3");
 
-    const callbackUrl = window.location.origin.replace(/\/$/, "") + "/signup.html";
-    const checkoutLoading = document.getElementById("checkoutLoading");
+    const pill1 = document.getElementById("pill1");
+    const pill2 = document.getElementById("pill2");
+    const pill3 = document.getElementById("pill3");
 
-    function hideCheckoutLoading() {
-      if (checkoutLoading) checkoutLoading.classList.add("hidden");
+    const fullNameInput = document.getElementById("fullName");
+    const emailInput = document.getElementById("email");
+    const whatsappInput = document.getElementById("whatsapp");
+
+    let checkoutData = {
+      fullName: "",
+      email: "",
+      whatsapp: "",
+      reference: "",
+    };
+
+    const FORMSPREE_URL = (typeof TGIC_CONFIG !== "undefined" && TGIC_CONFIG.FORMSPREE_CHECKOUT_URL) || "";
+
+    function setStep(stepNum) {
+      step1.classList.toggle("hidden", stepNum !== 1);
+      step2.classList.toggle("hidden", stepNum !== 2);
+      step3.classList.toggle("hidden", stepNum !== 3);
+
+      pill1.classList.toggle("is-active", stepNum === 1);
+      pill2.classList.toggle("is-active", stepNum === 2);
+      pill3.classList.toggle("is-active", stepNum === 3);
     }
 
-    async function boot() {
+    function validEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    async function copyText(text) {
+      if (!text) return false;
       try {
-        const { data: { session } } = await sb.auth.getSession();
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
 
-        if (session) {
-          const { data: profile } = await sb
-            .from("profiles")
-            .select("subscription_status")
-            .eq("id", session.user.id)
-            .single();
+    async function sendFormspreeNotification(payload) {
+      if (!FORMSPREE_URL) {
+        throw new Error("Formspree URL is not configured yet.");
+      }
+      const res = await fetch(FORMSPREE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        throw new Error("Could not send confirmation notification.");
+      }
+    }
 
-          if (profile?.subscription_status === "active") {
-            window.location.href = TGIC_CONFIG.ACCOUNT_URL;
-            return;
-          }
+    detailsForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      errorMsg.textContent = "";
+      copyStatus.textContent = "";
 
-          hideCheckoutLoading();
-          guestBlock.classList.add("hidden");
-          memberBlock.classList.remove("hidden");
+      const fullName = fullNameInput.value.trim();
+      const email = emailInput.value.trim().toLowerCase();
+      const whatsapp = whatsappInput.value.trim();
 
-          memberPayBtn.addEventListener("click", async () => {
-            memberPayBtn.disabled = true;
-            memberPayBtn.innerHTML = '<span class="spinner"></span>Redirecting…';
-            errorMsgMember.textContent = "";
-            try {
-              const base = window.location.origin.replace(/\/$/, "");
-              const accountPath = TGIC_CONFIG.ACCOUNT_URL.replace(/^\//, "");
-              const res = await sb.functions.invoke("create-subscription", {
-                headers: { "x-callback-url": base + "/" + accountPath },
-              });
-              if (res.error) throw new Error(res.error.message || "Function error");
-              const result = res.data;
-              if (result.authorization_url) {
-                window.location.href = result.authorization_url;
-              } else {
-                throw new Error(result.error || "No payment URL received");
-              }
-            } catch (err) {
-              errorMsgMember.textContent = err.message || "Something went wrong.";
-              memberPayBtn.disabled = false;
-              memberPayBtn.innerHTML = "Pay R150 &amp; Join &rarr;";
-            }
-          });
-          return;
-        }
-      } catch (e) {
-        console.error(e);
+      if (!fullName || !email || !whatsapp) {
+        errorMsg.textContent = "Please complete full name, email, and WhatsApp number.";
+        return;
+      }
+      if (!validEmail(email)) {
+        errorMsg.textContent = "Please enter a valid email address.";
+        return;
       }
 
-      hideCheckoutLoading();
-      guestBlock.classList.remove("hidden");
-      memberBlock.classList.add("hidden");
+      checkoutData = {
+        fullName: fullName,
+        email: email,
+        whatsapp: whatsapp,
+        reference: whatsapp,
+      };
 
-      guestForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        errorMsgGuest.textContent = "";
-        guestPayBtn.disabled = true;
-        guestPayBtn.innerHTML = '<span class="spinner"></span>Starting checkout…';
+      paymentReference.textContent = checkoutData.reference;
+      setStep(2);
+    });
 
-        const full_name = document.getElementById("gName").value.trim();
-        const phone_number = document.getElementById("gPhone").value.trim();
-        const email = document.getElementById("gEmail").value.trim().toLowerCase();
+    backToStep1.addEventListener("click", function () {
+      errorMsg.textContent = "";
+      setStep(1);
+    });
 
-        try {
-          const res = await sb.functions.invoke("create-guest-checkout", {
-            body: {
-              email,
-              full_name,
-              phone_number,
-              callback_url: callbackUrl,
-            },
-          });
-
-          if (res.error) throw new Error(res.error.message || "Could not start checkout");
-
-          const result = res.data;
-          if (result.error) throw new Error(result.error + (result.detail ? " — " + JSON.stringify(result.detail) : ""));
-
-          if (result.reference) {
-            try {
-              sessionStorage.setItem("tgic_pay_ref", result.reference);
-            } catch (ignore) {}
-          }
-
-          if (result.authorization_url) {
-            window.location.href = result.authorization_url;
-          } else {
-            throw new Error("No payment URL received");
-          }
-        } catch (err) {
-          errorMsgGuest.textContent = err.message || "Something went wrong.";
-          guestPayBtn.disabled = false;
-          guestPayBtn.innerHTML = "Continue to secure payment &rarr;";
-        }
+    document.querySelectorAll(".copy-btn").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        const targetId = btn.getAttribute("data-copy-target");
+        const node = document.getElementById(targetId);
+        const value = node ? node.textContent.trim() : "";
+        const ok = await copyText(value);
+        copyStatus.textContent = ok ? "Copied." : "Could not copy. Please copy manually.";
       });
-    }
+    });
 
-    boot();
+    confirmPaymentBtn.addEventListener("click", async function () {
+      errorMsg.textContent = "";
+      copyStatus.textContent = "";
+      confirmPaymentBtn.disabled = true;
+      confirmPaymentBtn.innerHTML = '<span class="spinner"></span>Sending confirmation…';
+
+      try {
+        await sendFormspreeNotification({
+          full_name: checkoutData.fullName,
+          email: checkoutData.email,
+          whatsapp_number: checkoutData.whatsapp,
+          reference: checkoutData.reference,
+          source: "checkout-manual-eft",
+        });
+
+        confirmEmail.textContent = checkoutData.email;
+        confirmReference.textContent = checkoutData.reference;
+        setStep(3);
+      } catch (err) {
+        errorMsg.textContent = err.message || "Could not submit confirmation.";
+      } finally {
+        confirmPaymentBtn.disabled = false;
+        confirmPaymentBtn.textContent = "I've Made the Payment";
+      }
+    });
   </script>
 </body>
 </html>

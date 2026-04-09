@@ -9,8 +9,8 @@ const TGIC_CONFIG = {
   // If auth fails, copy the legacy "anon" JWT from Project Settings → API and paste here instead.
   SUPABASE_ANON_KEY: "sb_publishable_7U257mFcB_WWNWjfsx2zAg_0Yqoy6UW",
 
-  // Paystack — add when your account is ready (Settings → API Keys)
-  PAYSTACK_PUBLIC_KEY: "YOUR_PAYSTACK_PUBLIC_KEY",
+  // Formspree endpoint for manual EFT confirmation notifications (example: https://formspree.io/f/xxxxabcd)
+  FORMSPREE_CHECKOUT_URL: "https://formspree.io/f/xreovjdg",
 
   // Page URLs (adjust if your site lives in a subdirectory)
   SIGNUP_URL: "signup.html",
