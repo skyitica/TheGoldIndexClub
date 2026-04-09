@@ -30,7 +30,7 @@
       line-height: 1.45;
       padding: 1.2rem;
     }
-    .wrap { width: min(1600px, 100%); margin: 0 auto; }
+    .wrap { width: min(1800px, 100%); margin: 0 auto; }
     h1 {
       font-family: "Cormorant Garamond", serif;
       font-size: clamp(1.6rem, 3vw, 2.2rem);
@@ -87,8 +87,8 @@
     .table-wrap {
       border: 1px solid var(--border);
       border-radius: 10px;
-      overflow: hidden;
-      background: #0d0d0d;
+      overflow: auto;
+      background: #0f0f0f;
     }
     table {
       width: 100%;
@@ -96,18 +96,17 @@
       table-layout: fixed;
     }
     th, td {
-      padding: 0.4rem 0.45rem;
+      padding: 0.3rem 0.35rem;
       border-bottom: 1px solid var(--border);
       text-align: left;
-      font-size: 0.68rem;
+      font-size: 0.62rem;
       vertical-align: middle;
-      white-space: normal;
-      word-break: break-word;
-      line-height: 1.2;
+      white-space: nowrap;
+      line-height: 1.1;
     }
     th {
       color: #d9d9d9;
-      font-size: 0.66rem;
+      font-size: 0.58rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       background: #121212;
@@ -132,18 +131,27 @@
       color: #ecd38f;
       border-radius: 8px;
       font-family: inherit;
-      font-size: 0.6rem;
+      font-size: 0.52rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 0.25rem 0.4rem;
+      padding: 0.18rem 0.3rem;
       cursor: pointer;
     }
     .btn:hover { border-color: #ecd38f; }
     .btn + .btn { margin-left: 0.28rem; }
     .actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.25rem;
+      flex-wrap: nowrap;
+      gap: 0.2rem;
+      white-space: nowrap;
+    }
+    .cell-ellipsis {
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: bottom;
     }
     .notice {
       margin-top: 0.8rem;
@@ -152,8 +160,8 @@
       min-height: 1.2em;
     }
     @media (max-width: 1200px) {
-      th, td { font-size: 0.64rem; padding: 0.34rem 0.35rem; }
-      .btn { font-size: 0.56rem; padding: 0.2rem 0.32rem; }
+      th, td { font-size: 0.58rem; padding: 0.28rem 0.28rem; }
+      .btn { font-size: 0.48rem; padding: 0.15rem 0.24rem; }
     }
     @media (max-width: 980px) {
       .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -480,22 +488,22 @@
           : "No";
         return `
           <tr>
-            <td>${esc(row.full_name)}</td>
-            <td>${esc(row.email)}</td>
-            <td>${esc(row.whatsapp)}</td>
+            <td><span class="cell-ellipsis" title="${esc(row.full_name)}">${esc(row.full_name)}</span></td>
+            <td><span class="cell-ellipsis" title="${esc(row.email)}">${esc(row.email)}</span></td>
+            <td><span class="cell-ellipsis" title="${esc(row.whatsapp)}">${esc(row.whatsapp)}</span></td>
             <td>${esc(row.join_date)}</td>
             <td>${esc(row.next_due_date)}</td>
             <td>${esc(row.date_paid || "-")}</td>
             <td><span class="status-badge ${statusClass(dStatus)}">${esc(dStatus)}</span></td>
             <td>${accessLabel}</td>
-            <td>${esc(extensionReq)}</td>
+            <td><span class="cell-ellipsis" title="${esc(extensionReq)}">${esc(extensionReq)}</span></td>
             <td>
               <div class="actions">
-              <button class="btn js-paid" data-id="${row.id}">Mark Paid</button>
-              <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${accessBtnLabel}</button>
-              <button class="btn js-extend" data-id="${row.id}">Extend</button>
-              <button class="btn js-reduce" data-id="${row.id}">Reduce</button>
-              <button class="btn js-delete" data-id="${row.id}" data-name="${esc(row.full_name)}">Delete</button>
+              <button class="btn js-paid" data-id="${row.id}">PAID</button>
+              <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${row.group_access ? "REVOKE" : "GRANT"}</button>
+              <button class="btn js-extend" data-id="${row.id}">EXT</button>
+              <button class="btn js-reduce" data-id="${row.id}">RED</button>
+              <button class="btn js-delete" data-id="${row.id}" data-name="${esc(row.full_name)}">DEL</button>
               </div>
             </td>
           </tr>
