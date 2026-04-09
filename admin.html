@@ -388,36 +388,44 @@
       if (!secret || !memberId) {
         return { ok: false, skipped: true, error: "TGIC_EMAIL_SERVER_SECRET not set in config" };
       }
-      var url = TGIC_CONFIG.SUPABASE_URL.replace(/\/$/, "") + "/functions/v1/notify-member";
       try {
-        var res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + TGIC_CONFIG.SUPABASE_ANON_KEY,
-            apikey: TGIC_CONFIG.SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({
+        // Use supabase-js invoke — raw fetch with Authorization: Bearer + publishable key (sb_…)
+        // is rejected by the gateway ("Invalid Token"); the client sends valid auth.
+        var result = await sb.functions.invoke("notify-member", {
+          body: {
             type: type,
             member_id: memberId,
             tgic_email_server_secret: secret,
-          }),
+          },
         });
-        var rawText = await res.text();
-        var data = {};
-        try {
-          data = rawText ? JSON.parse(rawText) : {};
-        } catch (parseErr) {
-          data = {};
-        }
-        if (!res.ok) {
-          var msg = (data && data.error) || res.statusText || "";
-          if (!msg && rawText) msg = rawText.slice(0, 280);
-          if (!msg) msg = "HTTP " + res.status;
-          else msg = "HTTP " + res.status + ": " + msg;
-          if (data && data.hint) msg = msg + " — " + data.hint;
-          if (data && data.skipped) msg = msg + " (server email provider not configured?)";
+        var data = result.data;
+        var fnError = result.error;
+        if (fnError) {
+          var msg = fnError.message || "Function error";
+          var ctx = fnError.context;
+          if (ctx && ctx.body != null) {
+            try {
+              var parsed =
+                typeof ctx.body === "string" ? JSON.parse(ctx.body) : ctx.body;
+              if (parsed.error) msg = String(parsed.error);
+              if (parsed.hint) msg = msg + " — " + parsed.hint;
+              if (parsed.skipped) msg = msg + " (email provider not configured on server?)";
+            } catch (parseErr) {
+              if (typeof ctx.body === "string" && ctx.body.length) {
+                msg = ctx.body.slice(0, 280);
+              }
+            }
+          }
           return { ok: false, error: msg };
+        }
+        if (data && data.error) {
+          return {
+            ok: false,
+            error:
+              String(data.error) +
+              (data.hint ? " — " + data.hint : "") +
+              (data.skipped ? " (email provider not configured?)" : ""),
+          };
         }
         return { ok: true, data: data };
       } catch (e) {
