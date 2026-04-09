@@ -401,20 +401,43 @@
         var data = result.data;
         var fnError = result.error;
         if (fnError) {
+          // FunctionsHttpError.context is a fetch Response (not { body }) — read text to get JSON error from Edge Function.
           var msg = fnError.message || "Function error";
           var ctx = fnError.context;
-          if (ctx && ctx.body != null) {
+          var status = (ctx && ctx.status) || "";
+          if (ctx && typeof ctx.text === "function") {
             try {
-              var parsed =
-                typeof ctx.body === "string" ? JSON.parse(ctx.body) : ctx.body;
-              if (parsed.error) msg = String(parsed.error);
-              if (parsed.hint) msg = msg + " — " + parsed.hint;
-              if (parsed.skipped) msg = msg + " (email provider not configured on server?)";
-            } catch (parseErr) {
-              if (typeof ctx.body === "string" && ctx.body.length) {
-                msg = ctx.body.slice(0, 280);
+              var raw = await ctx.text();
+              if (raw) {
+                try {
+                  var parsed = JSON.parse(raw);
+                  if (parsed.error) msg = String(parsed.error);
+                  else if (parsed.message) msg = String(parsed.message);
+                  if (parsed.hint) msg = msg + " — " + parsed.hint;
+                  if (parsed.skipped) msg = msg + " (add RESEND_API_KEY + EMAIL_FROM in Supabase Edge secrets)";
+                } catch (je) {
+                  msg = raw.slice(0, 400);
+                }
               }
-            }
+            } catch (te) {}
+          } else if (ctx && ctx.body != null) {
+            try {
+              var parsed2 =
+                typeof ctx.body === "string" ? JSON.parse(ctx.body) : ctx.body;
+              if (parsed2.error) msg = String(parsed2.error);
+              if (parsed2.hint) msg = msg + " — " + parsed2.hint;
+            } catch (parseErr) {}
+          }
+          if (status && msg.indexOf("HTTP ") !== 0) {
+            msg = "HTTP " + status + ": " + msg;
+          }
+          if (
+            status === 401 ||
+            (msg && msg.indexOf("Unauthorized") >= 0)
+          ) {
+            msg =
+              msg +
+              " — Set TGIC_EMAIL_SERVER_SECRET in js/config.js to match Supabase → Edge Functions → Secrets (exact same string).";
           }
           return { ok: false, error: msg };
         }
