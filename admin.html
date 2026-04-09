@@ -40,7 +40,7 @@
     .muted { color: var(--muted); font-size: 0.78rem; margin-bottom: 1rem; }
     .summary {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 0.75rem;
       margin-bottom: 1rem;
     }
@@ -49,6 +49,73 @@
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-bottom: 0.85rem;
+    }
+    .debug-toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin: 0 0 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .debug-badge {
+      font-size: 0.65rem;
+      color: #f6d17a;
+      border: 1px solid rgba(201, 168, 76, 0.45);
+      border-radius: 999px;
+      padding: 0.22rem 0.55rem;
+      display: none;
+    }
+    .debug-badge.on { display: inline-block; }
+    .debug-panel {
+      border: 1px dashed rgba(201, 168, 76, 0.45);
+      border-radius: 10px;
+      padding: 0.8rem;
+      margin: 0 0 0.9rem;
+      background: rgba(201, 168, 76, 0.05);
+      display: none;
+    }
+    .debug-panel.on { display: block; }
+    .debug-title {
+      font-size: 0.72rem;
+      color: #ecd38f;
+      margin-bottom: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .debug-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.45rem;
+      margin-bottom: 0.55rem;
+    }
+    .debug-grid label {
+      font-size: 0.6rem;
+      color: #d6d6d6;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .debug-grid input,
+    .debug-grid select {
+      width: 100%;
+      background: #131313;
+      border: 1px solid #2f2f2f;
+      color: #f0f0f0;
+      border-radius: 8px;
+      padding: 0.32rem 0.4rem;
+      font-family: inherit;
+      font-size: 0.64rem;
+    }
+    .debug-actions {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.45rem;
+    }
+    .sep {
+      height: 1px;
+      background: rgba(201, 168, 76, 0.2);
+      margin: 0.6rem 0;
     }
     .filter-btn {
       border: 1px solid var(--border);
@@ -165,10 +232,12 @@
       .btn { font-size: 0.48rem; padding: 0.15rem 0.24rem; }
     }
     @media (max-width: 980px) {
-      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .debug-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 560px) {
-      .summary { grid-template-columns: 1fr; }
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .debug-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -182,6 +251,7 @@
       <div class="card"><p class="kpi-label">Paid this month</p><p class="kpi-value" id="kpiPaidMonth">0</p></div>
       <div class="card"><p class="kpi-label">Pending</p><p class="kpi-value" id="kpiPending">0</p></div>
       <div class="card"><p class="kpi-label">Overdue</p><p class="kpi-value" id="kpiOverdue">0</p></div>
+      <div class="card"><p class="kpi-label">Members requesting extension</p><p class="kpi-value" id="kpiExtensionReq">0</p></div>
     </section>
 
     <section class="filters" aria-label="Member filters">
@@ -189,6 +259,90 @@
       <button class="filter-btn" data-filter="new" type="button">New Members</button>
       <button class="filter-btn" data-filter="overdue" type="button">Overdue</button>
       <button class="filter-btn" data-filter="paid" type="button">Members Who Have Paid</button>
+      <button class="filter-btn" data-filter="extension" type="button">Requesting Extension</button>
+    </section>
+    <section class="debug-toolbar">
+      <button class="btn" id="debugToggleBtn" type="button">Enable Debug Mode</button>
+      <span class="debug-badge" id="debugBadge">DEBUG MODE ACTIVE</span>
+    </section>
+    <section class="debug-panel" id="debugPanel">
+      <p class="debug-title">Debug Tools - manual overrides</p>
+      <div class="debug-grid">
+        <label>Member ID
+          <input id="dbgMemberId" type="number" min="1" placeholder="e.g. 17" />
+        </label>
+        <label>Field name
+          <input id="dbgFieldName" type="text" placeholder="e.g. phone_number, next_due_date, month_number" />
+        </label>
+        <label>Field value (raw)
+          <input id="dbgFieldValue" type="text" placeholder="e.g. 2026-04-20, 5, true, +2782..." />
+        </label>
+        <label>Type
+          <select id="dbgFieldType">
+            <option value="auto">Auto</option>
+            <option value="string">String</option>
+            <option value="number">Number</option>
+            <option value="boolean">Boolean</option>
+            <option value="null">Null</option>
+          </select>
+        </label>
+      </div>
+      <div class="debug-actions">
+        <button class="btn" id="dbgApplyFieldBtn" type="button">Apply Field Update</button>
+        <button class="btn" id="dbgLoadLatestBtn" type="button">Load Latest Member ID</button>
+      </div>
+      <div class="debug-grid">
+        <label>Quick phone
+          <input id="dbgPhoneValue" type="text" placeholder="e.g. +27821234567" />
+        </label>
+        <label>Quick due date (YYYY-MM-DD)
+          <input id="dbgDueValue" type="text" placeholder="e.g. 2026-05-04" />
+        </label>
+        <label>Quick month number
+          <input id="dbgMonthNoValue" type="number" min="1" placeholder="e.g. 8" />
+        </label>
+        <label>Quick status
+          <input id="dbgStatusValue" type="text" placeholder="e.g. Paid, Pending, past_due" />
+        </label>
+      </div>
+      <div class="debug-actions">
+        <button class="btn" id="dbgApplyQuickBtn" type="button">Apply Quick Update</button>
+      </div>
+      <div class="sep"></div>
+      <p class="debug-title">Create Member (debug)</p>
+      <div class="debug-grid">
+        <label>Full name
+          <input id="dbgNewName" type="text" placeholder="Test Member" />
+        </label>
+        <label>Email
+          <input id="dbgNewEmail" type="text" placeholder="test.member@example.com" />
+        </label>
+        <label>WhatsApp
+          <input id="dbgNewWhatsapp" type="text" placeholder="+27820000000" />
+        </label>
+        <label>Join date (YYYY-MM-DD)
+          <input id="dbgNewJoinDate" type="text" placeholder="2026-04-04" />
+        </label>
+        <label>Next due date (YYYY-MM-DD)
+          <input id="dbgNewNextDue" type="text" placeholder="2026-05-04" />
+        </label>
+        <label>Amount
+          <input id="dbgNewAmount" type="number" min="0" value="150" />
+        </label>
+        <label>Status
+          <input id="dbgNewStatus" type="text" value="Pending" />
+        </label>
+        <label>Group access
+          <select id="dbgNewAccess">
+            <option value="false">False</option>
+            <option value="true">True</option>
+          </select>
+        </label>
+      </div>
+      <div class="debug-actions">
+        <button class="btn" id="dbgAutoFillBtn" type="button">Auto Fill Test Member</button>
+        <button class="btn" id="dbgCreateBtn" type="button">Create Member</button>
+      </div>
     </section>
 
     <section class="table-wrap">
@@ -217,6 +371,7 @@
   <script src="js/config.js"></script>
   <script>
     const ADMIN_PASSWORD = "179317";
+    const DEBUG_PASSWORD = "179317";
     const entered = window.prompt("Enter admin password");
     if (entered !== ADMIN_PASSWORD) {
       window.location.replace("/");
@@ -233,20 +388,38 @@
     const kpiPaidMonth = document.getElementById("kpiPaidMonth");
     const kpiPending = document.getElementById("kpiPending");
     const kpiOverdue = document.getElementById("kpiOverdue");
+    const kpiExtensionReq = document.getElementById("kpiExtensionReq");
     const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
+    const debugToggleBtn = document.getElementById("debugToggleBtn");
+    const debugBadge = document.getElementById("debugBadge");
+    const debugPanel = document.getElementById("debugPanel");
     let activeFilter = "all";
     let allRowsCache = [];
+    let debugMode = false;
 
     function dateOnlyString(date) {
-      return date.toISOString().slice(0, 10);
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + d;
     }
 
     function monthPrefix(date) {
-      return date.toISOString().slice(0, 7);
+      return dateOnlyString(date).slice(0, 7);
+    }
+
+    function parseIsoDate(value) {
+      const s = String(value || "").trim();
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      const dt = new Date(s);
+      if (!isNaN(dt.getTime())) return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
 
     function deriveStatus(member, todayStr) {
-      if (member.next_due_date && member.next_due_date <= todayStr) return "Overdue";
+      if (member.next_due_date && member.next_due_date < todayStr) return "Overdue";
       const raw = (member.status || "Pending").toLowerCase();
       if (raw === "paid") return "Paid";
       return "Pending";
@@ -279,7 +452,7 @@
       if (!m) {
         var dt = new Date(s);
         if (!isNaN(dt.getTime())) {
-          ymd = dt.toISOString().slice(0, 10);
+          ymd = dateOnlyString(new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()));
           m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
         }
       }
@@ -291,13 +464,13 @@
     }
 
     function addOneMonthIso(isoDate) {
-      const d = new Date((isoDate || dateOnlyString(new Date())) + "T00:00:00");
+      const d = parseIsoDate(isoDate || dateOnlyString(new Date()));
       d.setMonth(d.getMonth() + 1);
       return dateOnlyString(d);
     }
 
     function addMonthsIso(isoDate, months) {
-      const d = new Date((isoDate || dateOnlyString(new Date())) + "T00:00:00");
+      const d = parseIsoDate(isoDate || dateOnlyString(new Date()));
       d.setMonth(d.getMonth() + Number(months || 1));
       return dateOnlyString(d);
     }
@@ -443,7 +616,7 @@
       if (fetchErr || !member) throw (fetchErr || new Error("Member not found"));
 
       const baseDate = member.next_due_date || today;
-      const d = new Date(baseDate + "T00:00:00");
+      const d = parseIsoDate(baseDate);
       d.setMonth(d.getMonth() - m);
       const reducedDue = dateOnlyString(d);
       const nextMonthNumber = Math.max(1, Number(member.month_number || 1) - m);
@@ -476,6 +649,53 @@
       if (error) throw error;
     }
 
+    function parseDebugValue(raw, forcedType) {
+      if (forcedType === "null") return null;
+      if (forcedType === "string") return String(raw || "");
+      if (forcedType === "number") {
+        const n = Number(raw);
+        if (isNaN(n)) throw new Error("Field value must be a number.");
+        return n;
+      }
+      if (forcedType === "boolean") {
+        const v = String(raw || "").trim().toLowerCase();
+        if (v === "true" || v === "1" || v === "yes") return true;
+        if (v === "false" || v === "0" || v === "no") return false;
+        throw new Error("Boolean value must be true/false.");
+      }
+      const text = String(raw || "").trim();
+      if (text === "") return "";
+      if (text.toLowerCase() === "null") return null;
+      if (/^(true|false)$/i.test(text)) return text.toLowerCase() === "true";
+      if (!isNaN(Number(text)) && /^-?\d+(\.\d+)?$/.test(text)) return Number(text);
+      return text;
+    }
+
+    async function debugUpdateField(memberId, fieldName, value) {
+      const payload = {};
+      payload[fieldName] = value;
+      const { error } = await sb.from("members").update(payload).eq("id", memberId);
+      if (error) throw error;
+    }
+
+    async function debugCreateMember(payload) {
+      let ins = await sb.from("members").insert(payload);
+      if (ins.error && /column .* does not exist/i.test(ins.error.message || "")) {
+        const legacyPayload = {
+          full_name: payload.full_name,
+          email: payload.email,
+          whatsapp: payload.whatsapp,
+          join_date: payload.join_date,
+          next_due_date: payload.next_due_date,
+          amount: payload.amount,
+          status: payload.status,
+          group_access: payload.group_access,
+        };
+        ins = await sb.from("members").insert(legacyPayload);
+      }
+      if (ins.error) throw ins.error;
+    }
+
     function renderSummary(rows) {
       const today = new Date();
       const todayStr = dateOnlyString(today);
@@ -484,18 +704,21 @@
       let paidThisMonth = 0;
       let pending = 0;
       let overdue = 0;
+      let extensionReq = 0;
 
       rows.forEach(function (row) {
         const dStatus = deriveStatus(row, todayStr);
         if (dStatus === "Pending") pending += 1;
         if (dStatus === "Overdue") overdue += 1;
         if (row.date_paid && row.date_paid.startsWith(thisMonth)) paidThisMonth += 1;
+        if (row.pending_extension) extensionReq += 1;
       });
 
       kpiTotal.textContent = String(rows.length);
       kpiPaidMonth.textContent = String(paidThisMonth);
       kpiPending.textContent = String(pending);
       kpiOverdue.textContent = String(overdue);
+      kpiExtensionReq.textContent = String(extensionReq);
     }
 
     function renderRows(rows) {
@@ -552,6 +775,11 @@
       }
       if (activeFilter === "new") {
         return rows.filter(isNewMember);
+      }
+      if (activeFilter === "extension") {
+        return rows.filter(function (row) {
+          return !!row.pending_extension;
+        });
       }
       return rows;
     }
@@ -663,6 +891,122 @@
         });
         applyActiveFilter();
       });
+    });
+
+    debugToggleBtn.addEventListener("click", function () {
+      if (debugMode) {
+        debugMode = false;
+        debugPanel.classList.remove("on");
+        debugBadge.classList.remove("on");
+        debugToggleBtn.textContent = "Enable Debug Mode";
+        notice.textContent = "Debug mode disabled.";
+        return;
+      }
+      const pass = window.prompt("Enter debug password");
+      if (pass !== DEBUG_PASSWORD) {
+        notice.textContent = "Debug mode denied: wrong password.";
+        return;
+      }
+      debugMode = true;
+      debugPanel.classList.add("on");
+      debugBadge.classList.add("on");
+      debugToggleBtn.textContent = "Disable Debug Mode";
+      notice.textContent = "Debug mode enabled. Manual editing unlocked.";
+    });
+
+    document.getElementById("dbgLoadLatestBtn").addEventListener("click", function () {
+      if (!allRowsCache.length) {
+        notice.textContent = "No members loaded yet.";
+        return;
+      }
+      const latest = allRowsCache[0];
+      document.getElementById("dbgMemberId").value = String(latest.id);
+      notice.textContent = "Loaded latest member id: " + latest.id;
+    });
+
+    document.getElementById("dbgApplyFieldBtn").addEventListener("click", async function () {
+      try {
+        if (!debugMode) throw new Error("Enable debug mode first.");
+        const memberId = Number(document.getElementById("dbgMemberId").value || "0");
+        const fieldName = String(document.getElementById("dbgFieldName").value || "").trim();
+        const raw = document.getElementById("dbgFieldValue").value;
+        const forcedType = document.getElementById("dbgFieldType").value || "auto";
+        if (!memberId) throw new Error("Enter a valid member id.");
+        if (!fieldName) throw new Error("Enter a field name.");
+        const parsed = parseDebugValue(raw, forcedType);
+        await debugUpdateField(memberId, fieldName, parsed);
+        await loadMembers();
+        notice.textContent = "Updated member " + memberId + " field " + fieldName + ".";
+      } catch (err) {
+        notice.textContent = "Debug update failed: " + (err.message || "unknown error");
+      }
+    });
+
+    document.getElementById("dbgApplyQuickBtn").addEventListener("click", async function () {
+      try {
+        if (!debugMode) throw new Error("Enable debug mode first.");
+        const memberId = Number(document.getElementById("dbgMemberId").value || "0");
+        if (!memberId) throw new Error("Enter a valid member id.");
+        const phone = String(document.getElementById("dbgPhoneValue").value || "").trim();
+        const due = String(document.getElementById("dbgDueValue").value || "").trim();
+        const monthNoRaw = String(document.getElementById("dbgMonthNoValue").value || "").trim();
+        const status = String(document.getElementById("dbgStatusValue").value || "").trim();
+        const payload = {};
+        if (phone) payload.whatsapp = phone;
+        if (due) payload.next_due_date = due;
+        if (monthNoRaw) payload.month_number = Number(monthNoRaw);
+        if (status) payload.status = status;
+        if (!Object.keys(payload).length) throw new Error("Enter at least one quick value.");
+        const { error } = await sb.from("members").update(payload).eq("id", memberId);
+        if (error) throw error;
+        await loadMembers();
+        notice.textContent = "Quick update applied for member " + memberId + ".";
+      } catch (err) {
+        notice.textContent = "Quick update failed: " + (err.message || "unknown error");
+      }
+    });
+
+    document.getElementById("dbgAutoFillBtn").addEventListener("click", function () {
+      const now = new Date();
+      const join = dateOnlyString(now);
+      const next = addOneMonthIso(join);
+      const token = String(Date.now()).slice(-6);
+      document.getElementById("dbgNewName").value = "Debug Member " + token;
+      document.getElementById("dbgNewEmail").value = "debug+" + token + "@example.com";
+      document.getElementById("dbgNewWhatsapp").value = "+2782" + token;
+      document.getElementById("dbgNewJoinDate").value = join;
+      document.getElementById("dbgNewNextDue").value = next;
+      document.getElementById("dbgNewAmount").value = "150";
+      document.getElementById("dbgNewStatus").value = "Pending";
+      document.getElementById("dbgNewAccess").value = "false";
+      notice.textContent = "Debug test member data filled in.";
+    });
+
+    document.getElementById("dbgCreateBtn").addEventListener("click", async function () {
+      try {
+        if (!debugMode) throw new Error("Enable debug mode first.");
+        const payload = {
+          full_name: String(document.getElementById("dbgNewName").value || "").trim(),
+          email: String(document.getElementById("dbgNewEmail").value || "").trim(),
+          whatsapp: String(document.getElementById("dbgNewWhatsapp").value || "").trim(),
+          join_date: String(document.getElementById("dbgNewJoinDate").value || "").trim(),
+          next_due_date: String(document.getElementById("dbgNewNextDue").value || "").trim(),
+          amount: Number(document.getElementById("dbgNewAmount").value || "150"),
+          status: String(document.getElementById("dbgNewStatus").value || "Pending").trim() || "Pending",
+          group_access: document.getElementById("dbgNewAccess").value === "true",
+          current_plan_months: 1,
+          last_discount_percent: 0,
+          last_payment_total: Number(document.getElementById("dbgNewAmount").value || "150"),
+        };
+        if (!payload.full_name || !payload.email || !payload.whatsapp || !payload.join_date || !payload.next_due_date) {
+          throw new Error("Name, email, WhatsApp, join date and next due are required.");
+        }
+        await debugCreateMember(payload);
+        await loadMembers();
+        notice.textContent = "Debug member created successfully.";
+      } catch (err) {
+        notice.textContent = "Create member failed: " + (err.message || "unknown error");
+      }
     });
 
     loadMembers();
