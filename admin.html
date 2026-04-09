@@ -403,7 +403,10 @@
           return {};
         });
         if (!res.ok) {
-          return { ok: false, error: (data && data.error) || res.statusText || "Request failed" };
+          var errParts = [(data && data.error) || res.statusText || "Request failed"];
+          if (data && data.hint) errParts.push(data.hint);
+          if (data && data.skipped) errParts.push("(Email provider not configured on server.)");
+          return { ok: false, error: errParts.join(" ") };
         }
         return { ok: true, data: data };
       } catch (e) {

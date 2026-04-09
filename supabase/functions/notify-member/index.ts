@@ -117,10 +117,18 @@ serve(async (req) => {
 
   const send = await sendResendEmail({ to, subject, html });
   if (!send.ok) {
+    // 503 = Resend not configured; 502 = Resend API error — so clients don't treat as success.
+    const status = send.skipped ? 503 : 502;
     return new Response(
-      JSON.stringify({ error: send.error || "Send failed", skipped: send.skipped }),
+      JSON.stringify({
+        error: send.error || "Send failed",
+        skipped: !!send.skipped,
+        hint: send.skipped
+          ? "Add RESEND_API_KEY and EMAIL_FROM in Supabase → Edge Functions → Secrets, then redeploy notify-member."
+          : undefined,
+      }),
       {
-        status: send.skipped ? 200 : 502,
+        status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
