@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="assets/logo-favicon.png">
+  <title>Admin | The Gold Index Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card: #111111;
+      --border: #242424;
+      --text: #f0f0f0;
+      --muted: #9a9a9a;
+      --gold: #c9a84c;
+      --green: #81c784;
+      --red: #ef5350;
+      --amber: #fbc02d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% -20%, rgba(201,168,76,0.1), transparent 42%), var(--bg);
+      color: var(--text);
+      font-family: "DM Mono", monospace;
+      line-height: 1.45;
+      padding: 1.2rem;
+    }
+    .wrap { width: min(1200px, 100%); margin: 0 auto; }
+    h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      margin-bottom: 0.35rem;
+      color: #f6f6f6;
+    }
+    .muted { color: var(--muted); font-size: 0.78rem; margin-bottom: 1rem; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      padding: 0.8rem;
+    }
+    .kpi-label {
+      font-size: 0.67rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .kpi-value {
+      margin-top: 0.35rem;
+      font-size: 1.5rem;
+      color: #fff;
+    }
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: auto;
+      background: #0d0d0d;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1100px;
+    }
+    th, td {
+      padding: 0.6rem 0.55rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 0.74rem;
+      vertical-align: top;
+    }
+    th {
+      color: #d9d9d9;
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: #121212;
+      position: sticky;
+      top: 0;
+    }
+    .status-badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.2rem 0.48rem;
+      font-size: 0.64rem;
+      border: 1px solid currentColor;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .status-paid { color: var(--green); }
+    .status-overdue { color: var(--red); }
+    .status-pending { color: var(--amber); }
+    .btn {
+      border: 1px solid rgba(201, 168, 76, 0.5);
+      background: transparent;
+      color: #ecd38f;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.32rem 0.5rem;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: #ecd38f; }
+    .btn + .btn { margin-left: 0.35rem; }
+    .notice {
+      margin-top: 0.8rem;
+      font-size: 0.74rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+    @media (max-width: 980px) {
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="adminApp" style="display:none;">
+    <h1>Members Admin</h1>
+    <p class="muted">Manual EFT member tracking dashboard.</p>
+
+    <section class="summary">
+      <div class="card"><p class="kpi-label">Total members</p><p class="kpi-value" id="kpiTotal">0</p></div>
+      <div class="card"><p class="kpi-label">Paid this month</p><p class="kpi-value" id="kpiPaidMonth">0</p></div>
+      <div class="card"><p class="kpi-label">Pending</p><p class="kpi-value" id="kpiPending">0</p></div>
+      <div class="card"><p class="kpi-label">Overdue</p><p class="kpi-value" id="kpiOverdue">0</p></div>
+    </section>
+
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>WhatsApp</th>
+            <th>Join Date</th>
+            <th>Next Due</th>
+            <th>Date Paid</th>
+            <th>Status</th>
+            <th>Group Access</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="membersBody"></tbody>
+      </table>
+    </section>
+    <p class="notice" id="notice"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    const ADMIN_PASSWORD = "tgic_admin_2026";
+    const entered = window.prompt("Enter admin password");
+    if (entered !== ADMIN_PASSWORD) {
+      window.location.replace("/");
+    } else {
+      document.getElementById("adminApp").style.display = "block";
+    }
+
+    const { createClient } = supabase;
+    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+
+    const membersBody = document.getElementById("membersBody");
+    const notice = document.getElementById("notice");
+    const kpiTotal = document.getElementById("kpiTotal");
+    const kpiPaidMonth = document.getElementById("kpiPaidMonth");
+    const kpiPending = document.getElementById("kpiPending");
+    const kpiOverdue = document.getElementById("kpiOverdue");
+
+    function dateOnlyString(date) {
+      return date.toISOString().slice(0, 10);
+    }
+
+    function monthPrefix(date) {
+      return date.toISOString().slice(0, 7);
+    }
+
+    function deriveStatus(member, todayStr) {
+      const raw = (member.status || "Pending").toLowerCase();
+      if (raw === "paid") return "Paid";
+      if (member.next_due_date && member.next_due_date < todayStr) return "Overdue";
+      return "Pending";
+    }
+
+    function statusClass(status) {
+      if (status === "Paid") return "status-paid";
+      if (status === "Overdue") return "status-overdue";
+      return "status-pending";
+    }
+
+    function esc(value) {
+      return String(value || "").replace(/[&<>"']/g, function (ch) {
+        return ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "\"": "&quot;",
+          "'": "&#39;",
+        })[ch];
+      });
+    }
+
+    async function markPaid(id) {
+      const today = dateOnlyString(new Date());
+      const { error } = await sb
+        .from("members")
+        .update({ date_paid: today, status: "Paid" })
+        .eq("id", id);
+      if (error) throw error;
+    }
+
+    async function toggleAccess(id, current) {
+      const { error } = await sb
+        .from("members")
+        .update({ group_access: !current })
+        .eq("id", id);
+      if (error) throw error;
+    }
+
+    function renderSummary(rows) {
+      const today = new Date();
+      const todayStr = dateOnlyString(today);
+      const thisMonth = monthPrefix(today);
+
+      let paidThisMonth = 0;
+      let pending = 0;
+      let overdue = 0;
+
+      rows.forEach(function (row) {
+        const dStatus = deriveStatus(row, todayStr);
+        if (dStatus === "Pending") pending += 1;
+        if (dStatus === "Overdue") overdue += 1;
+        if (row.date_paid && row.date_paid.startsWith(thisMonth)) paidThisMonth += 1;
+      });
+
+      kpiTotal.textContent = String(rows.length);
+      kpiPaidMonth.textContent = String(paidThisMonth);
+      kpiPending.textContent = String(pending);
+      kpiOverdue.textContent = String(overdue);
+    }
+
+    function renderRows(rows) {
+      const todayStr = dateOnlyString(new Date());
+      membersBody.innerHTML = rows.map(function (row) {
+        const dStatus = deriveStatus(row, todayStr);
+        const accessLabel = row.group_access ? "True" : "False";
+        const accessBtnLabel = row.group_access ? "Revoke Access" : "Grant Access";
+        return `
+          <tr>
+            <td>${esc(row.full_name)}</td>
+            <td>${esc(row.email)}</td>
+            <td>${esc(row.whatsapp)}</td>
+            <td>${esc(row.join_date)}</td>
+            <td>${esc(row.next_due_date)}</td>
+            <td>${esc(row.date_paid || "-")}</td>
+            <td><span class="status-badge ${statusClass(dStatus)}">${esc(dStatus)}</span></td>
+            <td>${accessLabel}</td>
+            <td>
+              <button class="btn js-paid" data-id="${row.id}">Mark Paid</button>
+              <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${accessBtnLabel}</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadMembers() {
+      notice.textContent = "Loading members...";
+      const { data, error } = await sb
+        .from("members")
+        .select("id, full_name, email, whatsapp, join_date, next_due_date, date_paid, status, group_access")
+        .order("id", { ascending: false });
+      if (error) {
+        notice.textContent = "Could not load members: " + (error.message || "unknown error");
+        return;
+      }
+      const rows = data || [];
+      renderSummary(rows);
+      renderRows(rows);
+      notice.textContent = rows.length ? "" : "No members yet.";
+    }
+
+    membersBody.addEventListener("click", async function (e) {
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      try {
+        if (target.classList.contains("js-paid")) {
+          const id = Number(target.dataset.id || "0");
+          if (!id) return;
+          target.setAttribute("disabled", "disabled");
+          await markPaid(id);
+          await loadMembers();
+          notice.textContent = "Payment marked as received.";
+        }
+
+        if (target.classList.contains("js-access")) {
+          const id = Number(target.dataset.id || "0");
+          const current = target.dataset.current === "1";
+          if (!id) return;
+          target.setAttribute("disabled", "disabled");
+          await toggleAccess(id, current);
+          await loadMembers();
+          notice.textContent = "Group access updated.";
+        }
+      } catch (err) {
+        notice.textContent = "Update failed: " + (err.message || "unknown error");
+      }
+    });
+
+    loadMembers();
+  </script>
+</body>
+</html>

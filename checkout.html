@@ -492,8 +492,12 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script>
+    const { createClient } = supabase;
+    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
+
     const detailsForm = document.getElementById("detailsForm");
     const errorMsg = document.getElementById("errorMsg");
     const copyStatus = document.getElementById("copyStatus");
@@ -565,6 +569,33 @@
       }
     }
 
+    function toDateOnly(date) {
+      return date.toISOString().slice(0, 10);
+    }
+
+    function addOneMonth(date) {
+      const d = new Date(date);
+      d.setMonth(d.getMonth() + 1);
+      return d;
+    }
+
+    async function insertMemberSignup() {
+      const today = new Date();
+      const joinDate = toDateOnly(today);
+      const nextDueDate = toDateOnly(addOneMonth(today));
+
+      const { error } = await sb.from("members").insert({
+        full_name: checkoutData.fullName,
+        email: checkoutData.email,
+        whatsapp: checkoutData.whatsapp,
+        join_date: joinDate,
+        next_due_date: nextDueDate,
+        status: "Pending",
+        group_access: false,
+      });
+      if (error) throw new Error(error.message || "Could not save member signup.");
+    }
+
     detailsForm.addEventListener("submit", function (e) {
       e.preventDefault();
       errorMsg.textContent = "";
@@ -616,6 +647,8 @@
       confirmPaymentBtn.innerHTML = '<span class="spinner"></span>Sending confirmation…';
 
       try {
+        await insertMemberSignup();
+
         await sendFormspreeNotification({
           full_name: checkoutData.fullName,
           email: checkoutData.email,
