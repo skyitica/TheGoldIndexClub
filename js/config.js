@@ -25,5 +25,5 @@ const TGIC_CONFIG = {
 
   // Same string as Supabase Edge Function secret TGIC_EMAIL_SERVER_SECRET (Project Settings → Edge Functions → Secrets).
   // Used by admin only to trigger notify-member (payment confirmed, extension denied). Leave empty to skip those emails.
-  TGIC_EMAIL_SERVER_SECRET: "",
+  TGIC_EMAIL_SERVER_SECRET: "GoldIndex2026Secret!",
 };
