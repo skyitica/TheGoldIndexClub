@@ -2351,26 +2351,44 @@
         document.body.classList.toggle("tgic-logged-in", loggedIn);
       }
 
-      function boot() {
+      async function boot() {
         // TGIC_CONFIG is a script global from js/config.js (not window.TGIC_CONFIG when declared with const/let).
         if (typeof supabase === "undefined" || typeof TGIC_CONFIG === "undefined" || !TGIC_CONFIG.SUPABASE_URL) {
           return;
         }
         var sb = supabase.createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
-        sb.auth.getSession().then(function (res) {
-          var loggedIn = !!(res.data && res.data.session && res.data.session.user);
-          applyAuthUi(loggedIn);
-          if (loggedIn) {
-            var allowFullSite = false;
+        var res = await sb.auth.getSession();
+        var session = res.data && res.data.session ? res.data.session : null;
+        var loggedIn = !!(session && session.user);
+        applyAuthUi(loggedIn);
+        if (loggedIn) {
+          var allowFullSite = false;
+          try {
+            var params = new URLSearchParams(window.location.search);
+            allowFullSite = params.get("fullsite") === "1";
+          } catch (err) {}
+          if (!allowFullSite) {
             try {
-              var params = new URLSearchParams(window.location.search);
-              allowFullSite = params.get("fullsite") === "1";
-            } catch (err) {}
-            if (!allowFullSite) {
+              // Guard against stale/deleted auth sessions: only redirect if user + profile still exist.
+              var userRes = await sb.auth.getUser();
+              var user = userRes.data && userRes.data.user ? userRes.data.user : null;
+              if (!user) {
+                await sb.auth.signOut();
+                applyAuthUi(false);
+                return;
+              }
+              var profileRes = await sb.from("profiles").select("id").eq("id", user.id).maybeSingle();
+              if (profileRes.error || !profileRes.data) {
+                await sb.auth.signOut();
+                applyAuthUi(false);
+                return;
+              }
               window.location.replace(TGIC_CONFIG.ACCOUNT_URL);
+            } catch (e) {
+              // If validation fails, keep user on home instead of forcing account redirect.
             }
           }
-        });
+        }
         sb.auth.onAuthStateChange(function (_evt, session) {
           applyAuthUi(!!(session && session.user));
         });

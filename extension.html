@@ -10,28 +10,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0a0a0a; --bg-card: #111; --border: #1e1e1e; --gold:#c9a84c; --gold-light:#e8c97a;
-      --text:#f0f0f0; --muted:#888; --ok:#81c784; --err:#ef5350; --container:680px;
+      --bg: #f7f7f7; --bg-card: #fff; --border: #d8d8d8; --gold:#9a7b2f; --gold-light:#7a5f20;
+      --text:#121212; --muted:#555; --ok:#2e7d32; --err:#c62828; --container:680px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{min-height:100vh;background:radial-gradient(circle at 50% -20%,rgba(201,168,76,.1),transparent 42%),var(--bg);color:var(--text);font-family:"DM Mono",monospace;display:flex;flex-direction:column}
-    .topbar{border-bottom:1px solid var(--border);padding:0 1rem;background:rgba(8,8,8,.94)}
+    body{min-height:100vh;background:#f7f7f7;color:var(--text);font-family:"DM Mono",monospace;display:flex;flex-direction:column}
+    .topbar{border-bottom:1px solid var(--border);padding:0 1rem;background:#fff}
     .topbar-inner{max-width:var(--container);margin:0 auto;min-height:56px;display:flex;align-items:center;justify-content:space-between}
     .brand{font-family:"Cormorant Garamond",serif;color:var(--gold-light);text-decoration:none}
     .links{display:flex;gap:1rem}
-    .links a{color:#c8c8c8;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;text-decoration:underline;text-underline-offset:6px}
+    .links a{color:#444;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;text-decoration:underline;text-underline-offset:6px}
     .page{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem}
     .card{width:100%;max-width:var(--container);background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.35rem}
     h1{font-family:"Cormorant Garamond",serif;font-size:1.9rem;margin-bottom:.35rem}
     .muted{color:var(--muted);font-size:.78rem;margin-bottom:.8rem}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
-    .row{border:1px solid var(--border);border-radius:8px;padding:.6rem;background:#0d0d0d}
+    .row{border:1px solid var(--border);border-radius:8px;padding:.6rem;background:#fff}
     .k{color:#aaa;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem}
     .v{font-size:.84rem}
     .field{margin:.8rem 0}
     .field label{display:block;font-size:.68rem;text-transform:uppercase;color:#aaa;margin-bottom:.35rem}
-    .field input{width:100%;padding:.62rem .72rem;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.75rem 1.1rem;border:1px solid var(--gold);border-radius:8px;background:#0d0d0d;color:var(--gold-light);font-family:inherit;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .field input{width:100%;padding:.62rem .72rem;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.75rem 1.1rem;border:1px solid var(--gold);border-radius:8px;background:#fff;color:var(--gold-light);font-family:inherit;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
     .btn:disabled{opacity:.5;cursor:not-allowed}
     .msg{margin-top:.6rem;font-size:.76rem;min-height:1.1em}
     .ok{color:var(--ok)} .err{color:var(--err)}
@@ -86,7 +86,7 @@
     const amountVal = document.getElementById("amountVal");
     const discountInfo = document.getElementById("discountInfo");
 
-    let userCtx = { email: "", whatsapp: "", full_name: "" };
+    let userCtx = { email: "", whatsapp: "", full_name: "", member_id: null };
 
     function pricingForMonths(months) {
       const m = Number(months || 1);
@@ -120,8 +120,27 @@
       const member = members && members.length ? members[0] : null;
       const whatsapp = (member && member.whatsapp) || (profile && profile.phone_number) || "";
       refVal.textContent = whatsapp || "Not set";
-      userCtx = { email: user.email || "", whatsapp: whatsapp, full_name: (profile && profile.full_name) || "" };
+      userCtx = { email: user.email || "", whatsapp: whatsapp, full_name: (profile && profile.full_name) || "", member_id: member ? member.id : null };
       refreshQuote();
+    }
+
+    async function saveExtensionRequest(q) {
+      if (!userCtx.member_id) return;
+      let upd = await sb
+        .from("members")
+        .update({
+          pending_extension: true,
+          requested_extension_months: q.months,
+          requested_extension_discount: q.discountPercent,
+          requested_extension_total: q.total,
+        })
+        .eq("id", userCtx.member_id);
+
+      // Backward compatibility before migration runs.
+      if (upd.error && /column .* does not exist/i.test(upd.error.message || "")) {
+        return;
+      }
+      if (upd.error) throw upd.error;
     }
 
     document.querySelectorAll("[data-copy]").forEach(function (btn) {
@@ -155,6 +174,7 @@
           })
         });
         if (!res.ok) throw new Error("Could not submit extension request.");
+        await saveExtensionRequest(q);
         msg.className = "msg ok";
         msg.textContent = "Extension request submitted. Redirecting to dashboard...";
         setTimeout(function () { window.location.href = "account.html"; }, 1200);

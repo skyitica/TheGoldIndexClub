@@ -392,7 +392,8 @@
         .single();
 
       if (!profile) {
-        loadingState.textContent = "Profile not found. Please contact support.";
+        await sb.auth.signOut();
+        window.location.href = TGIC_CONFIG.LOGIN_URL;
         return;
       }
 

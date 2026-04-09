@@ -93,14 +93,16 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1100px;
+      min-width: 1320px;
     }
     th, td {
-      padding: 0.6rem 0.55rem;
+      padding: 0.4rem 0.45rem;
       border-bottom: 1px solid var(--border);
       text-align: left;
-      font-size: 0.74rem;
-      vertical-align: top;
+      font-size: 0.68rem;
+      vertical-align: middle;
+      white-space: nowrap;
+      line-height: 1.2;
     }
     th {
       color: #d9d9d9;
@@ -129,10 +131,10 @@
       color: #ecd38f;
       border-radius: 8px;
       font-family: inherit;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 0.32rem 0.5rem;
+      padding: 0.25rem 0.4rem;
       cursor: pointer;
     }
     .btn:hover { border-color: #ecd38f; }
@@ -182,6 +184,7 @@
             <th>Date Paid</th>
             <th>Status</th>
             <th>Group Access</th>
+            <th>Extension Request</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -290,6 +293,10 @@
           status: "Paid",
           next_due_date: nextDue,
           month_number: nextMonthNumber,
+          pending_extension: false,
+          requested_extension_months: null,
+          requested_extension_discount: null,
+          requested_extension_total: null,
         })
         .eq("id", id);
       if (upd.error) throw upd.error;
@@ -341,6 +348,10 @@
           current_plan_months: m,
           last_discount_percent: pricing.discountPercent,
           last_payment_total: pricing.total,
+          pending_extension: false,
+          requested_extension_months: null,
+          requested_extension_discount: null,
+          requested_extension_total: null,
         })
         .eq("id", id);
       if (upd.error && /column .* does not exist/i.test(upd.error.message || "")) {
@@ -351,6 +362,10 @@
             status: "Paid",
             next_due_date: nextDue,
             month_number: nextMonthNumber,
+            pending_extension: false,
+            requested_extension_months: null,
+            requested_extension_discount: null,
+            requested_extension_total: null,
           })
           .eq("id", id);
       }
@@ -400,6 +415,10 @@
           next_due_date: reducedDue,
           month_number: nextMonthNumber,
           status: reducedDue <= today ? "past_due" : "Paid",
+          pending_extension: false,
+          requested_extension_months: null,
+          requested_extension_discount: null,
+          requested_extension_total: null,
         })
         .eq("id", id);
       if (upd.error) throw upd.error;
@@ -441,6 +460,9 @@
         const dStatus = deriveStatus(row, todayStr);
         const accessLabel = row.group_access ? "True" : "False";
         const accessBtnLabel = row.group_access ? "Revoke Access" : "Grant Access";
+        const extensionReq = row.pending_extension
+          ? ("Yes - " + (row.requested_extension_months || 1) + "m / R" + (row.requested_extension_total || "-"))
+          : "No";
         return `
           <tr>
             <td>${esc(row.full_name)}</td>
@@ -451,6 +473,7 @@
             <td>${esc(row.date_paid || "-")}</td>
             <td><span class="status-badge ${statusClass(dStatus)}">${esc(dStatus)}</span></td>
             <td>${accessLabel}</td>
+            <td>${esc(extensionReq)}</td>
             <td>
               <button class="btn js-paid" data-id="${row.id}">Mark Paid</button>
               <button class="btn js-access" data-id="${row.id}" data-current="${row.group_access ? "1" : "0"}">${accessBtnLabel}</button>
@@ -463,12 +486,9 @@
     }
 
     function isNewMember(row) {
-      const join = row.join_date || "";
-      if (!join) return false;
-      const today = new Date();
-      const cutoff = new Date(today);
-      cutoff.setDate(today.getDate() - 7);
-      return join >= dateOnlyString(cutoff);
+      const todayStr = dateOnlyString(new Date());
+      const dStatus = deriveStatus(row, todayStr);
+      return dStatus === "Pending" && !row.group_access;
     }
 
     function filteredRows(rows) {
@@ -504,7 +524,7 @@
       notice.textContent = "Loading members...";
       const { data, error } = await sb
         .from("members")
-        .select("id, full_name, email, whatsapp, join_date, next_due_date, date_paid, status, group_access")
+        .select("*")
         .order("id", { ascending: false });
       if (error) {
         notice.textContent = "Could not load members: " + (error.message || "unknown error");
