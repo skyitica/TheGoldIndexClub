@@ -413,6 +413,32 @@
       animation: none;
     }
 
+    .risk-ack {
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+      margin: 0.4rem 0 1rem;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid rgba(201, 168, 76, 0.22);
+      border-radius: 8px;
+      background: rgba(201, 168, 76, 0.04);
+    }
+    .risk-ack input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--gold);
+    }
+    .risk-ack label {
+      margin: 0;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.72rem;
+      line-height: 1.5;
+      color: #c7c0aa;
+    }
+
     .confirmation {
       border: 1px solid rgba(129, 199, 132, 0.45);
       background: rgba(129, 199, 132, 0.08);
@@ -501,7 +527,11 @@
             <input id="months" type="number" min="1" max="719" step="1" value="1" />
           </div>
           <p class="detail" style="margin:-0.2rem 0 0.8rem;">Discounts start after one month</p>
-          <button class="btn" type="submit">Continue &rarr;</button>
+          <div class="risk-ack">
+            <input id="checkoutRiskAck" type="checkbox" required />
+            <label for="checkoutRiskAck">I understand that The Gold Index Club provides educational content only, is not FSCA-registered, and that I am solely responsible for my trading decisions. I accept that past performance does not guarantee future results and that I may lose money.</label>
+          </div>
+          <button class="btn" type="submit" id="continueCheckoutBtn" disabled>Continue &rarr;</button>
         </form>
       </section>
 
@@ -790,6 +820,8 @@
           data: {
             full_name: checkoutData.fullName,
             phone_number: checkoutData.whatsapp,
+            acknowledged_risk: true,
+            acknowledged_at: checkoutData.acknowledged_at,
           },
         },
       });
@@ -831,6 +863,15 @@
       }
     }
 
+    (function wireCheckoutRiskAck() {
+      const cb = document.getElementById("checkoutRiskAck");
+      const btn = document.getElementById("continueCheckoutBtn");
+      if (!cb || !btn) return;
+      const sync = () => { btn.disabled = !cb.checked; };
+      cb.addEventListener("change", sync);
+      sync();
+    })();
+
     detailsForm.addEventListener("submit", function (e) {
       e.preventDefault();
       errorMsg.textContent = "";
@@ -842,6 +883,12 @@
       const password = passwordInput.value;
       const monthsRaw = String(monthsInput.value || "").trim();
       const months = parseInt(monthsRaw, 10);
+      const ackEl = document.getElementById("checkoutRiskAck");
+
+      if (!ackEl || !ackEl.checked) {
+        errorMsg.textContent = "Please acknowledge the risk disclosure before continuing.";
+        return;
+      }
 
       if (!fullName || !email || !whatsapp || !password || !monthsRaw) {
         errorMsg.textContent = "Please complete full name, email, WhatsApp number, password, and months.";
@@ -875,6 +922,8 @@
         discountPercent: pricing.discountPercent,
         totalAmount: pricing.total,
         reference: whatsapp,
+        acknowledged_risk: true,
+        acknowledged_at: new Date().toISOString(),
       };
 
       const amountEl = document.getElementById("amountValue");

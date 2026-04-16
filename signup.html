@@ -230,6 +230,32 @@
       font-size: 0.72rem;
     }
 
+    .risk-ack {
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+      margin: 0.4rem 0 1.05rem;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid rgba(201, 168, 76, 0.22);
+      border-radius: 8px;
+      background: rgba(201, 168, 76, 0.04);
+    }
+    .risk-ack input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--gold);
+    }
+    .risk-ack label {
+      margin: 0;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.72rem;
+      line-height: 1.5;
+      color: #c7c0aa;
+    }
+
     .error-msg {
       color: var(--error);
       font-size: 0.78rem;
@@ -289,7 +315,11 @@
             <label for="paidPassword">Password</label>
             <input id="paidPassword" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
           </div>
-          <button class="btn" type="submit" id="paidSubmitBtn">Create account &amp; unlock access &rarr;</button>
+          <div class="risk-ack">
+            <input id="paidRiskAck" type="checkbox" required />
+            <label for="paidRiskAck">I understand that The Gold Index Club provides educational content only, is not FSCA-registered, and that I am solely responsible for my trading decisions. I accept that past performance does not guarantee future results and that I may lose money.</label>
+          </div>
+          <button class="btn" type="submit" id="paidSubmitBtn" disabled>Create account &amp; unlock access &rarr;</button>
         </form>
         <p class="alt-link"><a href="/checkout">Wrong email? Pay again with the correct email</a></p>
       </div>
@@ -320,7 +350,11 @@
             <label for="password">Password</label>
             <input id="password" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
           </div>
-          <button class="btn" type="submit" id="submitBtn">Create Account &rarr;</button>
+          <div class="risk-ack">
+            <input id="riskAck" type="checkbox" required />
+            <label for="riskAck">I understand that The Gold Index Club provides educational content only, is not FSCA-registered, and that I am solely responsible for my trading decisions. I accept that past performance does not guarantee future results and that I may lose money.</label>
+          </div>
+          <button class="btn" type="submit" id="submitBtn" disabled>Create Account &rarr;</button>
         </form>
 
         <p class="alt-link">Already have an account? <a href="/login">Log in</a></p>
@@ -432,13 +466,21 @@
       const full_name = document.getElementById("paidName").value.trim();
       const phone_number = document.getElementById("paidPhone").value.trim();
       const password = document.getElementById("paidPassword").value;
+      const paidAck = document.getElementById("paidRiskAck");
+
+      if (!paidAck || !paidAck.checked) {
+        errorMsgPaid.textContent = "Please acknowledge the risk disclosure before continuing.";
+        btn.disabled = false;
+        btn.innerHTML = "Create account &amp; unlock access &rarr;";
+        return;
+      }
 
       const { data, error } = await sb.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: authEmailRedirect(TGIC_CONFIG.SIGNUP_URL),
-          data: { full_name, phone_number },
+          data: { full_name, phone_number, acknowledged_risk: true },
         },
       });
 
@@ -478,6 +520,22 @@
     const errorMsg = document.getElementById("errorMsg");
     const submitBtn = document.getElementById("submitBtn");
 
+    // Wire "I understand the risk" checkboxes → submit buttons.
+    (function wireRiskAck() {
+      const pairs = [
+        ["riskAck", "submitBtn"],
+        ["paidRiskAck", "paidSubmitBtn"],
+      ];
+      pairs.forEach(([cbId, btnId]) => {
+        const cb = document.getElementById(cbId);
+        const btn = document.getElementById(btnId);
+        if (!cb || !btn) return;
+        const sync = () => { btn.disabled = !cb.checked; };
+        cb.addEventListener("change", sync);
+        sync();
+      });
+    })();
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorMsg.textContent = "";
@@ -488,9 +546,17 @@
       const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+      const ackEl = document.getElementById("riskAck");
 
       if (!fullName || !phone || !email || !password) {
         errorMsg.textContent = "All fields are required.";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Create Account &rarr;";
+        return;
+      }
+
+      if (!ackEl || !ackEl.checked) {
+        errorMsg.textContent = "Please acknowledge the risk disclosure before continuing.";
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Create Account &rarr;";
         return;
@@ -501,7 +567,7 @@
         password,
         options: {
           emailRedirectTo: authEmailRedirect(TGIC_CONFIG.CHECKOUT_URL),
-          data: { full_name: fullName, phone_number: phone },
+          data: { full_name: fullName, phone_number: phone, acknowledged_risk: true },
         },
       });
 

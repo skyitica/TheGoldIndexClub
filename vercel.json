@@ -21,7 +21,8 @@
     { "source": "/terms.html", "destination": "/terms", "permanent": true },
     { "source": "/landing.html", "destination": "/landing", "permanent": true },
     { "source": "/extension.html", "destination": "/extension", "permanent": true },
-    { "source": "/admin.html", "destination": "/admin", "permanent": true }
+    { "source": "/admin.html", "destination": "/admin", "permanent": true },
+    { "source": "/refunds.html", "destination": "/refunds", "permanent": true }
   ],
   "rewrites": [
     { "source": "/account", "destination": "/account.html" },
@@ -33,6 +34,7 @@
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/landing", "destination": "/landing.html" },
     { "source": "/extension", "destination": "/extension.html" },
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/refunds", "destination": "/refunds.html" }
   ]
 }
