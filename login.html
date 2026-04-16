@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="assets/logo-favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Log In | The Gold Index Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -250,6 +251,19 @@
     const submitBtn = document.getElementById("submitBtn");
 
     async function redirectAfterLogin(user) {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const next = String(params.get("next") || "").trim();
+        if (
+          next &&
+          !/^https?:/i.test(next) &&
+          next.charAt(0) !== "/" &&
+          next.indexOf("..") === -1
+        ) {
+          window.location.href = next;
+          return;
+        }
+      } catch (e) {}
       let payRef = "";
       try {
         payRef = sessionStorage.getItem("tgic_pay_ref") || "";

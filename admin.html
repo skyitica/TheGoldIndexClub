@@ -371,20 +371,52 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script>
-    const ADMIN_PASSWORD = "179317";
-    const DEBUG_PASSWORD = "179317";
-    const entered = window.prompt("Enter admin password");
-    if (entered !== ADMIN_PASSWORD) {
-      window.location.replace("/");
-    } else {
-      document.getElementById("adminApp").style.display = "block";
-    }
-
     const { createClient } = supabase;
     var sbAnonForFunctions =
       (TGIC_CONFIG.SUPABASE_ANON_JWT && String(TGIC_CONFIG.SUPABASE_ANON_JWT).trim()) ||
       TGIC_CONFIG.SUPABASE_ANON_KEY;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, sbAnonForFunctions);
+
+    function tgicNormalizeEmailList(items) {
+      if (!Array.isArray(items)) return [];
+      return items
+        .map(function (item) { return String(item || "").trim().toLowerCase(); })
+        .filter(Boolean);
+    }
+
+    async function tgicRequireAdminAccess() {
+      var allowed = tgicNormalizeEmailList(TGIC_CONFIG.ADMIN_ALLOWED_EMAILS);
+      var target = TGIC_CONFIG.ADMIN_URL || "admin.html";
+      var loginUrl =
+        (TGIC_CONFIG.LOGIN_URL || "login.html") +
+        "?next=" +
+        encodeURIComponent(target);
+      var sessionRes = await sb.auth.getSession();
+      var session = sessionRes.data && sessionRes.data.session;
+      if (!session || !session.user) {
+        window.location.replace(loginUrl);
+        return false;
+      }
+      var userRes = await sb.auth.getUser();
+      var user = userRes.data && userRes.data.user;
+      var email = String((user && user.email) || "").trim().toLowerCase();
+      if (!email) {
+        await sb.auth.signOut();
+        window.location.replace(loginUrl);
+        return false;
+      }
+      if (allowed.length && allowed.indexOf(email) === -1) {
+        document.body.innerHTML =
+          '<div style="max-width:720px;margin:12vh auto;padding:1.5rem;border:1px solid #2a2a2a;border-radius:14px;background:#111;color:#f0f0f0;font-family:DM Mono,monospace">' +
+          '<h1 style="margin:0 0 .6rem;font:600 2rem Cormorant Garamond,serif;color:#f6f6f6">Access denied</h1>' +
+          '<p style="color:#bdbdbd;line-height:1.6">This signed-in account is not allowed to open the admin page.</p>' +
+          '<p style="color:#bdbdbd;line-height:1.6">Add your email to <code>ADMIN_ALLOWED_EMAILS</code> in <code>js/config.js</code>, then redeploy.</p>' +
+          "</div>";
+        return false;
+      }
+      document.getElementById("adminApp").style.display = "block";
+      return true;
+    }
 
     async function tgicNotifyMemberEmail(type, memberId) {
       return {
@@ -1026,11 +1058,6 @@
         notice.textContent = "Debug mode disabled.";
         return;
       }
-      const pass = window.prompt("Enter debug password");
-      if (pass !== DEBUG_PASSWORD) {
-        notice.textContent = "Debug mode denied: wrong password.";
-        return;
-      }
       debugMode = true;
       debugPanel.classList.add("on");
       debugBadge.classList.add("on");
@@ -1134,7 +1161,10 @@
       }
     });
 
-    loadMembers();
+    tgicRequireAdminAccess().then(function (ok) {
+      if (!ok) return;
+      loadMembers();
+    });
   </script>
 </body>
 </html>

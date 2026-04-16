@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://thegoldindexclub.vercel.app/</loc>
+    <loc>https://thegoldindexclub.co.za/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://thegoldindexclub.vercel.app/landing.html</loc>
+    <loc>https://thegoldindexclub.co.za/landing.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://thegoldindexclub.vercel.app/wins.html</loc>
+    <loc>https://thegoldindexclub.co.za/wins.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://thegoldindexclub.vercel.app/signup.html</loc>
+    <loc>https://thegoldindexclub.co.za/signup.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://thegoldindexclub.vercel.app/login.html</loc>
+    <loc>https://thegoldindexclub.co.za/login.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://thegoldindexclub.vercel.app/checkout.html</loc>
+    <loc>https://thegoldindexclub.co.za/checkout.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://thegoldindexclub.vercel.app/privacy.html</loc>
+    <loc>https://thegoldindexclub.co.za/privacy.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://thegoldindexclub.vercel.app/terms.html</loc>
+    <loc>https://thegoldindexclub.co.za/terms.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

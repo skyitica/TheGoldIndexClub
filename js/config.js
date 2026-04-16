@@ -20,6 +20,11 @@ const TGIC_CONFIG = {
   CHECKOUT_URL: "checkout.html",
   ACCOUNT_URL: "account.html",
   HOME_URL: "/",
+  ADMIN_URL: "admin.html",
+
+  // Admin access: sign in with one of these email addresses to open admin.html.
+  // Use lowercase emails. Example: ["name@example.com"]
+  ADMIN_ALLOWED_EMAILS: [],
 
   // When true: after email/password signup (session returned), go to account instead of checkout.
   // Use only for your own testing — set back to false for production.
