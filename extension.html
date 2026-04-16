@@ -50,7 +50,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/">The Gold Index Club</a>
-      <nav class="links"><a href="account.html">Dashboard</a><a href="/?fullsite=1">Full Site</a></nav>
+      <nav class="links"><a href="/account">Dashboard</a><a href="/?fullsite=1">Full Site</a></nav>
     </div>
   </header>
   <main class="page">
@@ -103,7 +103,7 @@
     const requestSentOverlay = document.getElementById("requestSentOverlay");
     const sentGoNowBtn = document.getElementById("sentGoNowBtn");
     let sentRedirectTimer = null;
-    let sentRedirectUrl = TGIC_CONFIG.ACCOUNT_URL || "account.html";
+    let sentRedirectUrl = TGIC_CONFIG.ACCOUNT_URL || "/account";
 
     function clearSentRedirect() {
       if (sentRedirectTimer) {
@@ -114,7 +114,7 @@
 
     function showRequestSentThenRedirect(targetUrl) {
       clearSentRedirect();
-      sentRedirectUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL || "account.html";
+      sentRedirectUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL || "/account";
       requestSentOverlay.classList.remove("hidden");
       sentRedirectTimer = setTimeout(function () {
         sentRedirectTimer = null;
@@ -255,7 +255,7 @@
         await saveExtensionRequest(q);
         succeeded = true;
         paidBtn.textContent = "I've Paid for Extension";
-        showRequestSentThenRedirect(TGIC_CONFIG.ACCOUNT_URL || "account.html");
+        showRequestSentThenRedirect(TGIC_CONFIG.ACCOUNT_URL || "/account");
       } catch (e) {
         msg.className = "msg err";
         msg.textContent = e.message || "Submission failed.";

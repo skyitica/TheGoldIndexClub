@@ -253,7 +253,7 @@
       <a class="brand" href="/">The Gold Index Club</a>
       <nav class="topbar-links" aria-label="Site">
         <a class="topbar-nav-item" href="/">Home</a>
-        <a class="topbar-nav-item" href="login.html">Log In</a>
+        <a class="topbar-nav-item" href="/login">Log In</a>
       </nav>
     </div>
   </header>
@@ -291,14 +291,14 @@
           </div>
           <button class="btn" type="submit" id="paidSubmitBtn">Create account &amp; unlock access &rarr;</button>
         </form>
-        <p class="alt-link"><a href="checkout.html">Wrong email? Pay again with the correct email</a></p>
+        <p class="alt-link"><a href="/checkout">Wrong email? Pay again with the correct email</a></p>
       </div>
 
       <!-- Standard: account first, then checkout -->
       <div id="standardFlow">
         <p class="card-label">Create account</p>
         <h1>Join The Gold Index Club</h1>
-        <p class="subtitle">Create your account, then go to checkout. Or <a href="checkout.html">pay first</a> if you prefer. Your WhatsApp number is required so we can add you to the private members group.</p>
+        <p class="subtitle">Create your account, then go to checkout. Or <a href="/checkout">pay first</a> if you prefer. Your WhatsApp number is required so we can add you to the private members group.</p>
 
         <div class="error-msg" id="errorMsg"></div>
 
@@ -323,7 +323,7 @@
           <button class="btn" type="submit" id="submitBtn">Create Account &rarr;</button>
         </form>
 
-        <p class="alt-link">Already have an account? <a href="login.html">Log in</a></p>
+        <p class="alt-link">Already have an account? <a href="/login">Log in</a></p>
       </div>
     </div>
   </main>
@@ -469,7 +469,7 @@
         <div style="text-align:center;padding:0.5rem 0;">
           <p style="font-size:1rem;margin-bottom:0.6rem;">Confirm your email</p>
           <p style="color:var(--text-muted);font-size:0.8rem;line-height:1.5;">
-            We sent a link to <strong>${email}</strong>. After you confirm, you’ll return here — then <a href="login.html">log in</a> if needed so we can link your payment.
+            We sent a link to <strong>${email}</strong>. After you confirm, you’ll return here — then <a href="/login">log in</a> if needed so we can link your payment.
           </p>
         </div>`;
     });
@@ -520,7 +520,7 @@
             <p style="font-size:1.1rem;margin-bottom:0.6rem;">Check your email</p>
             <p style="color:var(--text-muted);font-size:0.82rem;line-height:1.55;">
               We sent a link to <strong>${email}</strong>. After you confirm, you’ll be taken to <strong>checkout</strong> to pay.<br>
-              Or <a href="login.html">log in</a> later and open Checkout from your account.
+              Or <a href="/login">log in</a> later and open Checkout from your account.
             </p>
           </div>`;
       }

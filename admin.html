@@ -386,9 +386,9 @@
 
     async function tgicRequireAdminAccess() {
       var allowed = tgicNormalizeEmailList(TGIC_CONFIG.ADMIN_ALLOWED_EMAILS);
-      var target = TGIC_CONFIG.ADMIN_URL || "admin.html";
+      var target = TGIC_CONFIG.ADMIN_URL || "/admin";
       var loginUrl =
-        (TGIC_CONFIG.LOGIN_URL || "login.html") +
+        (TGIC_CONFIG.LOGIN_URL || "/login") +
         "?next=" +
         encodeURIComponent(target);
       var sessionRes = await sb.auth.getSession();

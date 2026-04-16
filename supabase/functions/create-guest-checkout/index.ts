@@ -80,7 +80,7 @@ serve(async (req) => {
           }
         }
       }
-      callbackUrl = `${base}/signup.html`;
+      callbackUrl = `${base}/signup`;
     }
 
     const subRes = await fetch("https://api.paystack.co/transaction/initialize", {

@@ -95,7 +95,7 @@ serve(async (req) => {
 
     // Initialize a subscription transaction (Paystack hosted checkout).
     const { origin } = new URL(req.url);
-    const callbackUrl = req.headers.get("x-callback-url") || `${origin}/account.html`;
+    const callbackUrl = req.headers.get("x-callback-url") || `${origin}/account`;
 
     const subRes = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",

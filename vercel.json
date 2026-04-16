@@ -11,10 +11,28 @@
     }
   ],
   "redirects": [
-    {
-      "source": "/index.html",
-      "destination": "/",
-      "permanent": true
-    }
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/account.html", "destination": "/account", "permanent": true },
+    { "source": "/signup.html", "destination": "/signup", "permanent": true },
+    { "source": "/login.html", "destination": "/login", "permanent": true },
+    { "source": "/checkout.html", "destination": "/checkout", "permanent": true },
+    { "source": "/wins.html", "destination": "/wins", "permanent": true },
+    { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
+    { "source": "/terms.html", "destination": "/terms", "permanent": true },
+    { "source": "/landing.html", "destination": "/landing", "permanent": true },
+    { "source": "/extension.html", "destination": "/extension", "permanent": true },
+    { "source": "/admin.html", "destination": "/admin", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/account", "destination": "/account.html" },
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/checkout", "destination": "/checkout.html" },
+    { "source": "/wins", "destination": "/wins.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/landing", "destination": "/landing.html" },
+    { "source": "/extension", "destination": "/extension.html" },
+    { "source": "/admin", "destination": "/admin.html" }
   ]
 }

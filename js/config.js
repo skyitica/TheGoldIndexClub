@@ -14,15 +14,15 @@ const TGIC_CONFIG = {
   // Formspree endpoint for manual EFT confirmation notifications (example: https://formspree.io/f/xxxxabcd)
   FORMSPREE_CHECKOUT_URL: "https://formspree.io/f/xreovjdg",
 
-  // Page URLs (adjust if your site lives in a subdirectory)
-  SIGNUP_URL: "signup.html",
-  LOGIN_URL: "login.html",
-  CHECKOUT_URL: "checkout.html",
-  ACCOUNT_URL: "account.html",
+  // Page URLs (root paths; Vercel rewrites serve the matching .html file)
+  SIGNUP_URL: "/signup",
+  LOGIN_URL: "/login",
+  CHECKOUT_URL: "/checkout",
+  ACCOUNT_URL: "/account",
   HOME_URL: "/",
-  ADMIN_URL: "admin.html",
+  ADMIN_URL: "/admin",
 
-  // Admin access: sign in with one of these email addresses to open admin.html.
+  // Admin access: sign in with one of these email addresses to open /admin.
   // Use lowercase emails. Example: ["name@example.com"]
   ADMIN_ALLOWED_EMAILS: [],
 
