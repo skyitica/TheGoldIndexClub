@@ -1267,7 +1267,35 @@
       }
 
       .hero {
-        min-height: clamp(520px, 86vh, 760px);
+        /* Fill the viewport — 86vh left a visible band below the hero on tall phones */
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+
+      /* Logged-in: top bar already has Dashboard — hide duplicate hero CTA on mobile */
+      body.tgic-logged-in .hero-content .hero-actions > a.tgic-when-logged-in {
+        display: none !important;
+      }
+
+      .video-start-overlay {
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0 1rem calc(4.25rem + env(safe-area-inset-bottom, 0px));
+      }
+
+      .video-start-btn {
+        margin-top: 0;
+        max-width: min(100%, 20rem);
+        text-align: center;
+      }
+
+      .skip-video-btn {
+        bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+        right: 0.75rem;
+      }
+
+      .ticker-wrap {
+        bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
       }
 
       .hero-video {
@@ -1291,7 +1319,17 @@
       }
 
       .hero-content {
-        padding-block: 7.6rem 6.6rem;
+        padding-block: 6.75rem 5.25rem;
+      }
+
+      .hero-title {
+        font-size: clamp(1.85rem, 8vw, 2.65rem);
+        margin-bottom: 0.75rem;
+      }
+
+      .hero-subtitle {
+        font-size: clamp(0.86rem, 3.5vw, 1rem);
+        margin-bottom: 1.15rem;
       }
 
       .ticker-track {
