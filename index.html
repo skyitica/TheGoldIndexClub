@@ -792,6 +792,44 @@
       50% { box-shadow: 0 0 22px rgba(201, 168, 76, 0.35), inset 0 0 10px rgba(201, 168, 76, 0.14); }
     }
 
+    /* In-video style line (matches on-screen copy in hero.webm) */
+    .hero-video-tagline {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 38%;
+      z-index: 3;
+      width: min(94%, 28rem);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      pointer-events: none;
+      text-align: center;
+      color: #f7f2ea;
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
+    }
+
+    .hero-headphones-icon {
+      width: 1.85rem;
+      height: 1.85rem;
+      color: var(--gold-light);
+      filter: drop-shadow(0 0 12px rgba(201, 168, 76, 0.35));
+    }
+
+    .hero-video-tagline-text {
+      font-size: clamp(0.58rem, 1.35vw, 0.76rem);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      line-height: 1.35;
+    }
+
+    .hero.video-ended .hero-video-tagline {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 280ms ease, visibility 280ms ease;
+    }
+
     .ticker-wrap {
       position: absolute;
       left: 0;
@@ -1280,7 +1318,7 @@
       .video-start-overlay {
         align-items: flex-end;
         justify-content: center;
-        padding: 0 1rem calc(4.25rem + env(safe-area-inset-bottom, 0px));
+        padding: 0 1rem calc(5.35rem + env(safe-area-inset-bottom, 0px));
       }
 
       .video-start-btn {
@@ -1289,13 +1327,30 @@
         text-align: center;
       }
 
+      /* Skip stays away from bottom “tap to play” + ticker */
       .skip-video-btn {
-        bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
-        right: 0.75rem;
+        top: calc(6.25rem + env(safe-area-inset-top, 0px));
+        bottom: auto;
+        right: 0.65rem;
+        left: auto;
       }
 
       .ticker-wrap {
         bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+      }
+
+      .hero-video-tagline {
+        top: 32%;
+      }
+
+      .hero-headphones-icon {
+        width: 1.65rem;
+        height: 1.65rem;
+      }
+
+      .hero-video-tagline-text {
+        font-size: clamp(0.52rem, 3.1vw, 0.68rem);
+        letter-spacing: 0.1em;
       }
 
       .hero-video {
@@ -1383,6 +1438,14 @@
     <video class="hero-video" playsinline preload="auto">
       <source id="heroVideoSource" src="assets/hero.webm" type="video/webm" />
     </video>
+    <div class="hero-video-tagline" aria-hidden="true">
+      <svg class="hero-headphones-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+        <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+        <path d="M21 19a2 2 0 0 1-2 2h-1v-8h1a2 2 0 0 1 2 2z" />
+        <path d="M3 19a2 2 0 0 0 2 2h1v-8H5a2 2 0 0 0-2 2z" />
+      </svg>
+      <span class="hero-video-tagline-text">We Believe You Have A Choice</span>
+    </div>
     <div class="hero-texture" aria-hidden="true"></div>
     <canvas class="chart-line-bg" id="chartCanvas" aria-hidden="true"></canvas>
     <div class="trade-game" id="tradeGame">
