@@ -1296,12 +1296,161 @@
         box-sizing: border-box;
       }
 
-      .stats-grid,
-      .features-grid,
-      .testimonials-grid,
-      .wins-grid,
+      /* Dense card grids — multiple columns on small screens so sections read as one tight “page” */
+      .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+      }
+
+      .stat {
+        padding: 0.8rem 0.3rem;
+      }
+
+      .stat-value {
+        font-size: clamp(1rem, 4.2vw, 1.35rem);
+      }
+
+      .stat-label {
+        font-size: 0.55rem;
+        letter-spacing: 0.06em;
+      }
+
+      .features-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+        margin-top: 0.95rem;
+      }
+
+      .features-grid .card {
+        padding: 0.72rem 0.5rem;
+      }
+
+      .features-grid .card h3 {
+        font-size: 1.02rem;
+        margin: 0.45rem 0 0.28rem;
+      }
+
+      .features-grid .card p {
+        font-size: 0.7rem;
+        line-height: 1.38;
+      }
+
+      .features-grid .icon-svg {
+        width: 36px;
+        height: 36px;
+      }
+
+      .wins-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+        margin-top: 0.85rem;
+      }
+
+      .win-media {
+        aspect-ratio: 1 / 1;
+      }
+
+      .win-content {
+        padding: 0.42rem 0.32rem;
+      }
+
+      .win-title {
+        font-size: clamp(0.68rem, 2.9vw, 0.88rem);
+        line-height: 1.15;
+        margin-bottom: 0.12rem;
+      }
+
+      .win-meta {
+        font-size: 0.5rem;
+        letter-spacing: 0.04em;
+      }
+
+      .wins-more-btn {
+        padding: 0.48rem 0.85rem;
+        font-size: 0.6rem;
+      }
+
       .how-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+        margin-top: 0.85rem;
+      }
+
+      .how-step {
+        padding: 0.55rem 0.38rem;
+      }
+
+      .how-step h4 {
+        font-size: 0.82rem;
+        margin: 0.25rem 0;
+      }
+
+      .how-grid .icon-svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      .how-grid .how-step .muted {
+        font-size: 0.58rem;
+        line-height: 1.32;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .step-number {
+        width: 22px;
+        height: 22px;
+        font-size: 0.58rem;
+        margin-bottom: 0.4rem;
+      }
+
+      .testimonials-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.42rem;
+        margin-top: 0.8rem;
+      }
+
+      .testimonial {
+        padding: 0.5rem 0.38rem;
+      }
+
+      .testimonial .stars {
+        font-size: 0.48rem;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.28rem;
+      }
+
+      .testimonial .quote {
+        font-size: clamp(0.58rem, 2.2vw, 0.72rem);
+        line-height: 1.22;
+        margin-bottom: 0.32rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .testimonial .muted {
+        font-size: 0.55rem;
+      }
+
+      section .container > p.muted {
+        font-size: 0.8rem;
+        line-height: 1.42;
+        margin-bottom: 0.55rem;
+      }
+
+      .section-title {
+        font-size: clamp(1.32rem, 5vw, 1.75rem);
+        margin-bottom: 0.55rem;
+      }
+
+      .section-label {
+        font-size: 0.6rem;
+        margin-bottom: 0.45rem;
+        letter-spacing: 0.16em;
       }
 
       .hero {
@@ -1370,7 +1519,7 @@
       }
 
       section {
-        padding-block: 3.9rem;
+        padding-block: 2.85rem;
       }
 
       .hero-content {
