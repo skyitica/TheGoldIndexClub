@@ -10,7 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="preload" href="assets/hero.webm" as="video" type="video/webm">
+  <link rel="preload" href="assets/hero.webm" as="video" type="video/webm" media="(min-width: 769px)">
+  <link rel="preload" href="assets/hero-mobile.webm" as="video" type="video/webm" media="(max-width: 768px)">
   <style>
     :root {
       --bg: #0a0a0a;
@@ -1277,7 +1278,7 @@
         right: auto;
         transform: none;
         max-width: 100%;
-        object-fit: contain;
+        object-fit: cover;
         object-position: center center;
       }
 
@@ -1342,7 +1343,7 @@
 
   <header class="hero" id="top">
     <video class="hero-video" playsinline preload="auto">
-      <source src="assets/hero.webm" type="video/webm" />
+      <source id="heroVideoSource" src="assets/hero.webm" type="video/webm" />
     </video>
     <div class="hero-texture" aria-hidden="true"></div>
     <canvas class="chart-line-bg" id="chartCanvas" aria-hidden="true"></canvas>
@@ -1670,6 +1671,17 @@
 
   <script>
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    (function swapHeroVideoForMobile() {
+      var v = document.querySelector(".hero-video");
+      var src = v && v.querySelector("#heroVideoSource");
+      if (!v || !src) return;
+      if (isMobile) {
+        src.src = "assets/hero-mobile.webm";
+        try {
+          v.load();
+        } catch (e) {}
+      }
+    })();
     const heroVideo = document.querySelector(".hero-video");
     const heroSection = document.querySelector(".hero");
     const timedHeroElements = document.querySelectorAll(".hero-timed");
@@ -1680,7 +1692,6 @@
     const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
     const HERO_REVEAL_TIME = 9;
     const HERO_HIDE_TIME = 28.2;
-    const MOBILE_HERO_PLAYBACK_RATE = 1.1;
     let heroContentShown = false;
     let heroStarted = false;
     let heroHiddenAtCut = false;
@@ -1771,7 +1782,7 @@
       heroVideo.muted = false;
       heroVideo.volume = 1;
       heroVideo.loop = false;
-      heroVideo.playbackRate = isMobile ? MOBILE_HERO_PLAYBACK_RATE : 1;
+      heroVideo.playbackRate = 1;
 
       heroVideo.addEventListener("timeupdate", syncHeroTimelineToVideo);
       heroVideo.addEventListener("seeking", syncHeroTimelineToVideo);
