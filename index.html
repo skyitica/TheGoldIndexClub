@@ -1265,20 +1265,17 @@
         grid-template-columns: 1fr;
       }
 
+      .hero {
+        min-height: clamp(520px, 86vh, 760px);
+      }
+
       .hero-video {
-        display: none;
-      }
-
-      #videoStartOverlay {
-        display: none;
-      }
-
-      #skipVideoBtn {
-        display: none;
-      }
-
-      #replayVideoBtn {
-        display: none;
+        display: block;
+        width: 140%;
+        left: -20%;
+        right: auto;
+        object-fit: cover;
+        object-position: center center;
       }
 
       .hero-texture {
@@ -1290,7 +1287,7 @@
       }
 
       .hero-content {
-        padding-block: 6.25rem 5.8rem;
+        padding-block: 7.6rem 6.6rem;
       }
 
       .ticker-track {
@@ -1694,7 +1691,7 @@
     }
 
     function hideSiteHeaderForVideoPlayback() {
-      if (siteHeaderLockedVisible || isMobile) return;
+      if (siteHeaderLockedVisible) return;
       siteTopHeader?.classList.add("is-hidden-for-video");
     }
 
@@ -1766,7 +1763,7 @@
       heroTimelineRaf = requestAnimationFrame(tick);
     }
 
-    if (heroVideo && !isMobile) {
+    if (heroVideo) {
       heroVideo.muted = false;
       heroVideo.volume = 1;
       heroVideo.loop = false;
@@ -1869,7 +1866,7 @@
         fetch(videoSource, { cache: "force-cache" }).catch(() => {});
       }
     } else {
-      // Mobile: no video, no timed reveal. Show hero content immediately.
+      // No video available: show hero content immediately.
       revealHeroContent();
       ensureSiteHeaderLockedVisible();
       heroSection?.classList.remove("video-playing");

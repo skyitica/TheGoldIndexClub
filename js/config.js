@@ -5,9 +5,11 @@
 const TGIC_CONFIG = {
   // Supabase — project: yonnoepfovbeeiaqvyqw
   SUPABASE_URL: "https://yonnoepfovbeeiaqvyqw.supabase.co",
-  // Supabase anon/public key (Project Settings → API). Used as apikey + Bearer for Edge Functions.
-  // If function calls return 401 "Invalid Token", use the legacy anon JWT (eyJ…) instead of sb_publishable.
+  // Public / publishable key (safe in the browser). OK for auth + database from the client.
   SUPABASE_ANON_KEY: "sb_publishable_7U257mFcB_WWNWjfsx2zAg_0Yqoy6UW",
+  // Legacy anon JWT (Project Settings → API → anon public key, starts with eyJ). REQUIRED for Edge Functions
+  // (e.g. notify-member): the gateway rejects sb_publishable… with "Invalid JWT". Paste the eyJ… string here.
+  SUPABASE_ANON_JWT: "",
 
   // Formspree endpoint for manual EFT confirmation notifications (example: https://formspree.io/f/xxxxabcd)
   FORMSPREE_CHECKOUT_URL: "https://formspree.io/f/xreovjdg",

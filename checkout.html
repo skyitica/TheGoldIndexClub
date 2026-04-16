@@ -931,20 +931,7 @@
           source: "checkout-manual-eft",
         });
 
-        try {
-          const sessRes = await sb.auth.getSession();
-          var tok = sessRes.data && sessRes.data.session && sessRes.data.session.access_token;
-          if (tok) {
-            var fnBase = TGIC_CONFIG.SUPABASE_URL.replace(/\/$/, "");
-            fetch(fnBase + "/functions/v1/send-checkout-submitted-email", {
-              method: "POST",
-              headers: {
-                Authorization: "Bearer " + tok,
-                apikey: TGIC_CONFIG.SUPABASE_ANON_KEY,
-              },
-            }).catch(function () {});
-          }
-        } catch (e) {}
+        // Automated checkout email disabled — team will send manual emails.
 
         confirmEmail.textContent = checkoutData.email;
         confirmReference.textContent = checkoutData.reference;
