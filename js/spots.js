@@ -1,6 +1,6 @@
 /* Live "N spots left" from public.site_settings (see supabase/migrations/003_site_settings_spots.sql). */
 (function () {
-  var FALLBACK = 46;
+  var FALLBACK = 50;
 
   function apply(n) {
     var text = n + " spots left";

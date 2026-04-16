@@ -910,6 +910,17 @@
       text-transform: uppercase;
     }
 
+    .stat-disclaimer {
+      margin-top: 0.45rem;
+      font-size: 0.58rem;
+      line-height: 1.45;
+      color: rgba(201, 168, 76, 0.55);
+      letter-spacing: 0.02em;
+      font-style: italic;
+      max-width: 20rem;
+      margin-inline: auto;
+    }
+
     section {
       padding-block: 5rem;
     }
@@ -1555,10 +1566,20 @@
       background: #0f0f0f;
     }
     .about-bio-text { font-size: 0.9rem; line-height: 1.75; margin-bottom: 2rem; }
-    .about-stats-row { display: flex; gap: 2rem; }
-    .about-stat { display: flex; flex-direction: column; gap: 0.2rem; }
+    .about-stats-row { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .about-stat { display: flex; flex-direction: column; gap: 0.4rem; }
     .about-stat-num { font-family: "Cormorant Garamond", serif; font-size: 2rem; color: var(--gold-light); line-height: 1; }
     .about-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .about-stat-disclaimer {
+      margin-top: 0.35rem;
+      max-width: 18rem;
+      font-size: 0.6rem;
+      line-height: 1.45;
+      color: rgba(201, 168, 76, 0.55);
+      letter-spacing: 0.02em;
+      text-transform: none;
+      font-style: italic;
+    }
     @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } .about-photo-box { aspect-ratio: 1/1; } }
   </style>
 </head>
@@ -1619,7 +1640,7 @@
       <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
       <p class="hero-subtitle hero-timed" style="--reveal-delay:520ms">Precision signals on US30 &amp; Gold - delivered before the move.</p>
       <div class="hero-cta-stack">
-        <p class="urgency-line hero-timed tgic-when-logged-out" data-tgic-spots style="--reveal-delay:640ms">46 spots left</p>
+        <p class="urgency-line hero-timed tgic-when-logged-out" data-tgic-spots style="--reveal-delay:640ms">50 spots left</p>
         <div class="hero-actions">
           <a href="/checkout" class="cta-btn hero-timed tgic-when-logged-out" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
           <a href="/account" class="cta-btn hero-timed tgic-when-logged-in tgic-auth-hidden" style="--reveal-delay:720ms">Dashboard &rarr;</a>
@@ -1673,6 +1694,7 @@
       <article class="stat">
         <div class="stat-value" data-target="92" data-suffix="%">92%</div>
         <div class="stat-label">Signal Accuracy</div>
+        <p class="stat-disclaimer">Based on internal signal tracking. Past performance is not indicative of future results.</p>
       </article>
       <article class="stat">
         <div class="stat-value" data-target="8" data-suffix=" Years">8 Years</div>
@@ -1841,7 +1863,11 @@
           <div class="about-stats-row">
             <div class="about-stat"><span class="about-stat-num">8+</span><span class="about-stat-label">Years Trading</span></div>
             <div class="about-stat"><span class="about-stat-num">2</span><span class="about-stat-label">Instruments</span></div>
-            <div class="about-stat"><span class="about-stat-num">92%</span><span class="about-stat-label">Signal Accuracy</span></div>
+            <div class="about-stat">
+              <span class="about-stat-num">92%</span>
+              <span class="about-stat-label">Signal Accuracy</span>
+              <span class="about-stat-disclaimer">Based on internal signal tracking. Past performance is not indicative of future results.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1878,7 +1904,7 @@
         <span class="section-label">Membership</span>
         <h2 class="pricing-title">The Gold Index Club - Full Access</h2>
         <p class="price">R150/month</p>
-        <p class="urgency-line tgic-when-logged-out" data-tgic-spots>46 spots left</p>
+        <p class="urgency-line tgic-when-logged-out" data-tgic-spots>50 spots left</p>
         <ul class="benefits">
           <li>Daily US30 and XAUUSD trade setups</li>
           <li>Clear entries, exits, and stop-loss guidance</li>
@@ -2134,6 +2160,17 @@
     }
 
     const statElements = document.querySelectorAll(".stat-value");
+
+    // Singularize suffixes so we never display "1 Years" mid-animation.
+    function formatStat(value, suffix) {
+      if (!suffix) return String(value);
+      if (value === 1) {
+        if (/^\s*Years\b/.test(suffix)) return value + suffix.replace(/Years/, "Year");
+        if (/^\s*Instruments\b/.test(suffix)) return value + suffix.replace(/Instruments/, "Instrument");
+      }
+      return value + suffix;
+    }
+
     const statsObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
@@ -2141,17 +2178,17 @@
         const target = Number(el.dataset.target || "0");
         const suffix = el.dataset.suffix || "";
         let current = 0;
-        const duration = 1300;
+        const duration = 900;
         const start = performance.now();
 
         function update(now) {
           const progress = Math.min((now - start) / duration, 1);
           current = Math.floor(progress * target);
-          el.textContent = current + suffix;
+          el.textContent = formatStat(current, suffix);
           if (progress < 1) {
             requestAnimationFrame(update);
           } else {
-            el.textContent = target + suffix;
+            el.textContent = formatStat(target, suffix);
           }
         }
         requestAnimationFrame(update);
