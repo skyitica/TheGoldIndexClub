@@ -1581,6 +1581,132 @@
       font-style: italic;
     }
     @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } .about-photo-box { aspect-ratio: 1/1; } }
+
+    /* Sample Signal (WhatsApp-style mock) */
+    #sample-signal .sample-signal-wrap { text-align: center; }
+    .sample-signal-intro { max-width: 34rem; margin-inline: auto; }
+    .sample-chat {
+      margin: 1.6rem auto 0;
+      width: min(100%, 22rem);
+      background: #0d1418;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 0.85rem 0.9rem 1.15rem;
+      text-align: left;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+    }
+    .sample-chat-header {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.9rem;
+    }
+    .sample-chat-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--gold), #8c6f2b);
+      color: #0a0a0a;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Cormorant Garamond", serif;
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+    .sample-chat-meta { display: flex; flex-direction: column; line-height: 1.15; }
+    .sample-chat-name { color: var(--gold-light); font-size: 0.78rem; letter-spacing: 0.04em; }
+    .sample-chat-status { color: #7aae7a; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .sample-chat-bubble {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      background: #075e54;
+      color: #f2f7f0;
+      border-radius: 14px 14px 14px 3px;
+      padding: 0.7rem 0.95rem 0.55rem;
+      max-width: 88%;
+      font-family: "DM Mono", ui-monospace, monospace;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+    }
+    .sample-chat-line { white-space: nowrap; }
+    .sample-chat-line--side { color: #ffeaa4; letter-spacing: 0.08em; font-weight: 600; }
+    .sample-chat-time {
+      align-self: flex-end;
+      margin-top: 0.15rem;
+      color: rgba(242, 247, 240, 0.55);
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+    }
+    .sample-signal-caption { margin-top: 1rem; font-size: 0.75rem; opacity: 0.75; }
+
+    /* FAQ accordion */
+    #faq .faq-wrap { max-width: 48rem; margin-inline: auto; text-align: center; }
+    .faq-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.55rem; text-align: left; }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0d0d0d;
+      overflow: hidden;
+      transition: border-color 200ms ease, background 200ms ease;
+    }
+    .faq-item[open] { border-color: rgba(201, 168, 76, 0.42); background: #111111; }
+    .faq-item > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0.95rem 1.1rem;
+      font-family: "Cormorant Garamond", serif;
+      color: var(--gold-light);
+      font-size: 1.02rem;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      transition: color 180ms ease;
+    }
+    .faq-item > summary::-webkit-details-marker { display: none; }
+    .faq-item > summary::after {
+      content: "+";
+      font-family: "DM Mono", ui-monospace, monospace;
+      font-size: 1.15rem;
+      color: var(--gold);
+      line-height: 1;
+      transition: transform 220ms ease;
+    }
+    .faq-item[open] > summary::after { content: "−"; }
+    .faq-item > summary:hover { color: #f5deaa; }
+    .faq-answer {
+      padding: 0 1.1rem 1.05rem;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+    .faq-answer p { margin: 0; }
+    .inline-link { color: var(--gold-light); text-decoration: underline; text-underline-offset: 3px; }
+    .inline-link:hover { color: #f5deaa; }
+    .testimonials-note { margin-top: 1.25rem; font-size: 0.75rem; opacity: 0.75; text-align: center; }
+
+    /* Contact section */
+    #contact .contact-wrap { max-width: 38rem; margin-inline: auto; text-align: center; }
+    .contact-intro { max-width: 34rem; margin-inline: auto; }
+    .contact-email {
+      display: inline-block;
+      margin-top: 1.1rem;
+      font-family: "Cormorant Garamond", serif;
+      color: var(--gold-light);
+      font-size: clamp(1.15rem, 3.5vw, 1.6rem);
+      letter-spacing: 0.02em;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .contact-email:hover { color: #f5deaa; }
+    .contact-hint { margin-top: 0.9rem; font-size: 0.78rem; opacity: 0.75; }
   </style>
 </head>
 <body>
@@ -1589,6 +1715,8 @@
       <a class="topbar-brand" href="#top">The Gold Index Club</a>
       <nav class="topbar-actions" aria-label="Main">
         <a class="topbar-link tgic-when-logged-out" href="#payment">Pricing</a>
+        <a class="topbar-link tgic-when-logged-out" href="#faq">FAQ</a>
+        <a class="topbar-link" href="#contact">Contact</a>
         <span class="topbar-guest-cluster tgic-when-logged-out">
           <a class="topbar-link" href="/login">Log in</a>
           <a class="topbar-btn topbar-btn--join" href="/checkout">Join</a>
@@ -1807,6 +1935,33 @@
     </div>
   </section>
 
+  <section id="sample-signal" class="tgic-when-logged-out">
+    <div class="container sample-signal-wrap">
+      <span class="section-label">What a signal looks like</span>
+      <h2 class="section-title">See the Signal Format Before You Join</h2>
+      <p class="muted sample-signal-intro">Every call that hits the private members channel follows the same clean template — direction, take profit, and stop loss.</p>
+
+      <div class="sample-chat">
+        <div class="sample-chat-header">
+          <div class="sample-chat-avatar" aria-hidden="true">P</div>
+          <div class="sample-chat-meta">
+            <span class="sample-chat-name">Percival · The Gold Index Club</span>
+            <span class="sample-chat-status">online</span>
+          </div>
+        </div>
+        <!-- TODO [human]: replace 0000 with real example values -->
+        <div class="sample-chat-bubble">
+          <span class="sample-chat-line sample-chat-line--side">BUY GOLD</span>
+          <span class="sample-chat-line">TP: 0000</span>
+          <span class="sample-chat-line">SL: 0000</span>
+          <span class="sample-chat-time">10:42 ✓✓</span>
+        </div>
+      </div>
+
+      <p class="sample-signal-caption muted">Example format. Every signal includes entry, take profit, and stop loss levels.</p>
+    </div>
+  </section>
+
   <section id="how">
     <div class="container">
       <span class="section-label">How It Works</span>
@@ -1895,6 +2050,58 @@
           <p class="muted">S. Patel</p>
         </article>
       </div>
+      <!-- TODO [human]: replace with real redacted WhatsApp screenshots when available -->
+      <p class="testimonials-note muted">Names partially redacted for member privacy. Full WhatsApp screenshots available on request.</p>
+    </div>
+  </section>
+
+  <section id="faq" class="tgic-when-logged-out">
+    <div class="container faq-wrap">
+      <span class="section-label">FAQ</span>
+      <h2 class="section-title">Questions Before You Join</h2>
+
+      <div class="faq-list" role="list">
+        <details class="faq-item">
+          <summary>How do I receive signals after I pay?</summary>
+          <div class="faq-answer"><p>After your payment clears, you'll receive an email with your WhatsApp group invite link and your dashboard login details. <!-- TODO [human]: confirm access window — 15 minutes / 1 hour / same day -->Access is usually granted within <strong>the same day</strong>.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>How many signals do you send per week?</summary>
+          <div class="faq-answer"><p>Signals are shared on high-conviction setups only. <!-- TODO [human]: confirm weekly range -->On average, members receive <strong>3–5 signals per week</strong> across XAUUSD and US30, depending on market conditions.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>What timezone are signals sent in?</summary>
+          <div class="faq-answer"><p>Signals are timestamped in South African Standard Time (SAST, UTC+2) and typically align with the London and New York trading sessions.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Do I need a specific broker?</summary>
+          <div class="faq-answer"><p>No. You can use any broker that offers XAUUSD (Gold) and US30 (Dow Jones). Signals are broker-agnostic.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>What happens if I miss a signal?</summary>
+          <div class="faq-answer"><p>Every signal is logged in the members dashboard with entry, stop loss, and take profit levels, so you can review whether it's still valid when you see it. Percival also posts updates if the setup changes.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>How do I cancel my subscription?</summary>
+          <div class="faq-answer"><p>You can cancel at any time through your dashboard or by emailing <a class="inline-link" href="mailto:thegoldindexclub@gmail.com">thegoldindexclub@gmail.com</a>. Your access continues until the end of your current billing cycle. No cancellation fees, no lock-in.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Do you offer refunds?</summary>
+          <div class="faq-answer"><p>Refunds are not offered for partial months or unused portions of a subscription. If you're unsure, you're welcome to email us before subscribing. See our full <a class="inline-link" href="/terms#refunds">refund policy</a>.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Is this financial advice?</summary>
+          <div class="faq-answer"><p>No. The Gold Index Club provides trade ideas and market commentary for educational purposes only. Percival is not registered with the FSCA. You are solely responsible for your own trading decisions.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>What if I'm a complete beginner?</summary>
+          <div class="faq-answer"><p>The group is best suited to traders who already understand basic concepts like entries, stop losses, and position sizing. Signals include rationale, but we don't teach from zero.</p></div>
+        </details>
+        <details class="faq-item">
+          <summary>Can I share signals with friends?</summary>
+          <div class="faq-answer"><p>No. Redistributing signals breaks our <a class="inline-link" href="/terms">Terms of Service</a> and can result in removal without refund. Refer friends to the site instead.</p></div>
+        </details>
+      </div>
     </div>
   </section>
 
@@ -1917,6 +2124,16 @@
     </div>
   </section>
 
+  <section id="contact">
+    <div class="container contact-wrap">
+      <span class="section-label">Contact</span>
+      <h2 class="section-title">Questions? Talk to Us.</h2>
+      <p class="muted contact-intro">Email is the fastest way to reach the desk. <!-- TODO [human]: confirm response time window -->We typically respond <strong>within 24 hours</strong>, Monday to Friday.</p>
+      <a class="contact-email" href="mailto:thegoldindexclub@gmail.com">thegoldindexclub@gmail.com</a>
+      <p class="contact-hint muted">Include your account email when reaching out about membership or billing.</p>
+    </div>
+  </section>
+
   <footer>
     <div class="container">
       <div class="footer-row">
@@ -1928,9 +2145,12 @@
           <a href="#wins">Wins</a>
           <a href="/wins">Big Wins</a>
           <a href="#payment" class="tgic-when-logged-out">Pricing</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact</a>
           <a href="/account" class="tgic-when-logged-in tgic-auth-hidden">Dashboard</a>
           <a href="/privacy">Privacy Policy</a>
           <a href="/terms">Terms of Service</a>
+          <a href="/refunds">Refund Policy</a>
         </nav>
         <div class="footer-copy">&copy; 2026 The Gold Index Club. All rights reserved.</div>
       </div>
@@ -2197,6 +2417,57 @@
     }, { threshold: 0.5 });
 
     statElements.forEach((el) => statsObserver.observe(el));
+
+    // FAQ accordion: only one <details> open at a time + smooth height animation.
+    (function wireFaq() {
+      const items = document.querySelectorAll(".faq-item");
+      if (!items.length) return;
+      const DURATION = 260;
+
+      function animateOpen(item) {
+        const answer = item.querySelector(".faq-answer");
+        if (!answer) return;
+        const target = answer.scrollHeight;
+        answer.style.overflow = "hidden";
+        const anim = answer.animate(
+          [{ height: "0px", opacity: 0 }, { height: target + "px", opacity: 1 }],
+          { duration: DURATION, easing: "ease-out" }
+        );
+        anim.onfinish = () => { answer.style.overflow = ""; };
+      }
+
+      function animateClose(item) {
+        const answer = item.querySelector(".faq-answer");
+        if (!answer) return;
+        const start = answer.getBoundingClientRect().height;
+        answer.style.overflow = "hidden";
+        const anim = answer.animate(
+          [{ height: start + "px", opacity: 1 }, { height: "0px", opacity: 0 }],
+          { duration: DURATION, easing: "ease-in" }
+        );
+        anim.onfinish = () => {
+          item.open = false;
+          answer.style.overflow = "";
+        };
+      }
+
+      items.forEach((item) => {
+        const summary = item.querySelector("summary");
+        if (!summary) return;
+        summary.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (item.open) {
+            animateClose(item);
+            return;
+          }
+          items.forEach((other) => {
+            if (other !== item && other.open) animateClose(other);
+          });
+          item.open = true;
+          animateOpen(item);
+        });
+      });
+    })();
 
     const chartCanvas = document.getElementById("chartCanvas");
     const cCtx = chartCanvas ? chartCanvas.getContext("2d") : null;
