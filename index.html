@@ -1271,7 +1271,7 @@
 
       .hero-video {
         display: block;
-        width: 120%;
+        width: 108%;
         left: 50%;
         right: auto;
         transform: translateX(-50%);
@@ -1679,6 +1679,7 @@
     const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
     const HERO_REVEAL_TIME = 9;
     const HERO_HIDE_TIME = 28.2;
+    const MOBILE_HERO_PLAYBACK_RATE = 1.1;
     let heroContentShown = false;
     let heroStarted = false;
     let heroHiddenAtCut = false;
@@ -1769,6 +1770,7 @@
       heroVideo.muted = false;
       heroVideo.volume = 1;
       heroVideo.loop = false;
+      heroVideo.playbackRate = isMobile ? MOBILE_HERO_PLAYBACK_RATE : 1;
 
       heroVideo.addEventListener("timeupdate", syncHeroTimelineToVideo);
       heroVideo.addEventListener("seeking", syncHeroTimelineToVideo);
