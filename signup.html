@@ -297,7 +297,7 @@
         <p class="subtitle" id="paidSubtitle">Use the same email you paid with. Then we link your membership. Enter the WhatsApp number you use in the private group — we need it to verify access.</p>
         <div class="error-msg" id="errorMsgPaid"></div>
         <div id="paidWait" class="hidden">
-          <p class="subtitle" id="paidWaitText">Confirming payment with Paystack…</p>
+          <p class="subtitle" id="paidWaitText">Confirming your EFT payment…</p>
           <button type="button" class="btn btn-secondary" id="retryPendingBtn">Check again</button>
         </div>
         <form id="paidForm" class="hidden" autocomplete="on">
@@ -368,7 +368,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/spots.js"></script>
-  <script src="js/analytics.js" defer></script>
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);

@@ -54,7 +54,7 @@ serve(async (req) => {
     if (row.subscription_status !== "active") {
       return new Response(JSON.stringify({
         ready: false,
-        message: "Payment not confirmed yet. Wait a moment and refresh, or complete payment on Paystack.",
+        message: "Payment not confirmed yet. Wait a moment and refresh once your EFT has cleared.",
         status: row.subscription_status,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

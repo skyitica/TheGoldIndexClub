@@ -12,14 +12,9 @@
   <meta property="og:description" content="Daily XAUUSD and US30 trade ideas from Percival, delivered to members before the move." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://thegoldindexclub.co.za/" />
-  <!-- TODO [human]: create og-image.png at 1200x630px and place in /assets/ -->
-  <meta property="og:image" content="https://thegoldindexclub.co.za/assets/og-image.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="The Gold Index Club | Premium US30 & Gold Signals" />
   <meta name="twitter:description" content="Daily XAUUSD and US30 trade ideas from Percival, delivered to members before the move." />
-  <meta name="twitter:image" content="https://thegoldindexclub.co.za/assets/og-image.png" />
   <meta name="theme-color" content="#0a0a0a" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -110,7 +105,7 @@
       gap: 1rem;
     }
 
-    /* Compliance disclaimer bar — always visible via the fixed site header */
+    /* Compliance disclaimer bar — sits inside the fixed header, collapses while the hero video is playing */
     .site-disclaimer-bar {
       background: #080808;
       border-bottom: 1px solid rgba(201, 168, 76, 0.14);
@@ -120,11 +115,21 @@
       line-height: 1.35;
       text-align: center;
       padding: 0.35rem 0.9rem;
+      max-height: 3rem;
+      overflow: hidden;
+      transition: max-height 320ms ease, padding 320ms ease, opacity 240ms ease, border-bottom-color 320ms ease;
     }
     .site-disclaimer-bar em { font-style: italic; opacity: 0.92; }
-    body:has(.hero.video-playing) .site-disclaimer-bar {
-      background: transparent;
-      border-bottom-color: rgba(201, 168, 76, 0.14);
+
+    /* While the hero video is playing, fully collapse the disclaimer so the top nav returns to its sleek adaptive look */
+    body:has(.hero.video-playing) .site-disclaimer-bar,
+    body:has(.hero.video-ended) .site-disclaimer-bar {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      opacity: 0;
+      border-bottom-color: transparent;
+      pointer-events: none;
     }
 
     .topbar-brand {
@@ -344,6 +349,147 @@
       z-index: 2;
     }
 
+    .video-start-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0;
+      z-index: 4;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: opacity 260ms ease;
+      background: transparent;
+    }
+
+    .video-start-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .video-start-btn {
+      pointer-events: none;
+      position: relative;
+      margin-top: 75vh;
+      border: 1px solid rgba(255, 215, 0, 0.72);
+      background: rgba(255, 215, 0, 0.03);
+      color: rgba(232, 201, 122, 0.92);
+      border-radius: 10px;
+      padding: 0.52rem 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      backdrop-filter: blur(1px);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+      transition: border-color 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+      animation: promptPulse 2s ease-in-out infinite, promptBob 2.2s ease-in-out infinite;
+    }
+
+    .video-start-btn::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 215, 0, 0.6);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.24);
+      transform: scale(0.95);
+      opacity: 0;
+      animation: promptPing 2s ease-out infinite;
+      pointer-events: none;
+    }
+
+    .video-start-overlay:hover .video-start-btn {
+      border-color: rgba(255, 215, 0, 0.72);
+      color: var(--gold-light);
+      background: rgba(255, 215, 0, 0.06);
+    }
+
+    .tap-label {
+      display: block;
+      font-size: 0.56rem;
+      line-height: 1.2;
+    }
+
+    @keyframes promptPulse {
+      0%, 100% {
+        border-color: rgba(255, 215, 0, 0.58);
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.26);
+        background: rgba(255, 215, 0, 0.02);
+      }
+      50% {
+        border-color: rgba(255, 215, 0, 0.92);
+        box-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
+        background: rgba(255, 215, 0, 0.08);
+      }
+    }
+
+    @keyframes promptPing {
+      0% {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      16% {
+        opacity: 0.8;
+      }
+      70% {
+        opacity: 0.12;
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.42);
+      }
+    }
+
+    @keyframes promptBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .skip-video-btn {
+      position: absolute;
+      right: 1.2rem;
+      bottom: 4.4rem;
+      z-index: 6;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      background: #0d0d0d;
+      color: rgba(232, 201, 122, 0.92);
+      border-radius: 8px;
+      padding: 0.42rem 0.62rem;
+      font-size: 0.56rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 180ms ease, color 180ms ease, background 180ms ease, opacity 250ms ease;
+    }
+
+    .skip-video-btn:hover {
+      border-color: rgba(255, 215, 0, 0.72);
+      color: var(--gold-light);
+      background: #0d0d0d;
+    }
+
+    .skip-video-btn.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .hero.skip-fade > * {
+      opacity: 0;
+      transition: opacity 420ms ease;
+    }
+
+    .hero.video-ended .hero-video {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .hero.video-ended .hero-texture {
+      opacity: 0.23;
+    }
 
     .hero-title {
       font-family: "Cormorant Garamond", serif;
@@ -424,34 +570,33 @@
       opacity: 0.92;
     }
 
-    .hero-mute-toggle {
-      position: absolute;
-      top: 5.25rem;
-      right: 1rem;
-      z-index: 6;
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
+    .replay-btn {
+      display: none;
+      padding: 0.62rem 0.9rem;
       border: 1px solid rgba(201, 168, 76, 0.45);
-      background: rgba(8, 8, 8, 0.5);
-      backdrop-filter: blur(4px);
+      background: rgba(8, 8, 8, 0.25);
       color: rgba(232, 201, 122, 0.95);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
       cursor: pointer;
+      backdrop-filter: blur(2px);
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .hero.video-ended .replay-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, background 180ms ease;
     }
-    .hero-mute-toggle:hover {
-      border-color: rgba(232, 201, 122, 0.85);
-      color: var(--gold-light);
-      background: rgba(8, 8, 8, 0.72);
+
+    .replay-btn:hover {
       transform: translateY(-1px);
+      border-color: rgba(232, 201, 122, 0.85);
+      box-shadow: 0 0 18px rgba(201, 168, 76, 0.18);
+      background: rgba(8, 8, 8, 0.34);
     }
-    .hero-mute-icon { width: 18px; height: 18px; }
-    .hero-mute-toggle .hero-mute-icon--unmuted { display: none; }
-    .hero-mute-toggle[aria-pressed="false"] .hero-mute-icon--muted { display: none; }
-    .hero-mute-toggle[aria-pressed="false"] .hero-mute-icon--unmuted { display: block; }
 
     .trade-game {
       position: absolute;
@@ -988,42 +1133,6 @@
       margin-bottom: 0.8rem;
     }
 
-    .pricing-toggle {
-      display: inline-flex;
-      margin: 0 auto 1rem;
-      padding: 4px;
-      border: 1px solid rgba(201, 168, 76, 0.32);
-      border-radius: 999px;
-      background: rgba(8, 8, 8, 0.6);
-    }
-    .pricing-toggle-option {
-      border: 0;
-      background: transparent;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.5rem 1rem;
-      border-radius: 999px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      transition: color 180ms ease, background 180ms ease;
-    }
-    .pricing-toggle-option.is-active {
-      background: rgba(201, 168, 76, 0.16);
-      color: var(--gold-light);
-    }
-    .pricing-toggle-save {
-      background: rgba(201, 168, 76, 0.22);
-      color: var(--gold-light);
-      font-size: 0.55rem;
-      padding: 0.12rem 0.45rem;
-      border-radius: 999px;
-      letter-spacing: 0.08em;
-    }
     .pricing-sub { font-size: 0.72rem; margin-top: -0.6rem; margin-bottom: 0.5rem; opacity: 0.75; }
 
     .pricing-wrap {
@@ -1367,13 +1476,25 @@
         display: none !important;
       }
 
-      .hero-mute-toggle {
-        top: calc(6.5rem + env(safe-area-inset-top, 0px));
-        right: 0.75rem;
-        width: 36px;
-        height: 36px;
+      .video-start-overlay {
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0 1rem calc(5.35rem + env(safe-area-inset-bottom, 0px));
       }
-      .hero-mute-icon { width: 16px; height: 16px; }
+
+      .video-start-btn {
+        margin-top: 0;
+        max-width: min(100%, 20rem);
+        text-align: center;
+      }
+
+      /* Skip stays away from bottom “tap to play” + ticker */
+      .skip-video-btn {
+        top: calc(6.25rem + env(safe-area-inset-top, 0px));
+        bottom: auto;
+        right: 0.65rem;
+        left: auto;
+      }
 
       .ticker-wrap {
         bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
@@ -1639,25 +1760,12 @@
   </div>
 
   <header class="hero" id="top">
-    <video class="hero-video" playsinline preload="auto" autoplay muted loop aria-hidden="true">
+    <video class="hero-video" playsinline preload="auto">
       <source id="heroVideoSource" src="assets/hero.webm" type="video/webm" />
     </video>
-    <button class="hero-mute-toggle" id="heroMuteToggle" type="button" aria-pressed="true" aria-label="Unmute hero video">
-      <svg class="hero-mute-icon hero-mute-icon--muted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-        <path d="M11 5 6 9H3v6h3l5 4z" />
-        <line x1="22" y1="9" x2="16" y2="15" />
-        <line x1="16" y1="9" x2="22" y2="15" />
-      </svg>
-      <svg class="hero-mute-icon hero-mute-icon--unmuted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-        <path d="M11 5 6 9H3v6h3l5 4z" />
-        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-        <path d="M18.54 5.46a9 9 0 0 1 0 13.07" />
-      </svg>
-    </button>
     <div class="hero-texture" aria-hidden="true"></div>
     <canvas class="chart-line-bg" id="chartCanvas" aria-hidden="true"></canvas>
-    <!-- TODO [human]: confirm Option A vs Option B — Option B chosen: widget removed; the #sample-signal section later in the page replaces this. Consider consolidating sample-signal back into the hero if you prefer the old real-estate. -->
-    <div class="trade-game" id="tradeGame" hidden>
+    <div class="trade-game" id="tradeGame">
       <span class="trade-label">Try a signal prediction:</span>
       <div class="trade-game-inner">
         <button class="trade-btn trade-btn--buy" id="tradeBuy" type="button">Buy ▲</button>
@@ -1674,6 +1782,13 @@
         </span>
       </span>
     </div>
+    <div class="video-start-overlay" id="videoStartOverlay">
+      <div class="video-start-btn" id="videoStartBtn" aria-hidden="true">
+        <span class="tap-label">Click anywhere to start video with sound</span>
+      </div>
+    </div>
+    <button class="skip-video-btn" id="skipVideoBtn" type="button">Skip Video</button>
+
     <div class="container hero-content">
       <span class="section-label hero-timed" style="--reveal-delay:120ms">Premium Signal Desk</span>
       <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
@@ -1683,6 +1798,9 @@
         <div class="hero-actions">
           <a href="/checkout" class="cta-btn hero-timed tgic-when-logged-out" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
           <a href="/account" class="cta-btn hero-timed tgic-when-logged-in tgic-auth-hidden" style="--reveal-delay:720ms">Dashboard &rarr;</a>
+          <button class="replay-btn" id="replayVideoBtn" type="button">
+            Replay Video &rarr;
+          </button>
         </div>
       </div>
     </div>
@@ -2020,14 +2138,8 @@
       <div class="pricing-wrap">
         <span class="section-label">Membership</span>
         <h2 class="pricing-title">The Gold Index Club - Full Access</h2>
-
-        <div class="pricing-toggle" role="tablist" aria-label="Billing period">
-          <button type="button" class="pricing-toggle-option is-active" role="tab" aria-selected="true" data-plan="monthly" id="planMonthlyBtn">Monthly</button>
-          <button type="button" class="pricing-toggle-option" role="tab" aria-selected="false" data-plan="annual" id="planAnnualBtn">Annual <span class="pricing-toggle-save">Save R300</span></button>
-        </div>
-
-        <p class="price" id="pricingPriceLine">R150/month</p>
-        <p class="pricing-sub muted" id="pricingSubLine">Billed monthly via Paystack. Cancel anytime.</p>
+        <p class="price">R150/month</p>
+        <p class="pricing-sub muted">Pay by EFT. Cancel anytime.</p>
         <p class="urgency-line tgic-when-logged-out" data-tgic-spots>50 spots left</p>
         <ul class="benefits">
           <li>Daily US30 and XAUUSD trade setups</li>
@@ -2035,8 +2147,7 @@
           <li>Real-time updates in private members group</li>
           <li>Direct education from Percival's trading framework</li>
         </ul>
-        <!-- TODO [human]: create annual plan in Paystack dashboard and paste plan ID into js/config.js as PAYSTACK_ANNUAL_PLAN_ID, then wire /checkout to honour the ?plan=annual query param -->
-        <a href="/checkout" id="pricingCta" class="cta-btn cta-pulse tgic-when-logged-out">Secure Your Spot Now &rarr;</a>
+        <a href="/checkout" class="cta-btn cta-pulse tgic-when-logged-out">Secure Your Spot Now &rarr;</a>
         <a href="/account" class="cta-btn cta-pulse tgic-when-logged-in tgic-auth-hidden">Dashboard &rarr;</a>
       </div>
     </div>
@@ -2095,56 +2206,207 @@
         } catch (e) {}
       }
     })();
-    // Hero video: autoplay muted + loop. Content reveals immediately; small unmute toggle in corner.
     const heroVideo = document.querySelector(".hero-video");
     const heroSection = document.querySelector(".hero");
-    const heroMuteToggle = document.getElementById("heroMuteToggle");
-    const siteTopHeader = document.getElementById("siteTopHeader");
     const timedHeroElements = document.querySelectorAll(".hero-timed");
+    const videoStartOverlay = document.getElementById("videoStartOverlay");
+    const videoStartBtn = document.getElementById("videoStartBtn");
+    const skipVideoBtn = document.getElementById("skipVideoBtn");
+    const replayVideoBtn = document.getElementById("replayVideoBtn");
+    const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
+    const HERO_REVEAL_TIME = 9;
+    const HERO_HIDE_TIME = 28.2;
+    let heroContentShown = false;
+    let heroStarted = false;
+    let heroHiddenAtCut = false;
+    let heroTimelineRaf = null;
+    const siteTopHeader = document.getElementById("siteTopHeader");
+    let siteHeaderLockedVisible = false;
 
-    siteTopHeader?.classList.add("is-header-locked");
-    siteTopHeader?.classList.remove("is-hidden-for-video");
-    timedHeroElements.forEach((el) => el.classList.add("is-visible"));
+    function ensureSiteHeaderLockedVisible() {
+      siteHeaderLockedVisible = true;
+      siteTopHeader?.classList.add("is-header-locked");
+      siteTopHeader?.classList.remove("is-hidden-for-video");
+    }
+
+    function hideSiteHeaderForVideoPlayback() {
+      if (siteHeaderLockedVisible) return;
+      siteTopHeader?.classList.add("is-hidden-for-video");
+    }
+
+    function revealHeroContent() {
+      if (heroContentShown) return;
+      heroContentShown = true;
+      timedHeroElements.forEach((el) => el.classList.remove("is-hidden-now"));
+      timedHeroElements.forEach((el) => el.classList.add("is-visible"));
+    }
+
+    function hideHeroContentNow() {
+      if (heroHiddenAtCut) return;
+      heroHiddenAtCut = true;
+      heroContentShown = false;
+      timedHeroElements.forEach((el) => {
+        el.classList.remove("is-visible");
+        el.classList.add("is-hidden-now");
+      });
+    }
+
+    function setEndedBlackScreenState() {
+      heroSection?.classList.remove("video-playing");
+      heroSection?.classList.add("video-ended");
+      revealHeroContent();
+      ensureSiteHeaderLockedVisible();
+    }
+
+    function resetHeroForNewPlayback() {
+      heroContentShown = false;
+      heroHiddenAtCut = false;
+      heroSection?.classList.remove("video-ended");
+      heroSection?.classList.remove("video-playing");
+      stopTimelineLoop();
+      timedHeroElements.forEach((el) => {
+        el.classList.remove("is-visible");
+        el.classList.add("is-hidden-now");
+      });
+    }
+
+    function syncHeroTimelineToVideo() {
+      if (!heroVideo || !heroStarted) return;
+      const t = heroVideo.currentTime;
+      if (t >= HERO_HIDE_TIME) {
+        hideHeroContentNow();
+        return;
+      }
+      if (t >= HERO_REVEAL_TIME) {
+        revealHeroContent();
+        ensureSiteHeaderLockedVisible();
+      }
+    }
+
+    function stopTimelineLoop() {
+      if (heroTimelineRaf) {
+        cancelAnimationFrame(heroTimelineRaf);
+        heroTimelineRaf = null;
+      }
+    }
+
+    function startTimelineLoop() {
+      stopTimelineLoop();
+      const tick = () => {
+        syncHeroTimelineToVideo();
+        if (!heroVideo.paused && !heroVideo.ended) {
+          heroTimelineRaf = requestAnimationFrame(tick);
+        }
+      };
+      heroTimelineRaf = requestAnimationFrame(tick);
+    }
 
     if (heroVideo) {
-      heroVideo.muted = true;
-      heroVideo.loop = true;
+      heroVideo.muted = false;
+      heroVideo.volume = 1;
+      heroVideo.loop = false;
       heroVideo.playbackRate = 1;
 
-      const tryPlay = () => heroVideo.play().catch(() => {});
-      heroVideo.addEventListener("loadedmetadata", tryPlay, { once: true });
-      tryPlay();
-
+      heroVideo.addEventListener("timeupdate", syncHeroTimelineToVideo);
+      heroVideo.addEventListener("seeking", syncHeroTimelineToVideo);
+      heroVideo.addEventListener("seeked", syncHeroTimelineToVideo);
       heroVideo.addEventListener("play", () => {
         heroSection?.classList.add("video-playing");
+        heroSection?.classList.remove("video-ended");
+        hideSiteHeaderForVideoPlayback();
+        startTimelineLoop();
       });
       heroVideo.addEventListener("pause", () => {
         heroSection?.classList.remove("video-playing");
+        stopTimelineLoop();
       });
 
-      if (heroMuteToggle) {
-        const syncPressed = () => {
-          heroMuteToggle.setAttribute("aria-pressed", heroVideo.muted ? "true" : "false");
-          heroMuteToggle.setAttribute(
-            "aria-label",
-            heroVideo.muted ? "Unmute hero video" : "Mute hero video"
-          );
-        };
-        syncPressed();
-        heroMuteToggle.addEventListener("click", () => {
-          heroVideo.muted = !heroVideo.muted;
-          if (!heroVideo.muted && heroVideo.paused) tryPlay();
-          syncPressed();
+      async function startHeroVideo() {
+        if (heroStarted) return;
+        heroStarted = true;
+        heroHiddenAtCut = false;
+        heroSection?.classList.remove("video-ended");
+        heroVideo.muted = false;
+        videoStartOverlay?.classList.add("is-hidden");
+
+        heroVideo.play().catch(() => {
+          heroStarted = false;
+          videoStartOverlay?.classList.remove("is-hidden");
+          if (videoStartBtn) {
+            const label = videoStartBtn.querySelector(".tap-label");
+            if (label) label.textContent = "Click anywhere to start video with sound";
+          }
         });
-        heroVideo.addEventListener("volumechange", syncPressed);
       }
 
-      // Warm the video cache for smoother playback on slow connections.
+      videoStartOverlay?.addEventListener("click", startHeroVideo);
+      heroVideo.addEventListener("click", startHeroVideo);
+
+      skipVideoBtn?.addEventListener("click", () => {
+        try { heroVideo.pause(); } catch (e) {}
+        skipVideoBtn.classList.add("is-hidden");
+        heroSection?.classList.add("skip-fade");
+        setTimeout(() => {
+          videoStartOverlay?.classList.add("is-hidden");
+          stopTimelineLoop();
+          setEndedBlackScreenState();
+          heroSection?.classList.remove("skip-fade");
+        }, 420);
+      });
+
+      replayVideoBtn?.addEventListener("click", () => {
+        sessionStorage.removeItem(HERO_VIDEO_ENDED_KEY);
+        resetHeroForNewPlayback();
+        heroStarted = true;
+        try { heroVideo.pause(); } catch (e) {}
+        heroVideo.currentTime = 0;
+        heroVideo.play().catch(() => {
+          heroStarted = false;
+          videoStartOverlay?.classList.remove("is-hidden");
+        });
+      });
+
+      heroVideo.addEventListener("ended", () => {
+        stopTimelineLoop();
+        sessionStorage.setItem(HERO_VIDEO_ENDED_KEY, "1");
+        skipVideoBtn?.classList.add("is-hidden");
+        setEndedBlackScreenState();
+      });
+
+      if (sessionStorage.getItem(HERO_VIDEO_ENDED_KEY) === "1") {
+        // On refresh, reset UI so the video is playable again without autoplay.
+        sessionStorage.removeItem(HERO_VIDEO_ENDED_KEY);
+        heroStarted = false;
+        heroHiddenAtCut = false;
+        stopTimelineLoop();
+        heroSection?.classList.remove("video-ended");
+        heroSection?.classList.remove("video-playing");
+        videoStartOverlay?.classList.remove("is-hidden");
+        skipVideoBtn?.classList.remove("is-hidden");
+        siteTopHeader?.classList.remove("is-hidden-for-video");
+        try {
+          heroVideo.pause();
+          heroVideo.currentTime = 0;
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      heroVideo.load();
+
+      // Warm the video cache as early as possible for smoother playback.
       const shouldPrefetch = !navigator.connection || (!navigator.connection.saveData && navigator.connection.effectiveType !== "2g");
       if (shouldPrefetch) {
         const videoSource = heroVideo.currentSrc || heroVideo.querySelector("source")?.src || "assets/hero.mp4";
         fetch(videoSource, { cache: "force-cache" }).catch(() => {});
       }
+    } else {
+      // No video available: show hero content immediately.
+      revealHeroContent();
+      ensureSiteHeaderLockedVisible();
+      heroSection?.classList.remove("video-playing");
+      heroSection?.classList.remove("video-ended");
+      skipVideoBtn?.classList.add("is-hidden");
     }
 
     const statElements = document.querySelectorAll(".stat-value");
@@ -2185,44 +2447,6 @@
     }, { threshold: 0.5 });
 
     statElements.forEach((el) => statsObserver.observe(el));
-
-    // Pricing toggle: Monthly vs Annual. Swaps copy and passes ?plan=annual to /checkout.
-    (function wirePricingToggle() {
-      const monthlyBtn = document.getElementById("planMonthlyBtn");
-      const annualBtn = document.getElementById("planAnnualBtn");
-      const priceLine = document.getElementById("pricingPriceLine");
-      const subLine = document.getElementById("pricingSubLine");
-      const cta = document.getElementById("pricingCta");
-      if (!monthlyBtn || !annualBtn || !priceLine || !cta) return;
-
-      const PLANS = {
-        monthly: {
-          price: "R150/month",
-          sub: "Billed monthly via Paystack. Cancel anytime.",
-          href: "/checkout",
-        },
-        annual: {
-          price: "R1,500/year",
-          sub: "Save R300 vs. monthly. Billed once a year, renews annually.",
-          href: "/checkout?plan=annual",
-        },
-      };
-
-      function select(plan) {
-        const data = PLANS[plan] || PLANS.monthly;
-        priceLine.textContent = data.price;
-        if (subLine) subLine.textContent = data.sub;
-        cta.href = data.href;
-        [monthlyBtn, annualBtn].forEach((btn) => {
-          const active = btn.dataset.plan === plan;
-          btn.classList.toggle("is-active", active);
-          btn.setAttribute("aria-selected", active ? "true" : "false");
-        });
-      }
-
-      monthlyBtn.addEventListener("click", () => select("monthly"));
-      annualBtn.addEventListener("click", () => select("annual"));
-    })();
 
     // Win lightbox — click a win thumbnail to view full-size.
     (function wireWinLightbox() {
@@ -2734,7 +2958,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/spots.js"></script>
-  <script src="js/analytics.js" defer></script>
   <script>
     (function () {
       function applyAuthUi(loggedIn) {
