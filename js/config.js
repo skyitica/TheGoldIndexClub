@@ -22,9 +22,10 @@ const TGIC_CONFIG = {
   HOME_URL: "/",
   ADMIN_URL: "/admin",
 
-  // Admin access: sign in with one of these email addresses to open /admin.
-  // Use lowercase emails. Example: ["name@example.com"]
-  ADMIN_ALLOWED_EMAILS: [],
+  // Admin access: you MUST list at least one email here. Sign in with that account on /login, then open /admin.
+  // If this array is empty, /admin is disabled for everyone (safe default). Use lowercase emails.
+  // Example: ["you@yourdomain.com"]
+  ADMIN_ALLOWED_EMAILS: ["dante.s.king06@gmail.com"],
 
   // When true: after email/password signup (session returned), go to account instead of checkout.
   // Use only for your own testing — set back to false for production.

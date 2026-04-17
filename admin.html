@@ -405,7 +405,15 @@
         window.location.replace(loginUrl);
         return false;
       }
-      if (allowed.length && allowed.indexOf(email) === -1) {
+      if (!allowed.length) {
+        document.body.innerHTML =
+          '<div style="max-width:720px;margin:12vh auto;padding:1.5rem;border:1px solid #2a2a2a;border-radius:14px;background:#111;color:#f0f0f0;font-family:DM Mono,monospace">' +
+          '<h1 style="margin:0 0 .6rem;font:600 2rem Cormorant Garamond,serif;color:#f6f6f6">Admin not configured</h1>' +
+          '<p style="color:#bdbdbd;line-height:1.6">Set <code>ADMIN_ALLOWED_EMAILS</code> in <code>js/config.js</code> to a non-empty list of admin emails (lowercase), then redeploy. While the list is empty, no one can use this page — that avoids accidentally exposing member data to every logged-in user.</p>' +
+          "</div>";
+        return false;
+      }
+      if (allowed.indexOf(email) === -1) {
         document.body.innerHTML =
           '<div style="max-width:720px;margin:12vh auto;padding:1.5rem;border:1px solid #2a2a2a;border-radius:14px;background:#111;color:#f0f0f0;font-family:DM Mono,monospace">' +
           '<h1 style="margin:0 0 .6rem;font:600 2rem Cormorant Garamond,serif;color:#f6f6f6">Access denied</h1>' +
