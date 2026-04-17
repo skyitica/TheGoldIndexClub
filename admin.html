@@ -579,13 +579,27 @@
       const today = dateOnlyString(new Date());
       const { data: member, error: fetchErr } = await sb
         .from("members")
-        .select("id, next_due_date, month_number, amount, whatsapp")
+        .select(
+          "id, next_due_date, month_number, amount, whatsapp, status, current_plan_months, last_discount_percent, last_payment_total"
+        )
         .eq("id", id)
         .single();
       if (fetchErr || !member) throw (fetchErr || new Error("Member not found"));
 
-      const nextDue = addOneMonthIso(member.next_due_date || today);
-      const nextMonthNumber = Number(member.month_number || 1) + 1;
+      const st = String(member.status || "").trim().toLowerCase();
+      const isPending = st === "pending";
+      const planM = Math.max(1, Math.floor(Number(member.current_plan_months || 1)));
+
+      let nextDue;
+      let nextMonthNumber;
+      if (isPending) {
+        // Checkout already set next_due_date to the end of the prepaid period; do not add another month here.
+        nextDue = member.next_due_date || addMonthsIso(today, planM);
+        nextMonthNumber = Number(member.month_number || 1) + planM;
+      } else {
+        nextDue = addOneMonthIso(member.next_due_date || today);
+        nextMonthNumber = Number(member.month_number || 1) + 1;
+      }
 
       let upd = await sb
         .from("members")
@@ -605,14 +619,21 @@
         .eq("id", id);
       if (upd.error) throw upd.error;
 
+      var payMonths = isPending ? planM : 1;
+      var payDiscount = isPending ? Number(member.last_discount_percent || 0) : 0;
+      var payTotal = isPending
+        ? Number(member.last_payment_total != null ? member.last_payment_total : pricingForMonths(planM).total)
+        : Number(member.amount || 150);
+      var payLineRate = Number(member.amount || 150);
+
       let payRes = await sb.from("member_payments").insert({
         member_id: id,
         paid_on: today,
-        amount: member.amount || 150,
+        amount: payLineRate,
         reference: member.whatsapp || "",
-        months_count: 1,
-        discount_percent: 0,
-        total_amount: member.amount || 150,
+        months_count: payMonths,
+        discount_percent: payDiscount,
+        total_amount: payTotal,
       });
       if (payRes.error && /column .* does not exist/i.test(payRes.error.message || "")) {
         payRes = await sb.from("member_payments").insert({

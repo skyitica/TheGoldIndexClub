@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#0a0a0a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #f7f7f7;
@@ -34,7 +34,7 @@
       min-height: 100vh;
       background: #f7f7f7;
       color: var(--text-primary);
-      font-family: "DM Mono", monospace;
+      font-family: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
       line-height: 1.55;
       display: flex;
       flex-direction: column;
@@ -193,6 +193,47 @@
       outline: none;
     }
     .field input:focus { border-color: rgba(201,168,76,0.55); }
+
+    .live-pricing-summary {
+      margin: 0.5rem 0 0.85rem;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fafafa;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: #1a1a1a;
+    }
+    .live-pricing-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding: 0.2rem 0;
+    }
+    .live-pricing-row span.muted {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+    .live-pricing-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.35rem;
+      padding-top: 0.45rem;
+      border-top: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .live-pricing-total strong {
+      color: var(--gold-light);
+      font-size: 1.05rem;
+    }
+    .live-pricing-equiv {
+      margin-top: 0.35rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
 
     .btn {
       display: inline-flex;
@@ -529,6 +570,7 @@
             <label for="months">How many months</label>
             <input id="months" type="number" min="1" max="719" step="1" value="1" />
           </div>
+          <div id="livePricingSummary" class="live-pricing-summary" aria-live="polite"></div>
           <p class="detail" style="margin:-0.2rem 0 0.8rem;">Discounts start after one month</p>
           <div class="risk-ack">
             <input id="checkoutRiskAck" type="checkbox" required />
@@ -762,6 +804,38 @@
       return { subtotal, total, discountPercent };
     }
 
+    function updateLiveStep1Pricing() {
+      const box = document.getElementById("livePricingSummary");
+      if (!box || !monthsInput) return;
+      const raw = String(monthsInput.value || "").trim();
+      let m = parseInt(raw, 10);
+      if (isNaN(m) || m < 1) m = 1;
+      if (m > MAX_CHECKOUT_MONTHS) m = MAX_CHECKOUT_MONTHS;
+      const p = pricingForMonths(m);
+      const discAmt = p.subtotal - p.total;
+      var html =
+        '<div class="live-pricing-row"><span class="muted">Subtotal (R150 × ' +
+        m +
+        ")</span><span>R" +
+        p.subtotal +
+        "</span></div>";
+      if (p.discountPercent > 0) {
+        html +=
+          '<div class="live-pricing-row"><span class="muted">Discount (' +
+          p.discountPercent +
+          "%)</span><span>−R" +
+          discAmt +
+          "</span></div>";
+      }
+      html +=
+        '<div class="live-pricing-total"><span>Total due (EFT)</span><strong>R' + p.total + "</strong></div>";
+      if (m > 1) {
+        var per = Math.round(p.total / m);
+        html += '<p class="live-pricing-equiv">Effective about R' + per + " / month over " + m + " months.</p>";
+      }
+      box.innerHTML = html;
+    }
+
     async function insertMemberSignup() {
       const today = new Date();
       const joinDate = toDateOnly(today);
@@ -873,6 +947,13 @@
       const sync = () => { btn.disabled = !cb.checked; };
       cb.addEventListener("change", sync);
       sync();
+    })();
+
+    (function wireLiveStep1Pricing() {
+      if (!monthsInput) return;
+      monthsInput.addEventListener("input", updateLiveStep1Pricing);
+      monthsInput.addEventListener("change", updateLiveStep1Pricing);
+      updateLiveStep1Pricing();
     })();
 
     detailsForm.addEventListener("submit", function (e) {
