@@ -92,11 +92,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/formspree.js"></script>
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
-    const FORMSPREE_URL = (typeof TGIC_CONFIG !== "undefined" && TGIC_CONFIG.FORMSPREE_CHECKOUT_URL) || "";
-
     const monthsEl = document.getElementById("months");
     const msg = document.getElementById("msg");
     const paidBtn = document.getElementById("paidBtn");
@@ -204,6 +203,7 @@
     paidBtn.addEventListener("click", async function () {
       msg.textContent = "";
       msg.className = "msg";
+      msg.style.color = "";
       const rawMonths = String(monthsEl.value || "").trim();
       const mCount = parseInt(rawMonths, 10);
       if (!rawMonths || isNaN(mCount) || mCount < 1) {
@@ -222,11 +222,10 @@
       paidBtn.textContent = "Submitting…";
       let succeeded = false;
       try {
-        if (!FORMSPREE_URL) throw new Error("Formspree URL not configured.");
-        const res = await fetch(FORMSPREE_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
+        await saveExtensionRequest(q);
+        try {
+          await tgicPostFormspree({
+            _subject: "[Gold Index] Extension — payment request",
             source: "account-extension-checkout",
             full_name: userCtx.full_name,
             email: userCtx.email,
@@ -234,11 +233,15 @@
             reference: userCtx.whatsapp,
             months: q.months,
             discount_percent: q.discountPercent,
-            total_amount: q.total
-          })
-        });
-        if (!res.ok) throw new Error("Could not submit extension request.");
-        await saveExtensionRequest(q);
+            total_amount: q.total,
+          });
+        } catch (fe) {
+          msg.className = "msg";
+          msg.style.color = "#fbc02d";
+          msg.textContent =
+            "Request saved on your account. Email notification failed: " +
+            (fe.message || "Formspree error").slice(0, 200);
+        }
         succeeded = true;
         paidBtn.textContent = "I've Paid for Extension";
         showRequestSentOverlay(TGIC_CONFIG.ACCOUNT_URL || "/account");

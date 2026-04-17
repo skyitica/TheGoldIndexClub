@@ -11,7 +11,8 @@ const TGIC_CONFIG = {
   // (e.g. notify-member): the gateway rejects sb_publishable… with "Invalid JWT". Paste the eyJ… string here.
   SUPABASE_ANON_JWT: "",
 
-  // Formspree endpoint for manual EFT confirmation notifications (example: https://formspree.io/f/xxxxabcd)
+  // Formspree: one form endpoint used for checkout "payment made", extension requests, and phone-change alerts.
+  // Confirm the form is active at https://formspree.io/ (verified email, not over quota). Check spam folder.
   FORMSPREE_CHECKOUT_URL: "https://formspree.io/f/xreovjdg",
 
   // Page URLs (root paths; Vercel rewrites serve the matching .html file)
@@ -24,8 +25,14 @@ const TGIC_CONFIG = {
 
   // Admin access: you MUST list at least one email here. Sign in with that account on /login, then open /admin.
   // If this array is empty, /admin is disabled for everyone (safe default). Use lowercase emails.
-  // Example: ["you@yourdomain.com"]
+  // The email must match what Supabase stores (same Google account you use at login).
   ADMIN_ALLOWED_EMAILS: ["dante.s.king06@gmail.com"],
+
+  // Admin password is NOT stored here. Set on the server only:
+  // Vercel → Project → Settings → Environment Variables:
+  //   ADMIN_GATE_PASSWORD   (your secret)
+  //   ADMIN_SESSION_SECRET  (long random string; used to sign the HttpOnly cookie)
+  // Flow: open /admin → server asks for password at /admin-login → then sign in with your allowlisted email.
 
   // When true: after email/password signup (session returned), go to account instead of checkout.
   // Use only for your own testing — set back to false for production.

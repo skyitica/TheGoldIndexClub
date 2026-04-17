@@ -430,6 +430,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/formspree.js"></script>
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
@@ -628,6 +629,24 @@
           phoneMsg.textContent = error.message;
           phoneChangeBtn.disabled = false;
         } else {
+          try {
+            await tgicPostFormspree({
+              _subject: "[Gold Index] Phone number change request",
+              source: "phone-change-request",
+              email: user.email || "",
+              user_id: user.id,
+              old_phone: profile.phone_number || "",
+              new_phone: newPhone,
+            });
+          } catch (fe) {
+            phoneMsg.className = "msg msg-ok";
+            phoneMsg.textContent =
+              "Request saved. Email alert could not be sent (" +
+              (fe.message || "Formspree error") +
+              ") — we still have your request in the system.";
+            phoneChangeBtn.textContent = "Submitted";
+            return;
+          }
           phoneMsg.className = "msg msg-ok";
           phoneMsg.textContent = "Request submitted. We'll review and update your number.";
           phoneChangeBtn.textContent = "Submitted";

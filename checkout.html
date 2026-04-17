@@ -656,6 +656,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/formspree.js"></script>
   <script>
     const { createClient } = supabase;
     const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
@@ -706,8 +707,6 @@
       totalAmount: 150,
       reference: "",
     };
-
-    const FORMSPREE_URL = (typeof TGIC_CONFIG !== "undefined" && TGIC_CONFIG.FORMSPREE_CHECKOUT_URL) || "";
 
     function setStep(stepNum) {
       step1.classList.toggle("hidden", stepNum !== 1);
@@ -1040,7 +1039,8 @@
         const userId = await ensureAccountAndLogin();
         await attachMemberToUser(userId);
 
-        await sendFormspreeNotification({
+        await tgicPostFormspree({
+          _subject: "[Gold Index] Checkout — payment confirmation",
           full_name: checkoutData.fullName,
           email: checkoutData.email,
           whatsapp_number: checkoutData.whatsapp,

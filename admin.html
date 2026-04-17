@@ -239,12 +239,26 @@
       .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .debug-grid { grid-template-columns: 1fr; }
     }
+
+    .admin-signout {
+      font-size: 0.65rem;
+      color: #7a7a7a;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      white-space: nowrap;
+    }
+    .admin-signout:hover {
+      color: #c9a84c;
+    }
   </style>
 </head>
 <body>
   <div class="wrap" id="adminApp" style="display:none;">
     <h1>Members Admin</h1>
-    <p class="muted">Manual EFT member tracking dashboard.</p>
+    <p class="muted" style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem;flex-wrap:wrap">
+      <span>Manual EFT member tracking dashboard.</span>
+      <a class="admin-signout" href="/api/admin-logout">Sign out admin gate</a>
+    </p>
 
     <section class="summary">
       <div class="card"><p class="kpi-label">Total members</p><p class="kpi-value" id="kpiTotal">0</p></div>
@@ -384,6 +398,17 @@
         .filter(Boolean);
     }
 
+    /** Generic screen for any denied access — does not reveal that this is an admin URL or how it is configured. */
+    function tgicShowPageUnavailable() {
+      document.body.innerHTML =
+        '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:#0a0a0a;color:#bdbdbd;font-family:system-ui,-apple-system,sans-serif">' +
+        '<div style="max-width:22rem;text-align:center;line-height:1.55">' +
+        '<p style="margin:0 0 1rem;font-size:1rem;color:#e8e8e8">This page isn’t available.</p>' +
+        '<p style="margin:0 0 1.25rem;font-size:0.88rem;color:#888">If you followed a link here by mistake, head back to the site.</p>' +
+        '<a href="/" style="display:inline-block;font-size:0.88rem;color:#c9a84c;text-decoration:underline">Return home</a>' +
+        "</div></div>";
+    }
+
     async function tgicRequireAdminAccess() {
       var allowed = tgicNormalizeEmailList(TGIC_CONFIG.ADMIN_ALLOWED_EMAILS);
       var target = TGIC_CONFIG.ADMIN_URL || "/admin";
@@ -406,20 +431,14 @@
         return false;
       }
       if (!allowed.length) {
-        document.body.innerHTML =
-          '<div style="max-width:720px;margin:12vh auto;padding:1.5rem;border:1px solid #2a2a2a;border-radius:14px;background:#111;color:#f0f0f0;font-family:DM Mono,monospace">' +
-          '<h1 style="margin:0 0 .6rem;font:600 2rem Cormorant Garamond,serif;color:#f6f6f6">Admin not configured</h1>' +
-          '<p style="color:#bdbdbd;line-height:1.6">Set <code>ADMIN_ALLOWED_EMAILS</code> in <code>js/config.js</code> to a non-empty list of admin emails (lowercase), then redeploy. While the list is empty, no one can use this page — that avoids accidentally exposing member data to every logged-in user.</p>' +
-          "</div>";
+        if (typeof console !== "undefined" && console.warn) {
+          console.warn("[TGIC] Admin allowlist is empty. Set ADMIN_ALLOWED_EMAILS in js/config.js and redeploy.");
+        }
+        tgicShowPageUnavailable();
         return false;
       }
       if (allowed.indexOf(email) === -1) {
-        document.body.innerHTML =
-          '<div style="max-width:720px;margin:12vh auto;padding:1.5rem;border:1px solid #2a2a2a;border-radius:14px;background:#111;color:#f0f0f0;font-family:DM Mono,monospace">' +
-          '<h1 style="margin:0 0 .6rem;font:600 2rem Cormorant Garamond,serif;color:#f6f6f6">Access denied</h1>' +
-          '<p style="color:#bdbdbd;line-height:1.6">This signed-in account is not allowed to open the admin page.</p>' +
-          '<p style="color:#bdbdbd;line-height:1.6">Add your email to <code>ADMIN_ALLOWED_EMAILS</code> in <code>js/config.js</code>, then redeploy.</p>' +
-          "</div>";
+        tgicShowPageUnavailable();
         return false;
       }
       document.getElementById("adminApp").style.display = "block";
