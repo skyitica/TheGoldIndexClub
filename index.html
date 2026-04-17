@@ -2940,6 +2940,23 @@
         document.body.classList.toggle("tgic-logged-in", loggedIn);
       }
 
+      var TGIC_HOME_DASH_KEY = "tgic_home_dashboard_redirected";
+
+      function isReloadNavigation() {
+        try {
+          var nav = performance.getEntriesByType("navigation");
+          if (nav && nav.length) {
+            return nav[0].type === "reload";
+          }
+        } catch (err) {}
+        try {
+          if (performance.navigation && performance.navigation.type === 1) {
+            return true;
+          }
+        } catch (err2) {}
+        return false;
+      }
+
       async function boot() {
         // TGIC_CONFIG is a script global from js/config.js (not window.TGIC_CONFIG when declared with const/let).
         if (typeof supabase === "undefined" || typeof TGIC_CONFIG === "undefined" || !TGIC_CONFIG.SUPABASE_URL) {
@@ -2956,7 +2973,14 @@
             var params = new URLSearchParams(window.location.search);
             allowFullSite = params.get("fullsite") === "1";
           } catch (err) {}
-          if (!allowFullSite) {
+          var alreadyAutoRedirected = false;
+          try {
+            alreadyAutoRedirected = sessionStorage.getItem(TGIC_HOME_DASH_KEY) === "1";
+          } catch (e0) {}
+          // Only send members to the dashboard once per browser session on the first real navigation to home — not on refresh, and not again after they return to the marketing site.
+          var shouldAutoDashboard =
+            !allowFullSite && !isReloadNavigation() && !alreadyAutoRedirected;
+          if (shouldAutoDashboard) {
             try {
               // Guard against stale/deleted auth sessions: only redirect if user + profile still exist.
               var userRes = await sb.auth.getUser();
@@ -2972,6 +2996,9 @@
                 applyAuthUi(false);
                 return;
               }
+              try {
+                sessionStorage.setItem(TGIC_HOME_DASH_KEY, "1");
+              } catch (e1) {}
               window.location.replace(TGIC_CONFIG.ACCOUNT_URL);
             } catch (e) {
               // If validation fails, keep user on home instead of forcing account redirect.
