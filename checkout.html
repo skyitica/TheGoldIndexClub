@@ -649,7 +649,7 @@
   <div id="requestSentOverlay" class="sent-overlay hidden" role="alert" aria-live="polite">
     <div class="sent-panel">
       <p class="sent-title">Request sent</p>
-      <p class="sent-body">Your payment confirmation has been received. Taking you to your dashboard…</p>
+      <p class="sent-body">Your payment confirmation has been received. Open your dashboard when you are ready.</p>
       <button type="button" class="btn sent-skip" id="sentGoNowBtn">Go to dashboard now</button>
     </div>
   </div>
@@ -671,29 +671,15 @@
     const continueDashboardBtn = document.getElementById("continueDashboardBtn");
     const requestSentOverlay = document.getElementById("requestSentOverlay");
     const sentGoNowBtn = document.getElementById("sentGoNowBtn");
-    let sentRedirectTimer = null;
-    let sentRedirectUrl = TGIC_CONFIG.ACCOUNT_URL;
+    let sentDashboardUrl = TGIC_CONFIG.ACCOUNT_URL;
 
-    function clearSentRedirect() {
-      if (sentRedirectTimer) {
-        clearTimeout(sentRedirectTimer);
-        sentRedirectTimer = null;
-      }
-    }
-
-    function showRequestSentThenRedirect(targetUrl) {
-      clearSentRedirect();
-      sentRedirectUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL;
+    function showRequestSentOverlay(targetUrl) {
+      sentDashboardUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL;
       requestSentOverlay.classList.remove("hidden");
-      sentRedirectTimer = setTimeout(function () {
-        sentRedirectTimer = null;
-        window.location.href = sentRedirectUrl;
-      }, 2800);
     }
 
     sentGoNowBtn.addEventListener("click", function () {
-      clearSentRedirect();
-      window.location.href = sentRedirectUrl;
+      window.location.href = sentDashboardUrl;
     });
 
     const step1 = document.getElementById("step1");
@@ -1071,7 +1057,7 @@
         confirmReference.textContent = checkoutData.reference;
         succeeded = true;
         confirmPaymentBtn.textContent = "I've Made the Payment";
-        showRequestSentThenRedirect(TGIC_CONFIG.ACCOUNT_URL);
+        showRequestSentOverlay(TGIC_CONFIG.ACCOUNT_URL);
       } catch (err) {
         errorMsg.textContent = err.message || "Could not submit confirmation.";
       } finally {

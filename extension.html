@@ -85,7 +85,7 @@
   <div id="requestSentOverlay" class="sent-overlay hidden" role="alert" aria-live="polite">
     <div class="sent-panel">
       <p class="sent-title">Request sent</p>
-      <p class="sent-body">Your extension request has been sent. Taking you to your dashboard…</p>
+      <p class="sent-body">Your extension request has been sent. Open your dashboard when you are ready.</p>
       <button type="button" class="btn" id="sentGoNowBtn">Go to dashboard now</button>
     </div>
   </div>
@@ -102,29 +102,15 @@
     const paidBtn = document.getElementById("paidBtn");
     const requestSentOverlay = document.getElementById("requestSentOverlay");
     const sentGoNowBtn = document.getElementById("sentGoNowBtn");
-    let sentRedirectTimer = null;
-    let sentRedirectUrl = TGIC_CONFIG.ACCOUNT_URL || "/account";
+    let sentDashboardUrl = TGIC_CONFIG.ACCOUNT_URL || "/account";
 
-    function clearSentRedirect() {
-      if (sentRedirectTimer) {
-        clearTimeout(sentRedirectTimer);
-        sentRedirectTimer = null;
-      }
-    }
-
-    function showRequestSentThenRedirect(targetUrl) {
-      clearSentRedirect();
-      sentRedirectUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL || "/account";
+    function showRequestSentOverlay(targetUrl) {
+      sentDashboardUrl = targetUrl || TGIC_CONFIG.ACCOUNT_URL || "/account";
       requestSentOverlay.classList.remove("hidden");
-      sentRedirectTimer = setTimeout(function () {
-        sentRedirectTimer = null;
-        window.location.href = sentRedirectUrl;
-      }, 2800);
     }
 
     sentGoNowBtn.addEventListener("click", function () {
-      clearSentRedirect();
-      window.location.href = sentRedirectUrl;
+      window.location.href = sentDashboardUrl;
     });
     const emailVal = document.getElementById("emailVal");
     const refVal = document.getElementById("refVal");
@@ -255,7 +241,7 @@
         await saveExtensionRequest(q);
         succeeded = true;
         paidBtn.textContent = "I've Paid for Extension";
-        showRequestSentThenRedirect(TGIC_CONFIG.ACCOUNT_URL || "/account");
+        showRequestSentOverlay(TGIC_CONFIG.ACCOUNT_URL || "/account");
       } catch (e) {
         msg.className = "msg err";
         msg.textContent = e.message || "Submission failed.";
