@@ -7,6 +7,20 @@
   <meta name="google-site-verification" content="0IVKBF5bty24l5TNxd0EujPf-dQz9Rc6ZvqqVCGM1ZI" />
   <title>The Gold Index Club | Premium US30 & Gold Signals</title>
   <meta name="description" content="Trade smarter with Percival's premium US30 and XAUUSD trading signals. Join The Gold Index Club." />
+  <link rel="canonical" href="https://thegoldindexclub.co.za/" />
+  <meta property="og:title" content="The Gold Index Club | Premium US30 & Gold Signals" />
+  <meta property="og:description" content="Daily XAUUSD and US30 trade ideas from Percival, delivered to members before the move." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://thegoldindexclub.co.za/" />
+  <!-- TODO [human]: create og-image.png at 1200x630px and place in /assets/ -->
+  <meta property="og:image" content="https://thegoldindexclub.co.za/assets/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Gold Index Club | Premium US30 & Gold Signals" />
+  <meta name="twitter:description" content="Daily XAUUSD and US30 trade ideas from Percival, delivered to members before the move." />
+  <meta name="twitter:image" content="https://thegoldindexclub.co.za/assets/og-image.png" />
+  <meta name="theme-color" content="#0a0a0a" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -330,104 +344,6 @@
       z-index: 2;
     }
 
-    .video-start-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 0;
-      z-index: 4;
-      pointer-events: auto;
-      cursor: pointer;
-      transition: opacity 260ms ease;
-      background: transparent;
-    }
-
-    .video-start-overlay.is-hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .video-start-btn {
-      pointer-events: none;
-      position: relative;
-      margin-top: 75vh;
-      border: 1px solid rgba(255, 215, 0, 0.72);
-      background: rgba(255, 215, 0, 0.03);
-      color: rgba(232, 201, 122, 0.92);
-      border-radius: 10px;
-      padding: 0.52rem 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      backdrop-filter: blur(1px);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
-      transition: border-color 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease;
-      animation: promptPulse 2s ease-in-out infinite, promptBob 2.2s ease-in-out infinite;
-    }
-
-    .video-start-btn::after {
-      content: "";
-      position: absolute;
-      inset: -6px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 215, 0, 0.6);
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.24);
-      transform: scale(0.95);
-      opacity: 0;
-      animation: promptPing 2s ease-out infinite;
-      pointer-events: none;
-    }
-
-    .video-start-overlay:hover .video-start-btn {
-      border-color: rgba(255, 215, 0, 0.72);
-      color: var(--gold-light);
-      background: rgba(255, 215, 0, 0.06);
-    }
-
-    .tap-label {
-      display: block;
-      font-size: 0.56rem;
-      line-height: 1.2;
-    }
-
-    @keyframes promptPulse {
-      0%, 100% {
-        border-color: rgba(255, 215, 0, 0.58);
-        box-shadow: 0 0 8px rgba(255, 215, 0, 0.26);
-        background: rgba(255, 215, 0, 0.02);
-      }
-      50% {
-        border-color: rgba(255, 215, 0, 0.92);
-        box-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
-        background: rgba(255, 215, 0, 0.08);
-      }
-    }
-
-    @keyframes promptPing {
-      0% {
-        opacity: 0;
-        transform: scale(0.92);
-      }
-      16% {
-        opacity: 0.8;
-      }
-      70% {
-        opacity: 0.12;
-      }
-      100% {
-        opacity: 0;
-        transform: scale(1.42);
-      }
-    }
-
-    @keyframes promptBob {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
 
     .hero-title {
       font-family: "Cormorant Garamond", serif;
@@ -508,33 +424,34 @@
       opacity: 0.92;
     }
 
-    .replay-btn {
-      display: none;
-      padding: 0.62rem 0.9rem;
-      border: 1px solid rgba(201, 168, 76, 0.45);
-      background: rgba(8, 8, 8, 0.25);
-      color: rgba(232, 201, 122, 0.95);
+    .hero-mute-toggle {
+      position: absolute;
+      top: 5.25rem;
+      right: 1rem;
+      z-index: 6;
+      width: 40px;
+      height: 40px;
       border-radius: 999px;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+      border: 1px solid rgba(201, 168, 76, 0.45);
+      background: rgba(8, 8, 8, 0.5);
+      backdrop-filter: blur(4px);
+      color: rgba(232, 201, 122, 0.95);
       cursor: pointer;
-      backdrop-filter: blur(2px);
-      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
-    }
-
-    .hero.video-ended .replay-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, background 180ms ease;
     }
-
-    .replay-btn:hover {
-      transform: translateY(-1px);
+    .hero-mute-toggle:hover {
       border-color: rgba(232, 201, 122, 0.85);
-      box-shadow: 0 0 18px rgba(201, 168, 76, 0.18);
-      background: rgba(8, 8, 8, 0.34);
+      color: var(--gold-light);
+      background: rgba(8, 8, 8, 0.72);
+      transform: translateY(-1px);
     }
+    .hero-mute-icon { width: 18px; height: 18px; }
+    .hero-mute-toggle .hero-mute-icon--unmuted { display: none; }
+    .hero-mute-toggle[aria-pressed="false"] .hero-mute-icon--muted { display: none; }
+    .hero-mute-toggle[aria-pressed="false"] .hero-mute-icon--unmuted { display: block; }
 
     .trade-game {
       position: absolute;
@@ -728,49 +645,6 @@
       pointer-events: auto;
     }
 
-    .skip-video-btn {
-      position: absolute;
-      right: 1.2rem;
-      bottom: 4.4rem;
-      z-index: 6;
-      border: 1px solid rgba(255, 215, 0, 0.4);
-      background: #0d0d0d;
-      color: rgba(232, 201, 122, 0.92);
-      border-radius: 8px;
-      padding: 0.42rem 0.62rem;
-      font-size: 0.56rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: border-color 180ms ease, color 180ms ease, background 180ms ease, opacity 250ms ease;
-    }
-
-    .skip-video-btn:hover {
-      border-color: rgba(255, 215, 0, 0.72);
-      color: var(--gold-light);
-      background: #0d0d0d;
-    }
-
-    .skip-video-btn.is-hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .hero.skip-fade > * {
-      opacity: 0;
-      transition: opacity 420ms ease;
-    }
-
-    .hero.video-ended .hero-video {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .hero.video-ended .hero-texture {
-      opacity: 0.23;
-    }
-
     @keyframes heroReveal {
       to {
         opacity: 1;
@@ -809,42 +683,6 @@
       50% { box-shadow: 0 0 22px rgba(201, 168, 76, 0.35), inset 0 0 10px rgba(201, 168, 76, 0.14); }
     }
 
-    /* Headphones cue — only while the “start with sound” overlay is visible */
-    .hero-video-tagline {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 38%;
-      z-index: 3;
-      width: min(94%, 28rem);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      pointer-events: none;
-      text-align: center;
-      color: #f7f2ea;
-      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
-      transition: opacity 260ms ease, visibility 260ms ease;
-    }
-
-    .hero-headphones-icon {
-      width: 1.85rem;
-      height: 1.85rem;
-      color: var(--gold-light);
-      filter: drop-shadow(0 0 12px rgba(201, 168, 76, 0.35));
-    }
-
-    .hero:has(.video-start-overlay.is-hidden) .hero-video-tagline {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .hero.video-ended .hero-video-tagline {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 280ms ease, visibility 280ms ease;
-    }
 
     .ticker-wrap {
       position: absolute;
@@ -1491,37 +1329,16 @@
         display: none !important;
       }
 
-      .video-start-overlay {
-        align-items: flex-end;
-        justify-content: center;
-        padding: 0 1rem calc(5.35rem + env(safe-area-inset-bottom, 0px));
+      .hero-mute-toggle {
+        top: calc(6.5rem + env(safe-area-inset-top, 0px));
+        right: 0.75rem;
+        width: 36px;
+        height: 36px;
       }
-
-      .video-start-btn {
-        margin-top: 0;
-        max-width: min(100%, 20rem);
-        text-align: center;
-      }
-
-      /* Skip stays away from bottom “tap to play” + ticker */
-      .skip-video-btn {
-        top: calc(6.25rem + env(safe-area-inset-top, 0px));
-        bottom: auto;
-        right: 0.65rem;
-        left: auto;
-      }
+      .hero-mute-icon { width: 16px; height: 16px; }
 
       .ticker-wrap {
         bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
-      }
-
-      .hero-video-tagline {
-        top: 32%;
-      }
-
-      .hero-headphones-icon {
-        width: 1.65rem;
-        height: 1.65rem;
       }
 
       .hero-video {
@@ -1724,6 +1541,42 @@
     }
     .contact-email:hover { color: #f5deaa; }
     .contact-hint { margin-top: 0.9rem; font-size: 0.78rem; opacity: 0.75; }
+
+    /* Win lightbox — simple full-screen preview */
+    .win-media { cursor: zoom-in; }
+    .win-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .win-lightbox.is-open { display: flex; }
+    .win-lightbox img {
+      max-width: min(100%, 1200px);
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+    .win-lightbox-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid rgba(232, 201, 122, 0.5);
+      background: rgba(8, 8, 8, 0.7);
+      color: var(--gold-light);
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
   </style>
 </head>
 <body>
@@ -1747,19 +1600,25 @@
   </div>
 
   <header class="hero" id="top">
-    <video class="hero-video" playsinline preload="auto">
+    <video class="hero-video" playsinline preload="auto" autoplay muted loop aria-hidden="true">
       <source id="heroVideoSource" src="assets/hero.webm" type="video/webm" />
     </video>
-    <div class="hero-video-tagline" aria-hidden="true">
-      <svg class="hero-headphones-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-        <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-        <path d="M21 19a2 2 0 0 1-2 2h-1v-8h1a2 2 0 0 1 2 2z" />
-        <path d="M3 19a2 2 0 0 0 2 2h1v-8H5a2 2 0 0 0-2 2z" />
+    <button class="hero-mute-toggle" id="heroMuteToggle" type="button" aria-pressed="true" aria-label="Unmute hero video">
+      <svg class="hero-mute-icon hero-mute-icon--muted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+        <path d="M11 5 6 9H3v6h3l5 4z" />
+        <line x1="22" y1="9" x2="16" y2="15" />
+        <line x1="16" y1="9" x2="22" y2="15" />
       </svg>
-    </div>
+      <svg class="hero-mute-icon hero-mute-icon--unmuted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+        <path d="M11 5 6 9H3v6h3l5 4z" />
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+        <path d="M18.54 5.46a9 9 0 0 1 0 13.07" />
+      </svg>
+    </button>
     <div class="hero-texture" aria-hidden="true"></div>
     <canvas class="chart-line-bg" id="chartCanvas" aria-hidden="true"></canvas>
-    <div class="trade-game" id="tradeGame">
+    <!-- TODO [human]: confirm Option A vs Option B — Option B chosen: widget removed; the #sample-signal section later in the page replaces this. Consider consolidating sample-signal back into the hero if you prefer the old real-estate. -->
+    <div class="trade-game" id="tradeGame" hidden>
       <span class="trade-label">Try a signal prediction:</span>
       <div class="trade-game-inner">
         <button class="trade-btn trade-btn--buy" id="tradeBuy" type="button">Buy ▲</button>
@@ -1776,13 +1635,6 @@
         </span>
       </span>
     </div>
-    <div class="video-start-overlay" id="videoStartOverlay">
-      <div class="video-start-btn" id="videoStartBtn" aria-hidden="true">
-        <span class="tap-label">Click anywhere to start video with sound</span>
-      </div>
-    </div>
-    <button class="skip-video-btn" id="skipVideoBtn" type="button">Skip Video</button>
-
     <div class="container hero-content">
       <span class="section-label hero-timed" style="--reveal-delay:120ms">Premium Signal Desk</span>
       <h1 class="hero-title hero-timed" style="--reveal-delay:320ms">Trade Smarter. Follow Percival.</h1>
@@ -1792,9 +1644,6 @@
         <div class="hero-actions">
           <a href="/checkout" class="cta-btn hero-timed tgic-when-logged-out" style="--reveal-delay:720ms">Secure Your Spot Now &rarr;</a>
           <a href="/account" class="cta-btn hero-timed tgic-when-logged-in tgic-auth-hidden" style="--reveal-delay:720ms">Dashboard &rarr;</a>
-          <button class="replay-btn" id="replayVideoBtn" type="button">
-            Replay Video &rarr;
-          </button>
         </div>
       </div>
     </div>
@@ -1863,7 +1712,8 @@
       <div class="wins-grid">
         <article class="win-card">
           <div class="win-media">
-            <img src="assets/WhatsApp_Image_2026-03-27_at_01.25.18-e9b54af7-afab-479d-afda-7d761757037d_topcrop_no1.png" alt="Member result screenshot — top win #1" width="800" height="500" loading="lazy">
+            <!-- TODO [human]: convert PNG to WebP via squoosh.app / TinyPNG and update src -->
+            <img src="assets/win-xauusd-mar27-01.png" alt="Member WhatsApp screenshot showing a closed XAUUSD position in profit — shared in the private group on 27 March" width="800" height="500" loading="lazy">
           </div>
           <div class="win-content">
             <h3 class="win-title">Top Win #1</h3>
@@ -1872,7 +1722,8 @@
         </article>
         <article class="win-card">
           <div class="win-media">
-            <img src="assets/WhatsApp_Image_2026-03-27_at_10.13.41-57d71a70-b054-4d35-aec5-ddc4283254a3_topcrop_no2.png" alt="Member result screenshot — top win #2" width="800" height="500" loading="lazy">
+            <!-- TODO [human]: convert PNG to WebP via squoosh.app / TinyPNG and update src -->
+            <img src="assets/win-xauusd-mar27-02.png" alt="Member WhatsApp screenshot of a XAUUSD trade closed in profit on 27 March" width="800" height="500" loading="lazy">
           </div>
           <div class="win-content">
             <h3 class="win-title">Top Win #2</h3>
@@ -2154,6 +2005,11 @@
     </div>
   </section>
 
+  <div class="win-lightbox" id="winLightbox" role="dialog" aria-modal="true" aria-label="Win screenshot preview">
+    <button type="button" class="win-lightbox-close" id="winLightboxClose" aria-label="Close preview">×</button>
+    <img id="winLightboxImg" src="" alt="" />
+  </div>
+
   <footer>
     <div class="container">
       <div class="footer-row">
@@ -2191,212 +2047,56 @@
         } catch (e) {}
       }
     })();
+    // Hero video: autoplay muted + loop. Content reveals immediately; small unmute toggle in corner.
     const heroVideo = document.querySelector(".hero-video");
     const heroSection = document.querySelector(".hero");
-    const timedHeroElements = document.querySelectorAll(".hero-timed");
-    const videoStartOverlay = document.getElementById("videoStartOverlay");
-    const videoStartBtn = document.getElementById("videoStartBtn");
-    const skipVideoBtn = document.getElementById("skipVideoBtn");
-    const replayVideoBtn = document.getElementById("replayVideoBtn");
-    const HERO_VIDEO_ENDED_KEY = "tgicHeroVideoEnded";
-    const HERO_REVEAL_TIME = 9;
-    const HERO_HIDE_TIME = 28.2;
-    let heroContentShown = false;
-    let heroStarted = false;
-    let heroHiddenAtCut = false;
-    let heroTimelineRaf = null;
+    const heroMuteToggle = document.getElementById("heroMuteToggle");
     const siteTopHeader = document.getElementById("siteTopHeader");
-    let siteHeaderLockedVisible = false;
+    const timedHeroElements = document.querySelectorAll(".hero-timed");
 
-    function ensureSiteHeaderLockedVisible() {
-      siteHeaderLockedVisible = true;
-      siteTopHeader?.classList.add("is-header-locked");
-      siteTopHeader?.classList.remove("is-hidden-for-video");
-    }
-
-    function hideSiteHeaderForVideoPlayback() {
-      if (siteHeaderLockedVisible) return;
-      siteTopHeader?.classList.add("is-hidden-for-video");
-    }
-
-    function revealHeroContent() {
-      if (heroContentShown) return;
-      heroContentShown = true;
-      timedHeroElements.forEach((el) => el.classList.remove("is-hidden-now"));
-      timedHeroElements.forEach((el) => el.classList.add("is-visible"));
-    }
-
-    function hideHeroContentNow() {
-      if (heroHiddenAtCut) return;
-      heroHiddenAtCut = true;
-      heroContentShown = false;
-      timedHeroElements.forEach((el) => {
-        el.classList.remove("is-visible");
-        el.classList.add("is-hidden-now");
-      });
-    }
-
-    function setEndedBlackScreenState() {
-      heroSection?.classList.remove("video-playing");
-      heroSection?.classList.add("video-ended");
-      revealHeroContent();
-      ensureSiteHeaderLockedVisible();
-    }
-
-    function resetHeroForNewPlayback() {
-      // Reset hero state so the 9s/27.8s timing works again on replay.
-      heroContentShown = false;
-      heroHiddenAtCut = false;
-      heroSection?.classList.remove("video-ended");
-      heroSection?.classList.remove("video-playing");
-      stopTimelineLoop();
-      timedHeroElements.forEach((el) => {
-        el.classList.remove("is-visible");
-        el.classList.add("is-hidden-now");
-      });
-    }
-
-    function syncHeroTimelineToVideo() {
-      if (!heroVideo || !heroStarted) return;
-      const t = heroVideo.currentTime;
-      if (t >= HERO_HIDE_TIME) {
-        hideHeroContentNow();
-        return;
-      }
-      if (t >= HERO_REVEAL_TIME) {
-        revealHeroContent();
-        ensureSiteHeaderLockedVisible();
-      }
-    }
-
-    function stopTimelineLoop() {
-      if (heroTimelineRaf) {
-        cancelAnimationFrame(heroTimelineRaf);
-        heroTimelineRaf = null;
-      }
-    }
-
-    function startTimelineLoop() {
-      stopTimelineLoop();
-      const tick = () => {
-        syncHeroTimelineToVideo();
-        if (!heroVideo.paused && !heroVideo.ended) {
-          heroTimelineRaf = requestAnimationFrame(tick);
-        }
-      };
-      heroTimelineRaf = requestAnimationFrame(tick);
-    }
+    siteTopHeader?.classList.add("is-header-locked");
+    siteTopHeader?.classList.remove("is-hidden-for-video");
+    timedHeroElements.forEach((el) => el.classList.add("is-visible"));
 
     if (heroVideo) {
-      heroVideo.muted = false;
-      heroVideo.volume = 1;
-      heroVideo.loop = false;
+      heroVideo.muted = true;
+      heroVideo.loop = true;
       heroVideo.playbackRate = 1;
 
-      heroVideo.addEventListener("timeupdate", syncHeroTimelineToVideo);
-      heroVideo.addEventListener("seeking", syncHeroTimelineToVideo);
-      heroVideo.addEventListener("seeked", syncHeroTimelineToVideo);
+      const tryPlay = () => heroVideo.play().catch(() => {});
+      heroVideo.addEventListener("loadedmetadata", tryPlay, { once: true });
+      tryPlay();
+
       heroVideo.addEventListener("play", () => {
         heroSection?.classList.add("video-playing");
-        heroSection?.classList.remove("video-ended");
-        hideSiteHeaderForVideoPlayback();
-        startTimelineLoop();
       });
       heroVideo.addEventListener("pause", () => {
         heroSection?.classList.remove("video-playing");
-        stopTimelineLoop();
       });
 
-      async function startHeroVideo() {
-        if (heroStarted) return;
-        heroStarted = true;
-        heroHiddenAtCut = false;
-        heroSection?.classList.remove("video-ended");
-        heroVideo.muted = false;
-        videoStartOverlay?.classList.add("is-hidden");
-
-        heroVideo.play().catch(() => {
-          heroStarted = false;
-          videoStartOverlay?.classList.remove("is-hidden");
-          if (videoStartBtn) {
-            const label = videoStartBtn.querySelector(".tap-label");
-            if (label) label.textContent = "Click anywhere to start video with sound";
-          }
+      if (heroMuteToggle) {
+        const syncPressed = () => {
+          heroMuteToggle.setAttribute("aria-pressed", heroVideo.muted ? "true" : "false");
+          heroMuteToggle.setAttribute(
+            "aria-label",
+            heroVideo.muted ? "Unmute hero video" : "Mute hero video"
+          );
+        };
+        syncPressed();
+        heroMuteToggle.addEventListener("click", () => {
+          heroVideo.muted = !heroVideo.muted;
+          if (!heroVideo.muted && heroVideo.paused) tryPlay();
+          syncPressed();
         });
+        heroVideo.addEventListener("volumechange", syncPressed);
       }
 
-      videoStartOverlay?.addEventListener("click", startHeroVideo);
-      heroVideo.addEventListener("click", startHeroVideo);
-
-      skipVideoBtn?.addEventListener("click", () => {
-        try { heroVideo.pause(); } catch (e) {}
-        skipVideoBtn.classList.add("is-hidden");
-        heroSection?.classList.add("skip-fade");
-        setTimeout(() => {
-          videoStartOverlay?.classList.add("is-hidden");
-          stopTimelineLoop();
-          setEndedBlackScreenState();
-          heroSection?.classList.remove("skip-fade");
-        }, 420);
-      });
-
-      replayVideoBtn?.addEventListener("click", () => {
-        // Replay is user-initiated, so audio should be allowed.
-        sessionStorage.removeItem(HERO_VIDEO_ENDED_KEY);
-        resetHeroForNewPlayback();
-        heroStarted = true;
-        try { heroVideo.pause(); } catch (e) {}
-        heroVideo.currentTime = 0;
-        heroVideo.play().catch(() => {
-          heroStarted = false;
-          // If play is blocked, show the original prompt again.
-          videoStartOverlay?.classList.remove("is-hidden");
-        });
-      });
-
-      heroVideo.addEventListener("ended", () => {
-        stopTimelineLoop();
-        sessionStorage.setItem(HERO_VIDEO_ENDED_KEY, "1");
-        skipVideoBtn?.classList.add("is-hidden");
-        setEndedBlackScreenState();
-      });
-
-      if (sessionStorage.getItem(HERO_VIDEO_ENDED_KEY) === "1") {
-        // On refresh, we want the video to be playable again, but still not autoplay.
-        // So we clear the "ended" persistence and reset UI to the initial state.
-        sessionStorage.removeItem(HERO_VIDEO_ENDED_KEY);
-        heroStarted = false;
-        heroHiddenAtCut = false;
-        stopTimelineLoop();
-        heroSection?.classList.remove("video-ended");
-        heroSection?.classList.remove("video-playing");
-        videoStartOverlay?.classList.remove("is-hidden");
-        skipVideoBtn?.classList.remove("is-hidden");
-        siteTopHeader?.classList.remove("is-hidden-for-video");
-        try {
-          heroVideo.pause();
-          heroVideo.currentTime = 0;
-        } catch (e) {
-          // ignore
-        }
-      }
-
-      // Warm metadata early so first frame/playback starts faster.
-      heroVideo.load();
-
-      // Warm the video cache as early as possible for smoother playback.
+      // Warm the video cache for smoother playback on slow connections.
       const shouldPrefetch = !navigator.connection || (!navigator.connection.saveData && navigator.connection.effectiveType !== "2g");
       if (shouldPrefetch) {
         const videoSource = heroVideo.currentSrc || heroVideo.querySelector("source")?.src || "assets/hero.mp4";
         fetch(videoSource, { cache: "force-cache" }).catch(() => {});
       }
-    } else {
-      // No video available: show hero content immediately.
-      revealHeroContent();
-      ensureSiteHeaderLockedVisible();
-      heroSection?.classList.remove("video-playing");
-      heroSection?.classList.remove("video-ended");
-      skipVideoBtn?.classList.add("is-hidden");
     }
 
     const statElements = document.querySelectorAll(".stat-value");
@@ -2437,6 +2137,31 @@
     }, { threshold: 0.5 });
 
     statElements.forEach((el) => statsObserver.observe(el));
+
+    // Win lightbox — click a win thumbnail to view full-size.
+    (function wireWinLightbox() {
+      const box = document.getElementById("winLightbox");
+      const img = document.getElementById("winLightboxImg");
+      const closeBtn = document.getElementById("winLightboxClose");
+      if (!box || !img) return;
+      const open = (src, alt) => {
+        img.src = src;
+        img.alt = alt || "";
+        box.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+      };
+      const close = () => {
+        box.classList.remove("is-open");
+        img.src = "";
+        document.body.style.overflow = "";
+      };
+      document.querySelectorAll(".win-media img").forEach((thumb) => {
+        thumb.addEventListener("click", () => open(thumb.src, thumb.alt));
+      });
+      closeBtn?.addEventListener("click", close);
+      box.addEventListener("click", (e) => { if (e.target === box) close(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && box.classList.contains("is-open")) close(); });
+    })();
 
     // FAQ accordion: only one <details> open at a time + smooth height animation.
     (function wireFaq() {
@@ -2923,6 +2648,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/spots.js"></script>
+  <script src="js/analytics.js" defer></script>
   <script>
     (function () {
       function applyAuthUi(loggedIn) {

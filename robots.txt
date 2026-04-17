@@ -1,7 +1,12 @@
 User-agent: *
 Allow: /
 
-# Keep private dashboard out of search.
+# Keep private pages out of search.
 Disallow: /account
+Disallow: /signup
+Disallow: /login
+Disallow: /checkout
+Disallow: /extension
+Disallow: /admin
 
-Sitemap: https://thegoldindexclub.vercel.app/sitemap.xml
+Sitemap: https://thegoldindexclub.co.za/sitemap.xml
