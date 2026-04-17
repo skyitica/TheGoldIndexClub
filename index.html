@@ -988,6 +988,44 @@
       margin-bottom: 0.8rem;
     }
 
+    .pricing-toggle {
+      display: inline-flex;
+      margin: 0 auto 1rem;
+      padding: 4px;
+      border: 1px solid rgba(201, 168, 76, 0.32);
+      border-radius: 999px;
+      background: rgba(8, 8, 8, 0.6);
+    }
+    .pricing-toggle-option {
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: color 180ms ease, background 180ms ease;
+    }
+    .pricing-toggle-option.is-active {
+      background: rgba(201, 168, 76, 0.16);
+      color: var(--gold-light);
+    }
+    .pricing-toggle-save {
+      background: rgba(201, 168, 76, 0.22);
+      color: var(--gold-light);
+      font-size: 0.55rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      letter-spacing: 0.08em;
+    }
+    .pricing-sub { font-size: 0.72rem; margin-top: -0.6rem; margin-bottom: 0.5rem; opacity: 0.75; }
+
     .pricing-wrap {
       text-align: center;
       border: 1px solid var(--border);
@@ -1589,6 +1627,7 @@
       <nav class="topbar-actions" aria-label="Main">
         <a class="topbar-link tgic-when-logged-out" href="#payment">Pricing</a>
         <a class="topbar-link tgic-when-logged-out" href="#faq">FAQ</a>
+        <a class="topbar-link" href="/blog">Blog</a>
         <a class="topbar-link" href="#contact">Contact</a>
         <span class="topbar-guest-cluster tgic-when-logged-out">
           <a class="topbar-link" href="/login">Log in</a>
@@ -1981,7 +2020,14 @@
       <div class="pricing-wrap">
         <span class="section-label">Membership</span>
         <h2 class="pricing-title">The Gold Index Club - Full Access</h2>
-        <p class="price">R150/month</p>
+
+        <div class="pricing-toggle" role="tablist" aria-label="Billing period">
+          <button type="button" class="pricing-toggle-option is-active" role="tab" aria-selected="true" data-plan="monthly" id="planMonthlyBtn">Monthly</button>
+          <button type="button" class="pricing-toggle-option" role="tab" aria-selected="false" data-plan="annual" id="planAnnualBtn">Annual <span class="pricing-toggle-save">Save R300</span></button>
+        </div>
+
+        <p class="price" id="pricingPriceLine">R150/month</p>
+        <p class="pricing-sub muted" id="pricingSubLine">Billed monthly via Paystack. Cancel anytime.</p>
         <p class="urgency-line tgic-when-logged-out" data-tgic-spots>50 spots left</p>
         <ul class="benefits">
           <li>Daily US30 and XAUUSD trade setups</li>
@@ -1989,7 +2035,8 @@
           <li>Real-time updates in private members group</li>
           <li>Direct education from Percival's trading framework</li>
         </ul>
-        <a href="/checkout" class="cta-btn cta-pulse tgic-when-logged-out">Secure Your Spot Now &rarr;</a>
+        <!-- TODO [human]: create annual plan in Paystack dashboard and paste plan ID into js/config.js as PAYSTACK_ANNUAL_PLAN_ID, then wire /checkout to honour the ?plan=annual query param -->
+        <a href="/checkout" id="pricingCta" class="cta-btn cta-pulse tgic-when-logged-out">Secure Your Spot Now &rarr;</a>
         <a href="/account" class="cta-btn cta-pulse tgic-when-logged-in tgic-auth-hidden">Dashboard &rarr;</a>
       </div>
     </div>
@@ -2022,6 +2069,7 @@
           <a href="/wins">Big Wins</a>
           <a href="#payment" class="tgic-when-logged-out">Pricing</a>
           <a href="#faq">FAQ</a>
+          <a href="/blog">Blog</a>
           <a href="#contact">Contact</a>
           <a href="/account" class="tgic-when-logged-in tgic-auth-hidden">Dashboard</a>
           <a href="/privacy">Privacy Policy</a>
@@ -2137,6 +2185,44 @@
     }, { threshold: 0.5 });
 
     statElements.forEach((el) => statsObserver.observe(el));
+
+    // Pricing toggle: Monthly vs Annual. Swaps copy and passes ?plan=annual to /checkout.
+    (function wirePricingToggle() {
+      const monthlyBtn = document.getElementById("planMonthlyBtn");
+      const annualBtn = document.getElementById("planAnnualBtn");
+      const priceLine = document.getElementById("pricingPriceLine");
+      const subLine = document.getElementById("pricingSubLine");
+      const cta = document.getElementById("pricingCta");
+      if (!monthlyBtn || !annualBtn || !priceLine || !cta) return;
+
+      const PLANS = {
+        monthly: {
+          price: "R150/month",
+          sub: "Billed monthly via Paystack. Cancel anytime.",
+          href: "/checkout",
+        },
+        annual: {
+          price: "R1,500/year",
+          sub: "Save R300 vs. monthly. Billed once a year, renews annually.",
+          href: "/checkout?plan=annual",
+        },
+      };
+
+      function select(plan) {
+        const data = PLANS[plan] || PLANS.monthly;
+        priceLine.textContent = data.price;
+        if (subLine) subLine.textContent = data.sub;
+        cta.href = data.href;
+        [monthlyBtn, annualBtn].forEach((btn) => {
+          const active = btn.dataset.plan === plan;
+          btn.classList.toggle("is-active", active);
+          btn.setAttribute("aria-selected", active ? "true" : "false");
+        });
+      }
+
+      monthlyBtn.addEventListener("click", () => select("monthly"));
+      annualBtn.addEventListener("click", () => select("annual"));
+    })();
 
     // Win lightbox — click a win thumbnail to view full-size.
     (function wireWinLightbox() {

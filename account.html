@@ -153,6 +153,23 @@
       margin-bottom: 1.5rem;
     }
 
+    .referral-banner {
+      border: 1px dashed rgba(201, 168, 76, 0.4);
+      background: rgba(201, 168, 76, 0.04);
+    }
+    .referral-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem; margin-top: 0.65rem; }
+    .referral-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.6rem;
+      border: 1px solid rgba(201, 168, 76, 0.35);
+      border-radius: 999px;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+
     .section {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -356,6 +373,16 @@
         <p class="detail" id="nextDueDetail"></p>
         <p class="detail hidden" id="overdueDetail" style="color:var(--red);"></p>
 
+      </div>
+
+      <!-- TODO [human]: build referral system — requires Supabase table for referral codes and payment logic -->
+      <div class="section referral-banner">
+        <p class="section-label">Refer a friend</p>
+        <p class="detail">Love the desk? Share The Gold Index Club with a trader you respect and earn a free month on your next renewal once they join and pay.</p>
+        <div class="referral-actions">
+          <span class="referral-pill">Coming soon</span>
+          <a class="btn-sm" href="mailto:thegoldindexclub@gmail.com?subject=I%20want%20to%20refer%20a%20friend">Ping us to get on the list &rarr;</a>
+        </div>
       </div>
 
       <div class="section hidden" id="extensionSection">

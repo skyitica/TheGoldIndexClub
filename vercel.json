@@ -59,6 +59,8 @@
     { "source": "/landing", "destination": "/landing.html" },
     { "source": "/extension", "destination": "/extension.html" },
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/refunds", "destination": "/refunds.html" }
+    { "source": "/refunds", "destination": "/refunds.html" },
+    { "source": "/blog", "destination": "/blog/index.html" },
+    { "source": "/blog/welcome", "destination": "/blog/welcome.html" }
   ]
 }

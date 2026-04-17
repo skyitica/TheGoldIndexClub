@@ -30,6 +30,10 @@ const TGIC_CONFIG = {
   // Use only for your own testing — set back to false for production.
   SKIP_CHECKOUT_AFTER_SIGNUP: false,
 
+  // TODO [human]: create the annual plan in Paystack and paste the plan ID below.
+  // Wire the checkout flow to read ?plan=annual from the URL and use this plan id.
+  PAYSTACK_ANNUAL_PLAN_ID: "",
+
   // Same as Edge secret TGIC_EMAIL_SERVER_SECRET. Sent in the notify-member JSON body (not Authorization).
   // Used by admin for notify-member emails. Leave empty to skip.
   TGIC_EMAIL_SERVER_SECRET: "GoldIndex2026Secret!",
