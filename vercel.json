@@ -53,7 +53,10 @@
     { "source": "/extension.html", "destination": "/extension", "permanent": true },
     { "source": "/admin-login.html", "destination": "/admin-login", "permanent": true },
     { "source": "/admin.html", "destination": "/admin", "permanent": true },
-    { "source": "/refunds.html", "destination": "/refunds", "permanent": true }
+    { "source": "/refunds.html", "destination": "/refunds", "permanent": true },
+    { "source": "/blog/index.html", "destination": "/blog", "permanent": true },
+    { "source": "/blog/welcome.html", "destination": "/blog/welcome", "permanent": true },
+    { "source": "/blog/post-template.html", "destination": "/blog/post-template", "permanent": true }
   ],
   "rewrites": [
     { "source": "/account", "destination": "/account.html" },
