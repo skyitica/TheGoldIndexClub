@@ -320,17 +320,44 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-      if (error) {
-        errorMsg.textContent = error.message;
+      let res, result;
+      try {
+        res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        result = await res.json().catch(() => ({}));
+      } catch (err) {
+        errorMsg.textContent = "Network error — please try again.";
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Log In &rarr;";
         return;
       }
 
-      if (data.user) {
-        await redirectAfterLogin(data.user);
+      if (!res.ok || (result && result.error)) {
+        errorMsg.textContent = (result && result.error) || "Could not sign in.";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Log In &rarr;";
+        return;
+      }
+
+      if (result.session && result.session.access_token && result.session.refresh_token) {
+        try {
+          await sb.auth.setSession({
+            access_token: result.session.access_token,
+            refresh_token: result.session.refresh_token,
+          });
+        } catch (err) {
+          errorMsg.textContent = "Could not attach session. Please try again.";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "Log In &rarr;";
+          return;
+        }
+      }
+
+      if (result.user) {
+        await redirectAfterLogin(result.user);
       }
     });
 

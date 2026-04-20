@@ -478,23 +478,53 @@
         return;
       }
 
-      const { data, error } = await sb.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: authEmailRedirect(TGIC_CONFIG.SIGNUP_URL),
-          data: { full_name, phone_number, acknowledged_risk: true },
-        },
-      });
+      let res, result;
+      try {
+        res = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            full_name,
+            phone_number,
+            acknowledged_risk: true,
+            emailRedirectTo: authEmailRedirect(TGIC_CONFIG.SIGNUP_URL),
+          }),
+        });
+        result = await res.json().catch(() => ({}));
+      } catch (err) {
+        errorMsgPaid.textContent = "Network error — please try again.";
+        btn.disabled = false;
+        btn.innerHTML = "Create account &amp; unlock access &rarr;";
+        return;
+      }
 
-      if (error) {
-        errorMsgPaid.textContent = error.message;
-        if (error.message && error.message.toLowerCase().includes("registered")) {
+      if (!res.ok || (result && result.error)) {
+        const msg = (result && result.error) || "Could not create account.";
+        errorMsgPaid.textContent = msg;
+        if (msg.toLowerCase().includes("registered")) {
           errorMsgPaid.textContent += " Try logging in — your payment will link after login if the email matches.";
         }
         btn.disabled = false;
         btn.innerHTML = "Create account &amp; unlock access &rarr;";
         return;
+      }
+
+      const data = { session: result.session, user: result.user };
+
+      if (data.session && data.session.access_token && data.session.refresh_token) {
+        try {
+          await sb.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          });
+        } catch (err) {
+          errorMsgPaid.textContent = "Could not attach session. Please try again.";
+          btn.disabled = false;
+          btn.innerHTML = "Create account &amp; unlock access &rarr;";
+          return;
+        }
       }
 
       if (data.session) {
@@ -565,20 +595,49 @@
         return;
       }
 
-      const { data, error } = await sb.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: authEmailRedirect(TGIC_CONFIG.CHECKOUT_URL),
-          data: { full_name: fullName, phone_number: phone, acknowledged_risk: true },
-        },
-      });
-
-      if (error) {
-        errorMsg.textContent = error.message;
+      let res, result;
+      try {
+        res = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            full_name: fullName,
+            phone_number: phone,
+            acknowledged_risk: true,
+            emailRedirectTo: authEmailRedirect(TGIC_CONFIG.CHECKOUT_URL),
+          }),
+        });
+        result = await res.json().catch(() => ({}));
+      } catch (err) {
+        errorMsg.textContent = "Network error — please try again.";
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Create Account &rarr;";
         return;
+      }
+
+      if (!res.ok || (result && result.error)) {
+        errorMsg.textContent = (result && result.error) || "Could not create account.";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Create Account &rarr;";
+        return;
+      }
+
+      const data = { session: result.session, user: result.user };
+
+      if (data.session && data.session.access_token && data.session.refresh_token) {
+        try {
+          await sb.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          });
+        } catch (err) {
+          errorMsg.textContent = "Could not attach session. Please try again.";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "Create Account &rarr;";
+          return;
+        }
       }
 
       if (data.session) {
