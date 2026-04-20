@@ -112,6 +112,79 @@ The Gold Index Club is not associated with Paystack. All user-visible Paystack c
 
 ---
 
+## notify-member / email-stub cleanup
+
+**Commit:** `chore: remove dead notify-member Edge Functions, orphan email helpers, and leaked TGIC_EMAIL_SERVER_SECRET from client config`
+
+A recon pass confirmed that the `notify-member` Edge Function and its shared-secret auth are entirely stubbed/unused: every Edge handler for email was returning `410 Gone`, no client code invoked any of them, `TGIC_CONFIG.TGIC_EMAIL_SERVER_SECRET` was never read, and `TGIC_CONFIG.SUPABASE_ANON_JWT` was always empty (with a fallback to the publishable key). This cleanup removes all of it. No runtime behaviour changes. No auth flow, RLS policy, `middleware.js`, `api/login.js`, or `api/signup.js` was touched.
+
+### Files deleted
+
+- `supabase/functions/notify-member/index.ts` (and the folder).
+- `supabase/functions/run-scheduled-member-emails/index.ts` (and the folder).
+- `supabase/functions/send-checkout-submitted-email/index.ts` (and the folder).
+- `supabase/functions/_shared/resend.ts` — orphaned (imported by nothing after the three stubs above were removed).
+- `supabase/functions/_shared/tgic-email-auth.ts` — orphaned (same reason).
+- `supabase/functions/_shared/` — removed because it was empty after the two deletions above.
+
+### Files modified
+
+- `js/config.js` — removed the `TGIC_EMAIL_SERVER_SECRET` key + its two-line comment header, and removed the `SUPABASE_ANON_JWT` key + its three-line comment header. The leaked shared-secret literal `"GoldIndex2026Secret!"` is no longer in client-served source.
+- `admin.html` — collapsed the `sbAnonForFunctions` fallback variable into a single `createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY)` call, and deleted the orphan `tgicNotifyMemberEmail(type, memberId)` stub function that wasn't called from anywhere.
+- `supabase/migrations/012_member_email_reminders.sql` — comment-only edit on line 1 to drop the stale reference to the now-deleted `run-scheduled-member-emails` Edge Function. No DDL changed. The three reminder columns (`due_reminder_sent_on`, `overdue_reminder_sent_on`, `checkout_submitted_email_sent_at`) are kept because `admin.html` still clears them in `markPaid` / `extendMembership` / `reduceMembership` / `denyExtensionRequest`.
+
+### Verification
+
+A repo-wide grep across `*.html`, `*.js`, `*.ts`, `*.json`, `*.md`, `*.sql` for `notify-member`, `notify_member`, `TGIC_EMAIL_SERVER_SECRET`, `tgicNotifyMemberEmail`, `resend.ts`, `tgic-email-auth`, `SUPABASE_ANON_JWT`, `sbAnonForFunctions`, `run-scheduled-member-emails`, `send-checkout-submitted-email`, and `GoldIndex2026Secret` returned zero hits after this change. No live reference to any of the removed code remains in the repo.
+
+### TODO [human]: out-of-repo follow-ups
+
+- **TODO [human]:** In the Supabase project dashboard → Edge Functions → Secrets, **rotate `TGIC_EMAIL_SERVER_SECRET`** to a fresh random value (or delete the secret entirely since nothing in the repo uses it anymore). The old value `GoldIndex2026Secret!` was committed to git in `js/config.js` and served to every site visitor, so treat it as fully public.
+- **TODO [human]:** If the Supabase project still has **deployed** versions of the Edge Functions `notify-member`, `run-scheduled-member-emails`, or `send-checkout-submitted-email`, delete them via the Supabase dashboard (Edge Functions → select function → Delete). Their source is gone from this repo, so they will not be re-deployed by `supabase functions deploy`, but existing deployments need to be removed manually.
+
+### Before / after diff of `js/config.js`
+
+Before (relevant section):
+
+```javascript
+  SUPABASE_ANON_KEY: "sb_publishable_7U257mFcB_WWNWjfsx2zAg_0Yqoy6UW",
+  // Legacy anon JWT (Project Settings → API → anon public key, starts with eyJ). REQUIRED for Edge Functions
+  // (e.g. notify-member): the gateway rejects sb_publishable… with "Invalid JWT". Paste the eyJ… string here.
+  SUPABASE_ANON_JWT: "",
+
+  // Formspree: one form endpoint used for checkout "payment made", extension requests, and phone-change alerts.
+  ...
+  // When true: after email/password signup (session returned), go to account instead of checkout.
+  // Use only for your own testing — set back to false for production.
+  SKIP_CHECKOUT_AFTER_SIGNUP: false,
+
+  // Same as Edge secret TGIC_EMAIL_SERVER_SECRET. Sent in the notify-member JSON body (not Authorization).
+  // Used by admin for notify-member emails. Leave empty to skip.
+  TGIC_EMAIL_SERVER_SECRET: "GoldIndex2026Secret!",
+};
+```
+
+After:
+
+```javascript
+  SUPABASE_ANON_KEY: "sb_publishable_7U257mFcB_WWNWjfsx2zAg_0Yqoy6UW",
+
+  // Formspree: one form endpoint used for checkout "payment made", extension requests, and phone-change alerts.
+  ...
+  // When true: after email/password signup (session returned), go to account instead of checkout.
+  // Use only for your own testing — set back to false for production.
+  SKIP_CHECKOUT_AFTER_SIGNUP: false,
+};
+```
+
+### Observations (flagged, not modified)
+
+- `supabase/migrations/012_member_email_reminders.sql` adds three "email sent on" tracking columns to `public.members`. Now that every email-sending Edge Function is gone, those columns are only ever written as `null` (reset-on-payment) and never read. They're harmless and removing them would require a new migration + another round of `admin.html` edits, so they've been left alone. Consider a future migration to drop them if/when you're certain no future email scheduler will re-introduce them.
+- The `supabase/functions/` tree now contains only three functions: `get-invite-link`, `get-pending-by-reference`, `link-payment-to-user`. None of them send email, so the Resend / shared-secret helpers were genuinely orphaned.
+- Client-side `admin.html` authorisation (email allowlist in `TGIC_CONFIG.ADMIN_ALLOWED_EMAILS`) is cosmetic only — real auth for `members` / `member_payments` mutations must still come from Supabase RLS policies. This is outside the scope of this cleanup but worth auditing separately.
+
+---
+
 ## SQL you asked for — copy/paste into the Supabase SQL Editor
 
 ### Required: reset the spots counter to 50

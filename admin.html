@@ -387,10 +387,7 @@
   <script src="js/config.js"></script>
   <script>
     const { createClient } = supabase;
-    var sbAnonForFunctions =
-      (TGIC_CONFIG.SUPABASE_ANON_JWT && String(TGIC_CONFIG.SUPABASE_ANON_JWT).trim()) ||
-      TGIC_CONFIG.SUPABASE_ANON_KEY;
-    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, sbAnonForFunctions);
+    const sb = createClient(TGIC_CONFIG.SUPABASE_URL, TGIC_CONFIG.SUPABASE_ANON_KEY);
 
     function tgicNormalizeEmailList(items) {
       if (!Array.isArray(items)) return [];
@@ -444,14 +441,6 @@
       }
       document.getElementById("adminApp").style.display = "block";
       return true;
-    }
-
-    async function tgicNotifyMemberEmail(type, memberId) {
-      return {
-        ok: false,
-        skipped: true,
-        error: "Automated email sending is disabled. Send emails manually.",
-      };
     }
 
     const membersBody = document.getElementById("membersBody");

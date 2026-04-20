@@ -478,9 +478,71 @@
       margin: 0;
       text-transform: none;
       letter-spacing: 0;
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       line-height: 1.5;
-      color: #c7c0aa;
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+    .password-wrap input {
+      padding-right: 2.5rem;
+    }
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 0.4rem;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: #6f5416;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .password-toggle:hover { color: var(--gold-light); background: rgba(201, 168, 76, 0.08); }
+    .password-toggle:focus-visible { outline: 2px solid rgba(201, 168, 76, 0.5); outline-offset: 1px; }
+    .password-toggle .pw-icon-hide { display: none; }
+    .password-toggle.is-visible .pw-icon-show { display: none; }
+    .password-toggle.is-visible .pw-icon-hide { display: inline-block; }
+
+    .account-summary {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fafafa;
+      padding: 0.75rem 0.85rem;
+      margin-bottom: 0.85rem;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+    .account-summary .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.12rem 0;
+    }
+    .account-summary .row span:first-child {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .account-summary .row span:last-child {
+      color: var(--text-primary);
+      text-align: right;
+      word-break: break-word;
+    }
+    .account-summary .muted {
+      margin-top: 0.4rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
     }
 
     .confirmation {
@@ -548,24 +610,49 @@
       <div class="error-msg" id="errorMsg"></div>
 
       <section id="step1">
+        <div id="accountSummary" class="account-summary hidden" aria-live="polite">
+          <div class="row"><span>Account</span><span id="summaryEmail"></span></div>
+          <div class="row"><span>Name</span><span id="summaryName"></span></div>
+          <div class="row"><span>WhatsApp</span><span id="summaryPhone"></span></div>
+          <p class="muted">Signed in — we'll use these details for your membership. <a id="summarySwitch" href="#" style="color:var(--gold-light)">Not you? Switch account</a></p>
+        </div>
+
         <form id="detailsForm" novalidate>
-          <div class="field">
-            <label for="fullName">Full name</label>
-            <input id="fullName" type="text" autocomplete="name" placeholder="Your full name" />
+          <div id="guestFields">
+            <div class="field">
+              <label for="fullName">Full name</label>
+              <input id="fullName" type="text" autocomplete="name" placeholder="Your full name" />
+            </div>
+            <div class="field">
+              <label for="email">Email address</label>
+              <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
+            </div>
+            <div class="field">
+              <label for="whatsapp">WhatsApp number</label>
+              <input id="whatsapp" type="tel" autocomplete="tel" placeholder="+27 82 123 4567" />
+            </div>
+            <div class="field">
+              <label for="password">Create password</label>
+              <div class="password-wrap">
+                <input id="password" type="password" autocomplete="new-password" placeholder="At least 6 characters" />
+                <button type="button" class="password-toggle" data-toggle-target="password" aria-label="Show password">
+                  <svg class="pw-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="pw-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C5 20 1 12 1 12a18.58 18.58 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.56 18.56 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="passwordConfirm">Confirm password</label>
+              <div class="password-wrap">
+                <input id="passwordConfirm" type="password" autocomplete="new-password" placeholder="Re-enter password" />
+                <button type="button" class="password-toggle" data-toggle-target="passwordConfirm" aria-label="Show password">
+                  <svg class="pw-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="pw-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C5 20 1 12 1 12a18.58 18.58 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.56 18.56 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="field">
-            <label for="email">Email address</label>
-            <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
-          </div>
-          <div class="field">
-            <label for="whatsapp">WhatsApp number</label>
-            <input id="whatsapp" type="tel" autocomplete="tel" placeholder="+27 82 123 4567" />
-            <p class="detail" style="margin-top:0.35rem;font-size:0.68rem;line-height:1.4;">Use the same number you use for WhatsApp — it will be your <strong>EFT reference</strong> on the bank details step.</p>
-          </div>
-          <div class="field">
-            <label for="password">Create password</label>
-            <input id="password" type="password" autocomplete="new-password" placeholder="At least 6 characters" />
-          </div>
+
           <div class="field">
             <label for="months">How many months</label>
             <input id="months" type="number" min="1" max="719" step="1" value="1" />
@@ -619,7 +706,7 @@
         <p class="detail" id="planSummary" style="margin-top:0.7rem;"></p>
 
         <p class="notice">
-          <strong>Reference (required):</strong> You <strong>must</strong> use <strong>your phone number</strong> exactly as shown under <strong>Payment Reference</strong> as the EFT payment reference. If you use any other text or a wrong number, we may not be able to match your payment to your membership and the transfer could be treated as void or left unallocated.
+          <strong>Reference (required):</strong> Use the <strong>4-digit code</strong> shown above under <strong>Payment Reference</strong> as the EFT reference when you transfer. Copy it exactly — if the reference is different or blank, your payment may be left unallocated.
         </p>
         <p class="detail" style="margin-top:0.55rem;font-size:0.68rem;line-height:1.45;">
           Invite access is sent by email only after your payment reflects, which may take a few hours on business days.
@@ -695,7 +782,22 @@
     const emailInput = document.getElementById("email");
     const whatsappInput = document.getElementById("whatsapp");
     const passwordInput = document.getElementById("password");
+    const passwordConfirmInput = document.getElementById("passwordConfirm");
     const monthsInput = document.getElementById("months");
+    const guestFields = document.getElementById("guestFields");
+    const accountSummary = document.getElementById("accountSummary");
+    const summaryEmail = document.getElementById("summaryEmail");
+    const summaryName = document.getElementById("summaryName");
+    const summaryPhone = document.getElementById("summaryPhone");
+    const summarySwitch = document.getElementById("summarySwitch");
+
+    let signedInUser = null;
+    let signedInProfile = {};
+
+    function generatePaymentReference() {
+      const n = Math.floor(Math.random() * 10000);
+      return String(n).padStart(4, "0");
+    }
 
     let checkoutData = {
       fullName: "",
@@ -867,14 +969,16 @@
     }
 
     async function ensureAccountAndLogin() {
-      // If account already exists, sign in directly.
+      // Already signed in (came from /signup or /login) — nothing to do.
+      if (signedInUser) return signedInUser.id || null;
+
+      // Guest "pay-first" flow: sign in if account exists, otherwise create it.
       let signInRes = await sb.auth.signInWithPassword({
         email: checkoutData.email,
         password: checkoutData.password,
       });
       if (!signInRes.error && signInRes.data?.session) return signInRes.data.user?.id || null;
 
-      // If sign-in fails, try creating the account, then sign in.
       const signUpRes = await sb.auth.signUp({
         email: checkoutData.email,
         password: checkoutData.password,
@@ -895,16 +999,22 @@
         throw new Error(signUpRes.error.message || "Could not create your account.");
       }
 
-      if (signUpRes.data?.session) return signUpRes.data.user?.id || null;
-
-      signInRes = await sb.auth.signInWithPassword({
-        email: checkoutData.email,
-        password: checkoutData.password,
-      });
-      if (signInRes.error || !signInRes.data?.session) {
-        throw new Error("Account created, but auto-login failed. Please log in once on the login page.");
+      // Email-confirmation on → no session returned; account is created but user must confirm email before signing in.
+      if (!signUpRes.data?.session) {
+        const retry = await sb.auth.signInWithPassword({
+          email: checkoutData.email,
+          password: checkoutData.password,
+        });
+        if (retry.error || !retry.data?.session) {
+          throw new Error(
+            "Account created. We've emailed a confirmation link to " +
+              checkoutData.email +
+              " — open it, then log in to finish linking your payment."
+          );
+        }
+        return retry.data.user?.id || null;
       }
-      return signInRes.data.user?.id || null;
+      return signUpRes.data.user?.id || null;
     }
 
     async function attachMemberToUser(userId) {
@@ -934,6 +1044,20 @@
       sync();
     })();
 
+    (function wirePasswordToggles() {
+      document.querySelectorAll(".password-toggle").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const targetId = btn.getAttribute("data-toggle-target");
+          const input = document.getElementById(targetId);
+          if (!input) return;
+          const isHidden = input.type === "password";
+          input.type = isHidden ? "text" : "password";
+          btn.classList.toggle("is-visible", isHidden);
+          btn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+        });
+      });
+    })();
+
     (function wireLiveStep1Pricing() {
       if (!monthsInput) return;
       monthsInput.addEventListener("input", updateLiveStep1Pricing);
@@ -941,15 +1065,54 @@
       updateLiveStep1Pricing();
     })();
 
+    async function detectSignedInUser() {
+      try {
+        const { data: sessionRes } = await sb.auth.getSession();
+        const session = sessionRes && sessionRes.session;
+        if (!session || !session.user) return;
+        signedInUser = session.user;
+        const meta = (session.user && session.user.user_metadata) || {};
+        let profileName = meta.full_name || "";
+        let profilePhone = meta.phone_number || "";
+        try {
+          const { data: profile } = await sb
+            .from("profiles")
+            .select("full_name, phone_number")
+            .eq("id", session.user.id)
+            .maybeSingle();
+          if (profile) {
+            if (!profileName && profile.full_name) profileName = profile.full_name;
+            if (!profilePhone && profile.phone_number) profilePhone = profile.phone_number;
+          }
+        } catch (e) {}
+        signedInProfile = {
+          email: (session.user.email || "").trim().toLowerCase(),
+          full_name: profileName || "",
+          phone_number: profilePhone || "",
+        };
+        guestFields.classList.add("hidden");
+        accountSummary.classList.remove("hidden");
+        summaryEmail.textContent = signedInProfile.email;
+        summaryName.textContent = signedInProfile.full_name || "(add on account page)";
+        summaryPhone.textContent = signedInProfile.phone_number || "(add on account page)";
+      } catch (e) {}
+    }
+
+    if (summarySwitch) {
+      summarySwitch.addEventListener("click", async function (e) {
+        e.preventDefault();
+        try { await sb.auth.signOut(); } catch (err) {}
+        window.location.href = TGIC_CONFIG.LOGIN_URL + "?next=/checkout";
+      });
+    }
+
+    detectSignedInUser();
+
     detailsForm.addEventListener("submit", function (e) {
       e.preventDefault();
       errorMsg.textContent = "";
       copyStatus.textContent = "";
 
-      const fullName = fullNameInput.value.trim();
-      const email = emailInput.value.trim().toLowerCase();
-      const whatsapp = whatsappInput.value.trim();
-      const password = passwordInput.value;
       const monthsRaw = String(monthsInput.value || "").trim();
       const months = parseInt(monthsRaw, 10);
       const ackEl = document.getElementById("checkoutRiskAck");
@@ -959,18 +1122,40 @@
         return;
       }
 
-      if (!fullName || !email || !whatsapp || !password || !monthsRaw) {
-        errorMsg.textContent = "Please complete full name, email, WhatsApp number, password, and months.";
-        return;
+      let fullName, email, whatsapp, password;
+      if (signedInUser) {
+        fullName = signedInProfile.full_name || "";
+        email = signedInProfile.email || "";
+        whatsapp = signedInProfile.phone_number || "";
+        password = "";
+        if (!fullName || !whatsapp) {
+          errorMsg.textContent = "Your profile is missing full name or WhatsApp number. Add them on the account page, then return here.";
+          return;
+        }
+      } else {
+        fullName = fullNameInput.value.trim();
+        email = emailInput.value.trim().toLowerCase();
+        whatsapp = whatsappInput.value.trim();
+        password = passwordInput.value;
+        const passwordConfirm = passwordConfirmInput.value;
+        if (!fullName || !email || !whatsapp || !password || !monthsRaw) {
+          errorMsg.textContent = "Please complete full name, email, WhatsApp number, password, and months.";
+          return;
+        }
+        if (!validEmail(email)) {
+          errorMsg.textContent = "Please enter a valid email address.";
+          return;
+        }
+        if (password.length < 6) {
+          errorMsg.textContent = "Password must be at least 6 characters.";
+          return;
+        }
+        if (password !== passwordConfirm) {
+          errorMsg.textContent = "Passwords do not match. Please re-enter.";
+          return;
+        }
       }
-      if (!validEmail(email)) {
-        errorMsg.textContent = "Please enter a valid email address.";
-        return;
-      }
-      if (password.length < 6) {
-        errorMsg.textContent = "Password must be at least 6 characters.";
-        return;
-      }
+
       if (isNaN(months) || months < 1) {
         errorMsg.textContent = "Enter a valid number of months (1–" + MAX_CHECKOUT_MONTHS + ").";
         return;
@@ -981,6 +1166,7 @@
       }
 
       const pricing = pricingForMonths(months);
+      const reference = generatePaymentReference();
 
       checkoutData = {
         fullName: fullName,
@@ -990,7 +1176,7 @@
         months: months,
         discountPercent: pricing.discountPercent,
         totalAmount: pricing.total,
-        reference: whatsapp,
+        reference: reference,
         acknowledged_risk: true,
         acknowledged_at: new Date().toISOString(),
       };

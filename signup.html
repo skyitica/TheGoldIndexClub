@@ -254,10 +254,36 @@
       margin: 0;
       text-transform: none;
       letter-spacing: 0;
-      font-size: 0.72rem;
-      line-height: 1.5;
-      color: #c7c0aa;
+      font-size: 0.76rem;
+      line-height: 1.55;
+      color: #ececec;
+      font-weight: 500;
     }
+
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 2.5rem; }
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 0.4rem;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: var(--gold-light);
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .password-toggle:hover { background: rgba(201, 168, 76, 0.1); }
+    .password-toggle:focus-visible { outline: 2px solid rgba(201, 168, 76, 0.5); outline-offset: 1px; }
+    .password-toggle .pw-icon-hide { display: none; }
+    .password-toggle.is-visible .pw-icon-show { display: none; }
+    .password-toggle.is-visible .pw-icon-hide { display: inline-block; }
 
     .error-msg {
       color: var(--error);
@@ -316,7 +342,23 @@
           </div>
           <div class="field">
             <label for="paidPassword">Password</label>
-            <input id="paidPassword" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
+            <div class="password-wrap">
+              <input id="paidPassword" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
+              <button type="button" class="password-toggle" data-toggle-target="paidPassword" aria-label="Show password">
+                <svg class="pw-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C5 20 1 12 1 12a18.58 18.58 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.56 18.56 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="paidPasswordConfirm">Confirm password</label>
+            <div class="password-wrap">
+              <input id="paidPasswordConfirm" type="password" placeholder="Re-enter password" required minlength="6" autocomplete="new-password" />
+              <button type="button" class="password-toggle" data-toggle-target="paidPasswordConfirm" aria-label="Show password">
+                <svg class="pw-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C5 20 1 12 1 12a18.58 18.58 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.56 18.56 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
           </div>
           <div class="risk-ack">
             <input id="paidRiskAck" type="checkbox" required />
@@ -351,7 +393,23 @@
           </div>
           <div class="field">
             <label for="password">Password</label>
-            <input id="password" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
+            <div class="password-wrap">
+              <input id="password" type="password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
+              <button type="button" class="password-toggle" data-toggle-target="password" aria-label="Show password">
+                <svg class="pw-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C5 20 1 12 1 12a18.58 18.58 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.56 18.56 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="passwordConfirm">Confirm password</label>
+            <div class="password-wrap">
+              <input id="passwordConfirm" type="password" placeholder="Re-enter password" required minlength="6" autocomplete="new-password" />
+              <button type="button" class="password-toggle" data-toggle-target="passwordConfirm" aria-label="Show password">
+                <svg class="pw-icon-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-icon-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.06 10.06 0 0 1 12 20C5 20 1 12 1 12a18.58 18.58 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.56 18.56 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
           </div>
           <div class="risk-ack">
             <input id="riskAck" type="checkbox" required />
@@ -469,10 +527,18 @@
       const full_name = document.getElementById("paidName").value.trim();
       const phone_number = document.getElementById("paidPhone").value.trim();
       const password = document.getElementById("paidPassword").value;
+      const passwordConfirm = document.getElementById("paidPasswordConfirm").value;
       const paidAck = document.getElementById("paidRiskAck");
 
       if (!paidAck || !paidAck.checked) {
         errorMsgPaid.textContent = "Please acknowledge the risk disclosure before continuing.";
+        btn.disabled = false;
+        btn.innerHTML = "Create account &amp; unlock access &rarr;";
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        errorMsgPaid.textContent = "Passwords do not match. Please re-enter.";
         btn.disabled = false;
         btn.innerHTML = "Create account &amp; unlock access &rarr;";
         return;
@@ -569,6 +635,20 @@
       });
     })();
 
+    (function wirePasswordToggles() {
+      document.querySelectorAll(".password-toggle").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const targetId = btn.getAttribute("data-toggle-target");
+          const input = document.getElementById(targetId);
+          if (!input) return;
+          const isHidden = input.type === "password";
+          input.type = isHidden ? "text" : "password";
+          btn.classList.toggle("is-visible", isHidden);
+          btn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+        });
+      });
+    })();
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorMsg.textContent = "";
@@ -579,10 +659,18 @@
       const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+      const passwordConfirm = document.getElementById("passwordConfirm").value;
       const ackEl = document.getElementById("riskAck");
 
       if (!fullName || !phone || !email || !password) {
         errorMsg.textContent = "All fields are required.";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Create Account &rarr;";
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        errorMsg.textContent = "Passwords do not match. Please re-enter.";
         submitBtn.disabled = false;
         submitBtn.innerHTML = "Create Account &rarr;";
         return;
