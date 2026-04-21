@@ -216,11 +216,17 @@
     }
     .cell-ellipsis {
       display: inline-block;
-      max-width: 190px;
+      max-width: 160px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       vertical-align: bottom;
+    }
+    .col-ref {
+      width: 46px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
     }
     .notice {
       margin-top: 0.8rem;
@@ -368,6 +374,7 @@
             <th>Name</th>
             <th>Email</th>
             <th>WhatsApp</th>
+            <th class="col-ref">Ref</th>
             <th>Join Date</th>
             <th>Next Due</th>
             <th>Date Paid</th>
@@ -597,7 +604,7 @@
       const { data: member, error: fetchErr } = await sb
         .from("members")
         .select(
-          "id, next_due_date, month_number, amount, whatsapp, status, current_plan_months, last_discount_percent, last_payment_total"
+          "id, next_due_date, month_number, amount, whatsapp, payment_reference, status, current_plan_months, last_discount_percent, last_payment_total"
         )
         .eq("id", id)
         .single();
@@ -647,7 +654,7 @@
         member_id: id,
         paid_on: today,
         amount: payLineRate,
-        reference: member.whatsapp || "",
+        reference: member.payment_reference || member.whatsapp || "",
         months_count: payMonths,
         discount_percent: payDiscount,
         total_amount: payTotal,
@@ -657,7 +664,7 @@
           member_id: id,
           paid_on: today,
           amount: member.amount || 150,
-          reference: member.whatsapp || "",
+          reference: member.payment_reference || member.whatsapp || "",
         });
       }
       if (payRes.error) throw payRes.error;
@@ -671,7 +678,7 @@
 
       const { data: member, error: fetchErr } = await sb
         .from("members")
-        .select("id, next_due_date, month_number, whatsapp")
+        .select("id, next_due_date, month_number, whatsapp, payment_reference")
         .eq("id", id)
         .single();
       if (fetchErr || !member) throw (fetchErr || new Error("Member not found"));
@@ -723,7 +730,7 @@
         member_id: id,
         paid_on: today,
         amount: pricing.monthly,
-        reference: member.whatsapp || "",
+        reference: member.payment_reference || member.whatsapp || "",
         months_count: m,
         discount_percent: pricing.discountPercent,
         total_amount: pricing.total,
@@ -733,7 +740,7 @@
           member_id: id,
           paid_on: today,
           amount: pricing.total,
-          reference: member.whatsapp || "",
+          reference: member.payment_reference || member.whatsapp || "",
         });
       }
       if (payRes.error) throw payRes.error;
@@ -776,7 +783,7 @@
     }
 
     var EXTENSION_DENIAL_DEFAULT =
-      "We could not approve your extension request because we have not received a matching payment yet (or the EFT reference did not match your account). Please pay using the bank details on the extension page and use your phone number as the payment reference. When your payment reflects, you can submit a new extension request.";
+      "We could not approve your extension request because we have not received a matching payment yet (or the EFT reference did not match your account). Please pay using the bank details on the extension page and use your unique EFT reference code exactly as shown. When your payment reflects, you can submit a new extension request.";
 
     async function denyExtensionRequest(id) {
       const custom = window.prompt(
@@ -903,6 +910,7 @@
             <td><span class="cell-ellipsis" title="${esc(row.full_name)}">${esc(row.full_name)}</span></td>
             <td><span class="cell-ellipsis" title="${esc(row.email)}">${esc(row.email)}</span></td>
             <td><span class="cell-ellipsis" title="${esc(row.whatsapp)}">${esc(row.whatsapp)}</span></td>
+            <td class="col-ref">${esc(row.payment_reference || "—")}</td>
             <td>${esc(formatDisplayDate(row.join_date))}</td>
             <td>${esc(formatDisplayDate(row.next_due_date))}</td>
             <td>${esc(formatDisplayDate(row.date_paid))}</td>

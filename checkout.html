@@ -941,6 +941,7 @@
         full_name: checkoutData.fullName,
         email: checkoutData.email,
         whatsapp: checkoutData.whatsapp,
+        payment_reference: checkoutData.reference,
         join_date: joinDate,
         next_due_date: nextDueDate,
         amount: 150,
@@ -1022,14 +1023,18 @@
       // Link latest matching member row to this authenticated user.
       const { data: row } = await sb
         .from("members")
-        .select("id")
+        .select("id, payment_reference")
         .eq("email", checkoutData.email)
         .eq("whatsapp", checkoutData.whatsapp)
         .order("id", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (!row?.id) return;
-      const upd = await sb.from("members").update({ user_id: userId }).eq("id", row.id);
+      const updatePayload = { user_id: userId };
+      if (checkoutData.reference && !row.payment_reference) {
+        updatePayload.payment_reference = checkoutData.reference;
+      }
+      const upd = await sb.from("members").update(updatePayload).eq("id", row.id);
       if (upd.error && !/column .* does not exist/i.test(upd.error.message || "")) {
         throw new Error(upd.error.message || "Could not link member to account.");
       }
