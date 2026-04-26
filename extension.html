@@ -166,6 +166,19 @@
       const { data: profile } = await sb.from("profiles").select("full_name, phone_number").eq("id", user.id).maybeSingle();
       const { data: members } = await sb.from("members").select("*").eq("email", user.email).order("id", { ascending: false }).limit(1);
       const member = members && members.length ? members[0] : null;
+      if (!member || !member.group_access) {
+        document.querySelector(".card").innerHTML =
+          '<h1>Extension unavailable</h1>' +
+          '<p class="muted" style="margin-top:0.35rem;line-height:1.55;">You can only request a membership extension after your account has been granted access. Once your first payment is approved and access is active, this page will unlock.</p>' +
+          '<button class="btn" type="button" id="backToAccountBtn" style="margin-top:0.65rem;">Back to dashboard</button>';
+        const backBtn = document.getElementById("backToAccountBtn");
+        if (backBtn) {
+          backBtn.addEventListener("click", function () {
+            window.location.href = TGIC_CONFIG.ACCOUNT_URL || "/account";
+          });
+        }
+        return;
+      }
       const whatsapp = (member && member.whatsapp) || (profile && profile.phone_number) || "";
       let extensionRef = (member && member.payment_reference) ? String(member.payment_reference).trim() : "";
       if (!extensionRef || !(member && member.pending_extension)) {

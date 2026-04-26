@@ -605,7 +605,7 @@
         denialDismiss.onclick = null;
       }
 
-      if (member) {
+      if (member && member.group_access) {
         document.getElementById("extensionSection").classList.remove("hidden");
       }
 
