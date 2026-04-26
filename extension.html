@@ -61,7 +61,7 @@
 
       <div class="grid">
         <div class="row"><p class="k">Email</p><p class="v" id="emailVal">—</p></div>
-        <div class="row"><p class="k">Reference (your WhatsApp)</p><p class="v" id="refVal">—</p></div>
+        <div class="row"><p class="k">Reference (4-digit code)</p><p class="v" id="refVal">—</p></div>
         <div class="row"><p class="k">Bank</p><p class="v">Discovery Bank</p></div>
         <div class="row"><p class="k">Account Number</p><p class="v"><span id="accVal">14586714314</span><button class="copy" data-copy="accVal" type="button">Copy</button></p></div>
         <div class="row"><p class="k">Branch Code</p><p class="v">679000</p></div>
@@ -69,7 +69,7 @@
       </div>
 
       <p class="muted" style="margin-top:0.5rem;line-height:1.45;border:1px solid rgba(111,84,22,.35);border-radius:8px;padding:0.5rem 0.55rem;background:#fafafa;color:#333;">
-        <strong>EFT reference:</strong> Use <strong>your phone number</strong> exactly as shown under <strong>Reference (your WhatsApp)</strong>. Wrong or missing references may mean we cannot match your payment and the transfer could be void or unallocated.
+        <strong>EFT reference:</strong> Use the <strong>4-digit code</strong> shown under <strong>Reference (4-digit code)</strong>. Use it exactly as shown; wrong or missing references may mean we cannot match your payment and the transfer could be void or unallocated.
       </p>
 
       <div class="field">
@@ -117,7 +117,12 @@
     const amountVal = document.getElementById("amountVal");
     const discountInfo = document.getElementById("discountInfo");
 
-    let userCtx = { email: "", whatsapp: "", full_name: "", member_id: null };
+    let userCtx = { email: "", whatsapp: "", full_name: "", member_id: null, reference: "" };
+
+    function generatePaymentReference() {
+      const n = Math.floor(Math.random() * 10000);
+      return String(n).padStart(4, "0");
+    }
 
     var MAX_EXT_MONTHS = 719;
 
@@ -161,8 +166,22 @@
       const { data: members } = await sb.from("members").select("*").eq("email", user.email).order("id", { ascending: false }).limit(1);
       const member = members && members.length ? members[0] : null;
       const whatsapp = (member && member.whatsapp) || (profile && profile.phone_number) || "";
-      refVal.textContent = whatsapp || "Not set";
-      userCtx = { email: user.email || "", whatsapp: whatsapp, full_name: (profile && profile.full_name) || "", member_id: member ? member.id : null };
+      let extensionRef = (member && member.payment_reference) ? String(member.payment_reference).trim() : "";
+      if (!extensionRef || !(member && member.pending_extension)) {
+        extensionRef = generatePaymentReference();
+      }
+      refVal.textContent = extensionRef || "Not set";
+      userCtx = {
+        email: user.email || "",
+        whatsapp: whatsapp,
+        full_name: (profile && profile.full_name) || "",
+        member_id: member ? member.id : null,
+        reference: extensionRef,
+      };
+      if (member && extensionRef && extensionRef !== (member.payment_reference || "")) {
+        // Persist the currently displayed EFT reference so admin sees the same code.
+        await sb.from("members").update({ payment_reference: extensionRef }).eq("id", member.id);
+      }
       refreshQuote();
     }
 
@@ -173,6 +192,7 @@
         requested_extension_months: q.months,
         requested_extension_discount: q.discountPercent,
         requested_extension_total: q.total,
+        payment_reference: userCtx.reference || null,
         extension_denial_notice: null,
       };
       var baseOnly = {
@@ -180,6 +200,7 @@
         requested_extension_months: q.months,
         requested_extension_discount: q.discountPercent,
         requested_extension_total: q.total,
+        payment_reference: userCtx.reference || null,
       };
       let upd = await sb.from("members").update(withNotice).eq("id", userCtx.member_id);
       if (upd.error && /extension_denial_notice|column .* does not exist/i.test(upd.error.message || "")) {
@@ -231,7 +252,7 @@
             full_name: userCtx.full_name,
             email: userCtx.email,
             whatsapp_number: userCtx.whatsapp,
-            reference: userCtx.whatsapp,
+            reference: userCtx.reference,
             months: q.months,
             discount_percent: q.discountPercent,
             total_amount: q.total,
