@@ -257,6 +257,98 @@
     .admin-signout:hover {
       color: #c9a84c;
     }
+
+    .tabs {
+      display: flex;
+      gap: 0.4rem;
+      margin: 0 0 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #c5c5c5;
+      font-family: inherit;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: #ecd38f; }
+    .tab-btn.is-active {
+      color: #ecd38f;
+      border-bottom-color: rgba(201, 168, 76, 0.85);
+    }
+
+    .toast-stack {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      pointer-events: none;
+      max-width: calc(100vw - 32px);
+    }
+    .toast {
+      pointer-events: auto;
+      min-width: 240px;
+      max-width: 360px;
+      background: #131313;
+      border: 1px solid #232323;
+      border-left: 4px solid var(--green);
+      border-radius: 10px;
+      padding: 0.7rem 0.85rem 0.95rem;
+      color: #f1f1f1;
+      font-family: inherit;
+      font-size: 0.74rem;
+      line-height: 1.45;
+      box-shadow: 0 14px 38px rgba(0, 0, 0, 0.45);
+      position: relative;
+      transform: translateX(20px);
+      opacity: 0;
+      transition: transform 200ms ease, opacity 200ms ease;
+      cursor: pointer;
+    }
+    .toast.toast-visible { transform: translateX(0); opacity: 1; }
+    .toast.toast-leaving { transform: translateX(20px); opacity: 0; }
+    .toast-error { border-left-color: var(--red); }
+    .toast-info { border-left-color: var(--gold); }
+    .toast-title {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 0.18rem;
+      font-weight: 600;
+    }
+    .toast-error .toast-title { color: var(--red); }
+    .toast-info .toast-title { color: #ecd38f; }
+    .toast-progress {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+      border-radius: 0 0 10px 10px;
+    }
+    .toast-progress-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--green);
+      transform-origin: left center;
+      animation: toastProgress 7s linear forwards;
+    }
+    .toast-error .toast-progress-bar { background: var(--red); }
+    .toast-info .toast-progress-bar { background: var(--gold); }
+    @keyframes toastProgress {
+      from { transform: scaleX(1); }
+      to   { transform: scaleX(0); }
+    }
   </style>
 </head>
 <body>
@@ -267,6 +359,12 @@
       <a class="admin-signout" href="/api/admin-logout">Sign out admin gate</a>
     </p>
 
+    <nav class="tabs" aria-label="Admin sections">
+      <button type="button" class="tab-btn is-active" data-view="members">Members</button>
+      <button type="button" class="tab-btn" data-view="history">History</button>
+    </nav>
+
+    <div id="viewMembers">
     <section class="summary">
       <div class="card"><p class="kpi-label">Total members</p><p class="kpi-value" id="kpiTotal">0</p></div>
       <div class="card"><p class="kpi-label">Paid this month</p><p class="kpi-value" id="kpiPaidMonth">0</p></div>
@@ -388,7 +486,37 @@
       </table>
     </section>
     <p class="notice" id="notice"></p>
+    </div>
+
+    <div id="viewHistory" style="display:none;">
+      <section class="filters" aria-label="History controls" style="margin-bottom:0.6rem;">
+        <button class="filter-btn is-active" data-history-filter="all" type="button">All</button>
+        <button class="filter-btn" data-history-filter="payment" type="button">Payments only</button>
+        <button class="filter-btn" data-history-filter="action" type="button">Admin actions only</button>
+        <button class="btn" id="historyRefreshBtn" type="button" style="margin-left:auto">Refresh</button>
+      </section>
+      <section class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Type</th>
+              <th>Member</th>
+              <th>Reference</th>
+              <th>Amount</th>
+              <th>Months</th>
+              <th>Actor</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </section>
+      <p class="notice" id="historyNotice"></p>
+    </div>
   </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/config.js"></script>
@@ -446,18 +574,29 @@
         tgicShowPageUnavailable();
         return false;
       }
+      adminActorEmail = email;
       document.getElementById("adminApp").style.display = "block";
       return true;
     }
 
     const membersBody = document.getElementById("membersBody");
     const notice = document.getElementById("notice");
+    const toastStack = document.getElementById("toastStack");
+    const historyBody = document.getElementById("historyBody");
+    const historyNotice = document.getElementById("historyNotice");
+    const viewMembers = document.getElementById("viewMembers");
+    const viewHistory = document.getElementById("viewHistory");
+    const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
+    const historyFilterButtons = Array.from(document.querySelectorAll("[data-history-filter]"));
+    let activeHistoryFilter = "all";
+    let historyCache = [];
+    let adminActorEmail = "";
     const kpiTotal = document.getElementById("kpiTotal");
     const kpiPaidMonth = document.getElementById("kpiPaidMonth");
     const kpiPending = document.getElementById("kpiPending");
     const kpiOverdue = document.getElementById("kpiOverdue");
     const kpiExtensionReq = document.getElementById("kpiExtensionReq");
-    const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
+    const filterButtons = Array.from(document.querySelectorAll("#viewMembers .filter-btn[data-filter]"));
     const debugToggleBtn = document.getElementById("debugToggleBtn");
     const debugBadge = document.getElementById("debugBadge");
     const debugPanel = document.getElementById("debugPanel");
@@ -509,6 +648,58 @@
           "'": "&#39;",
         })[ch];
       });
+    }
+
+    function showToast(message, type) {
+      if (!toastStack) return;
+      var safeType = type === "error" ? "error" : type === "info" ? "info" : "success";
+      var titleByType = { success: "Success", error: "Error", info: "Notice" };
+      var toast = document.createElement("div");
+      toast.className = "toast toast-" + safeType;
+      toast.setAttribute("role", safeType === "error" ? "alert" : "status");
+      toast.innerHTML =
+        '<div class="toast-title">' + esc(titleByType[safeType]) + '</div>' +
+        '<div class="toast-body">' + esc(message) + '</div>' +
+        '<div class="toast-progress"><div class="toast-progress-bar"></div></div>';
+      toastStack.appendChild(toast);
+      requestAnimationFrame(function () { toast.classList.add("toast-visible"); });
+      var dismissed = false;
+      function dismiss() {
+        if (dismissed) return;
+        dismissed = true;
+        toast.classList.remove("toast-visible");
+        toast.classList.add("toast-leaving");
+        setTimeout(function () { toast.remove(); }, 220);
+      }
+      var timer = setTimeout(dismiss, 7000);
+      toast.addEventListener("click", function () { clearTimeout(timer); dismiss(); });
+    }
+
+    async function logAdminAction(action, options) {
+      try {
+        var opts = options || {};
+        var payload = {
+          action: action,
+          actor_email: adminActorEmail || null,
+          member_id: opts.member_id != null ? opts.member_id : null,
+          member_name: opts.member_name != null ? opts.member_name : null,
+          reference: opts.reference != null ? opts.reference : null,
+          amount: opts.amount != null ? opts.amount : null,
+          months: opts.months != null ? opts.months : null,
+          details: opts.details != null ? opts.details : null,
+        };
+        await sb.from("admin_action_log").insert(payload);
+      } catch (err) {
+        if (typeof console !== "undefined" && console.warn) {
+          console.warn("[TGIC] admin_action_log insert failed", err);
+        }
+      }
+    }
+
+    function memberLabel(member) {
+      if (!member) return "—";
+      var name = member.full_name || member.fullName || "Unnamed";
+      return name + " (#" + member.id + ")";
     }
 
     var DISPLAY_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -989,6 +1180,14 @@
       }
     }
 
+    function findMemberInCache(id) {
+      const idNum = Number(id);
+      for (let i = 0; i < allRowsCache.length; i += 1) {
+        if (Number(allRowsCache[i].id) === idNum) return allRowsCache[i];
+      }
+      return null;
+    }
+
     membersBody.addEventListener("click", async function (e) {
       const target = e.target;
       if (!(target instanceof HTMLElement)) return;
@@ -997,20 +1196,35 @@
         if (target.classList.contains("js-paid")) {
           const id = Number(target.dataset.id || "0");
           if (!id) return;
+          const memberSnap = findMemberInCache(id);
           target.setAttribute("disabled", "disabled");
           await markPaid(id);
+          await logAdminAction("mark_paid", {
+            member_id: id,
+            member_name: memberSnap ? memberSnap.full_name : null,
+            reference: memberSnap ? (memberSnap.payment_reference || memberSnap.whatsapp || null) : null,
+            amount: memberSnap ? Number(memberSnap.amount || 150) : null,
+            details: { previous_status: memberSnap ? memberSnap.status : null },
+          });
           await loadMembers();
-          notice.textContent = "Payment marked as received.";
+          showToast("Payment marked as received for " + memberLabel(memberSnap) + ".", "success");
         }
 
         if (target.classList.contains("js-access")) {
           const id = Number(target.dataset.id || "0");
           const current = target.dataset.current === "1";
           if (!id) return;
+          const memberSnap = findMemberInCache(id);
           target.setAttribute("disabled", "disabled");
           await toggleAccess(id, current);
+          await logAdminAction("toggle_access", {
+            member_id: id,
+            member_name: memberSnap ? memberSnap.full_name : null,
+            reference: memberSnap ? (memberSnap.payment_reference || null) : null,
+            details: { from: current, to: !current },
+          });
           await loadMembers();
-          notice.textContent = "Group access updated.";
+          showToast("Group access " + (!current ? "granted" : "revoked") + " for " + memberLabel(memberSnap) + ".", "success");
         }
         if (target.classList.contains("js-deny-ext")) {
           const id = Number(target.dataset.id || "0");
@@ -1020,15 +1234,23 @@
             "Deny extension request for " + denyName + "? Their pending request will be cleared and they will see a message on their dashboard."
           );
           if (!ok) return;
+          const memberSnap = findMemberInCache(id);
           target.setAttribute("disabled", "disabled");
           try {
             const done = await denyExtensionRequest(id);
             if (done) {
+              await logAdminAction("deny_extension", {
+                member_id: id,
+                member_name: memberSnap ? memberSnap.full_name : denyName,
+                reference: memberSnap ? (memberSnap.payment_reference || null) : null,
+                months: memberSnap ? Number(memberSnap.requested_extension_months || 0) || null : null,
+                amount: memberSnap ? Number(memberSnap.requested_extension_total || 0) || null : null,
+              });
               await loadMembers();
-              notice.textContent = "Extension request denied; member will see a dashboard notice.";
+              showToast("Extension request denied for " + (memberSnap ? memberLabel(memberSnap) : denyName) + ".", "success");
             }
           } catch (denyErr) {
-            notice.textContent = "Deny failed: " + (denyErr.message || "unknown error");
+            showToast("Deny failed: " + (denyErr.message || "unknown error"), "error");
           } finally {
             target.removeAttribute("disabled");
           }
@@ -1041,16 +1263,28 @@
           if (raw === null) return;
           const months = Math.floor(Number(raw));
           if (!months || months < 1 || months > MAX_ADMIN_EXTEND_MONTHS) {
-            notice.textContent =
+            showToast(
               months >= 720
-                ? "You might be dead by the time this runs out"
-                : "Enter a valid month count between 1 and " + MAX_ADMIN_EXTEND_MONTHS + ".";
+                ? "You might be dead by the time this runs out."
+                : "Enter a valid month count between 1 and " + MAX_ADMIN_EXTEND_MONTHS + ".",
+              "error"
+            );
             return;
           }
+          const memberSnap = findMemberInCache(id);
+          const pricing = pricingForMonths(months);
           target.setAttribute("disabled", "disabled");
           await extendMembership(id, months);
+          await logAdminAction("extend_membership", {
+            member_id: id,
+            member_name: memberSnap ? memberSnap.full_name : null,
+            reference: memberSnap ? (memberSnap.payment_reference || null) : null,
+            amount: pricing.total,
+            months: months,
+            details: { discount_percent: pricing.discountPercent, monthly: pricing.monthly },
+          });
           await loadMembers();
-          notice.textContent = "Membership extended by " + months + " month(s).";
+          showToast("Extended " + memberLabel(memberSnap) + " by " + months + " month(s).", "success");
         }
         if (target.classList.contains("js-reduce")) {
           const id = Number(target.dataset.id || "0");
@@ -1059,13 +1293,20 @@
           if (raw === null) return;
           const months = Math.floor(Number(raw));
           if (!months || months < 1 || months > MAX_ADMIN_EXTEND_MONTHS) {
-            notice.textContent = "Enter a valid month count between 1 and " + MAX_ADMIN_EXTEND_MONTHS + ".";
+            showToast("Enter a valid month count between 1 and " + MAX_ADMIN_EXTEND_MONTHS + ".", "error");
             return;
           }
+          const memberSnap = findMemberInCache(id);
           target.setAttribute("disabled", "disabled");
           await reduceMembership(id, months);
+          await logAdminAction("reduce_membership", {
+            member_id: id,
+            member_name: memberSnap ? memberSnap.full_name : null,
+            reference: memberSnap ? (memberSnap.payment_reference || null) : null,
+            months: -months,
+          });
           await loadMembers();
-          notice.textContent = "Removed " + months + " month(s) from membership.";
+          showToast("Removed " + months + " month(s) from " + memberLabel(memberSnap) + ".", "success");
         }
         if (target.classList.contains("js-delete")) {
           const id = Number(target.dataset.id || "0");
@@ -1075,13 +1316,19 @@
           if (!ok1) return;
           const ok2 = window.confirm("Final confirmation: this cannot be undone. Delete now?");
           if (!ok2) return;
+          const memberSnap = findMemberInCache(id);
           target.setAttribute("disabled", "disabled");
           await deleteMember(id);
+          await logAdminAction("delete_member", {
+            member_id: id,
+            member_name: memberSnap ? memberSnap.full_name : memberName,
+            reference: memberSnap ? (memberSnap.payment_reference || null) : null,
+          });
           await loadMembers();
-          notice.textContent = "Member deleted successfully.";
+          showToast("Deleted member " + (memberSnap ? memberLabel(memberSnap) : memberName) + ".", "success");
         }
       } catch (err) {
-        notice.textContent = "Update failed: " + (err.message || "unknown error");
+        showToast("Update failed: " + (err.message || "unknown error"), "error");
       }
     });
 
@@ -1101,24 +1348,24 @@
         debugPanel.classList.remove("on");
         debugBadge.classList.remove("on");
         debugToggleBtn.textContent = "Enable Debug Mode";
-        notice.textContent = "Debug mode disabled.";
+        showToast("Debug mode disabled.", "info");
         return;
       }
       debugMode = true;
       debugPanel.classList.add("on");
       debugBadge.classList.add("on");
       debugToggleBtn.textContent = "Disable Debug Mode";
-      notice.textContent = "Debug mode enabled. Manual editing unlocked.";
+      showToast("Debug mode enabled. Manual editing unlocked.", "info");
     });
 
     document.getElementById("dbgLoadLatestBtn").addEventListener("click", function () {
       if (!allRowsCache.length) {
-        notice.textContent = "No members loaded yet.";
+        showToast("No members loaded yet.", "error");
         return;
       }
       const latest = allRowsCache[0];
       document.getElementById("dbgMemberId").value = String(latest.id);
-      notice.textContent = "Loaded latest member id: " + latest.id;
+      showToast("Loaded latest member id: " + latest.id, "info");
     });
 
     document.getElementById("dbgApplyFieldBtn").addEventListener("click", async function () {
@@ -1133,10 +1380,17 @@
         let parsed = parseDebugValue(raw, forcedType);
         parsed = normalizeDebugDateField(fieldName, parsed);
         await debugUpdateField(memberId, fieldName, parsed);
+        const memberSnap = findMemberInCache(memberId);
+        await logAdminAction("debug_update_field", {
+          member_id: memberId,
+          member_name: memberSnap ? memberSnap.full_name : null,
+          reference: memberSnap ? (memberSnap.payment_reference || null) : null,
+          details: { field: fieldName, value: parsed },
+        });
         await loadMembers();
-        notice.textContent = "Updated member " + memberId + " field " + fieldName + ".";
+        showToast("Updated member " + memberId + " field " + fieldName + ".", "success");
       } catch (err) {
-        notice.textContent = "Debug update failed: " + (err.message || "unknown error");
+        showToast("Debug update failed: " + (err.message || "unknown error"), "error");
       }
     });
 
@@ -1157,10 +1411,17 @@
         if (!Object.keys(payload).length) throw new Error("Enter at least one quick value.");
         const { error } = await sb.from("members").update(payload).eq("id", memberId);
         if (error) throw error;
+        const memberSnap = findMemberInCache(memberId);
+        await logAdminAction("debug_quick_update", {
+          member_id: memberId,
+          member_name: memberSnap ? memberSnap.full_name : null,
+          reference: memberSnap ? (memberSnap.payment_reference || null) : null,
+          details: payload,
+        });
         await loadMembers();
-        notice.textContent = "Quick update applied for member " + memberId + ".";
+        showToast("Quick update applied for member " + memberId + ".", "success");
       } catch (err) {
-        notice.textContent = "Quick update failed: " + (err.message || "unknown error");
+        showToast("Quick update failed: " + (err.message || "unknown error"), "error");
       }
     });
 
@@ -1177,7 +1438,7 @@
       document.getElementById("dbgNewAmount").value = "150";
       document.getElementById("dbgNewStatus").value = "Pending";
       document.getElementById("dbgNewAccess").value = "false";
-      notice.textContent = "Debug test member data filled in.";
+      showToast("Debug test member data filled in.", "info");
     });
 
     document.getElementById("dbgCreateBtn").addEventListener("click", async function () {
@@ -1200,12 +1461,247 @@
           throw new Error("Name, email, WhatsApp, join date and next due are required.");
         }
         await debugCreateMember(payload);
+        await logAdminAction("debug_create_member", {
+          member_name: payload.full_name,
+          amount: payload.amount,
+          details: payload,
+        });
         await loadMembers();
-        notice.textContent = "Debug member created successfully.";
+        showToast("Debug member " + payload.full_name + " created successfully.", "success");
       } catch (err) {
-        notice.textContent = "Create member failed: " + (err.message || "unknown error");
+        showToast("Create member failed: " + (err.message || "unknown error"), "error");
       }
     });
+
+    var ACTION_LABELS = {
+      mark_paid: "Mark Paid",
+      extend_membership: "Extend Membership",
+      reduce_membership: "Reduce Membership",
+      toggle_access: "Toggle Group Access",
+      deny_extension: "Deny Extension",
+      delete_member: "Delete Member",
+      debug_update_field: "Debug · Field Update",
+      debug_quick_update: "Debug · Quick Update",
+      debug_create_member: "Debug · Create Member",
+    };
+
+    function actionLabel(key) {
+      if (!key) return "—";
+      return ACTION_LABELS[key] || String(key).replace(/_/g, " ");
+    }
+
+    function formatHistoryWhen(value) {
+      if (!value) return "—";
+      var d = new Date(value);
+      if (isNaN(d.getTime())) return String(value);
+      var iso = d.toISOString();
+      var datePart = iso.slice(0, 10);
+      var timePart = iso.slice(11, 16);
+      return formatDisplayDate(datePart) + " " + timePart;
+    }
+
+    function formatActionNotes(entry) {
+      if (entry.kind !== "action") return "";
+      var d = entry.details;
+      if (!d) return "";
+      try {
+        if (entry.action === "toggle_access") {
+          return (d.from ? "True" : "False") + " → " + (d.to ? "True" : "False");
+        }
+        if (entry.action === "extend_membership") {
+          var bits = [];
+          if (d.discount_percent != null) bits.push(d.discount_percent + "% disc");
+          if (d.monthly != null) bits.push("R" + d.monthly + "/mo");
+          return bits.join(" · ");
+        }
+        if (entry.action === "debug_update_field") {
+          return String(d.field || "") + " = " + JSON.stringify(d.value);
+        }
+        if (entry.action === "debug_quick_update") {
+          return Object.keys(d).map(function (k) { return k + "=" + JSON.stringify(d[k]); }).join(", ");
+        }
+        if (entry.action === "debug_create_member") {
+          return "Email: " + (d.email || "—") + " · WhatsApp: " + (d.whatsapp || "—");
+        }
+        if (entry.action === "mark_paid") {
+          return d.previous_status ? "Previous status: " + d.previous_status : "";
+        }
+      } catch (_) { /* fall through */ }
+      try { return JSON.stringify(d); } catch (_) { return ""; }
+    }
+
+    function renderHistory() {
+      if (!historyBody) return;
+      var rows = historyCache;
+      if (activeHistoryFilter === "payment") {
+        rows = rows.filter(function (e) { return e.kind === "payment"; });
+      } else if (activeHistoryFilter === "action") {
+        rows = rows.filter(function (e) { return e.kind === "action"; });
+      }
+      if (!rows.length) {
+        historyBody.innerHTML = "";
+        historyNotice.textContent = "No history entries yet.";
+        return;
+      }
+      historyNotice.textContent = "";
+      historyBody.innerHTML = rows.map(function (entry) {
+        var typeLabel = entry.kind === "payment" ? "Payment" : actionLabel(entry.action);
+        var memberCell = entry.member_name
+          ? esc(entry.member_name) + (entry.member_id ? " <span style=\"color:#7a7a7a\">#" + entry.member_id + "</span>" : "")
+          : (entry.member_id ? "#" + entry.member_id : "—");
+        var amount = entry.amount != null && entry.amount !== "" ? "R" + entry.amount : "—";
+        var months = entry.months != null && entry.months !== "" ? String(entry.months) : "—";
+        var notes = entry.kind === "payment"
+          ? (entry.notes || "")
+          : formatActionNotes(entry);
+        return '<tr>' +
+          '<td>' + esc(formatHistoryWhen(entry.when)) + '</td>' +
+          '<td>' + esc(typeLabel) + '</td>' +
+          '<td>' + memberCell + '</td>' +
+          '<td class="col-ref">' + esc(entry.reference || "—") + '</td>' +
+          '<td>' + esc(amount) + '</td>' +
+          '<td>' + esc(months) + '</td>' +
+          '<td><span class="cell-ellipsis" title="' + esc(entry.actor_email || "") + '">' + esc(entry.actor_email || "—") + '</span></td>' +
+          '<td><span class="cell-ellipsis" title="' + esc(notes) + '">' + esc(notes) + '</span></td>' +
+        '</tr>';
+      }).join("");
+    }
+
+    async function loadHistory() {
+      historyNotice.textContent = "Loading history...";
+      try {
+        var paymentsP = sb
+          .from("member_payments")
+          .select("id, member_id, paid_on, amount, reference, months_count, discount_percent, total_amount, created_at")
+          .order("created_at", { ascending: false })
+          .limit(300);
+        var actionsP = sb
+          .from("admin_action_log")
+          .select("id, occurred_at, actor_email, action, member_id, member_name, reference, amount, months, details")
+          .order("occurred_at", { ascending: false })
+          .limit(300);
+
+        var memberLookup = {};
+        allRowsCache.forEach(function (m) { memberLookup[m.id] = m; });
+
+        var results = await Promise.all([paymentsP, actionsP]);
+        var paymentsRes = results[0];
+        var actionsRes = results[1];
+
+        var entries = [];
+
+        if (paymentsRes && !paymentsRes.error && Array.isArray(paymentsRes.data)) {
+          paymentsRes.data.forEach(function (p) {
+            var mem = memberLookup[p.member_id];
+            var totalAmt = p.total_amount != null ? p.total_amount : p.amount;
+            var notesBits = [];
+            if (p.months_count) notesBits.push(p.months_count + " month(s)");
+            if (p.discount_percent) notesBits.push(p.discount_percent + "% disc");
+            if (p.amount && p.months_count && p.amount !== totalAmt) notesBits.push("R" + p.amount + "/mo");
+            entries.push({
+              kind: "payment",
+              when: p.created_at || p.paid_on,
+              action: "payment",
+              member_id: p.member_id,
+              member_name: mem ? mem.full_name : null,
+              reference: p.reference || (mem ? (mem.payment_reference || mem.whatsapp) : null),
+              amount: totalAmt,
+              months: p.months_count || null,
+              actor_email: null,
+              notes: notesBits.join(" · "),
+            });
+          });
+        } else if (paymentsRes && paymentsRes.error && /column .* does not exist/i.test(paymentsRes.error.message || "")) {
+          var fallback = await sb
+            .from("member_payments")
+            .select("id, member_id, paid_on, amount, reference, created_at")
+            .order("created_at", { ascending: false })
+            .limit(300);
+          if (!fallback.error && Array.isArray(fallback.data)) {
+            fallback.data.forEach(function (p) {
+              var mem = memberLookup[p.member_id];
+              entries.push({
+                kind: "payment",
+                when: p.created_at || p.paid_on,
+                action: "payment",
+                member_id: p.member_id,
+                member_name: mem ? mem.full_name : null,
+                reference: p.reference || (mem ? (mem.payment_reference || mem.whatsapp) : null),
+                amount: p.amount,
+                months: null,
+                actor_email: null,
+                notes: "",
+              });
+            });
+          }
+        }
+
+        if (actionsRes && !actionsRes.error && Array.isArray(actionsRes.data)) {
+          actionsRes.data.forEach(function (a) {
+            var mem = memberLookup[a.member_id];
+            entries.push({
+              kind: "action",
+              when: a.occurred_at,
+              action: a.action,
+              member_id: a.member_id,
+              member_name: a.member_name || (mem ? mem.full_name : null),
+              reference: a.reference || (mem ? (mem.payment_reference || mem.whatsapp) : null),
+              amount: a.amount,
+              months: a.months,
+              actor_email: a.actor_email,
+              details: a.details,
+            });
+          });
+        } else if (actionsRes && actionsRes.error) {
+          if (/relation .* does not exist/i.test(actionsRes.error.message || "")) {
+            historyNotice.textContent =
+              "Run migration 014_admin_action_log.sql in Supabase to enable the admin action log.";
+          }
+        }
+
+        entries.sort(function (a, b) {
+          var av = new Date(a.when).getTime() || 0;
+          var bv = new Date(b.when).getTime() || 0;
+          return bv - av;
+        });
+
+        historyCache = entries;
+        renderHistory();
+      } catch (err) {
+        historyNotice.textContent = "Could not load history: " + (err.message || "unknown error");
+      }
+    }
+
+    function activateView(viewName) {
+      var isHistory = viewName === "history";
+      viewMembers.style.display = isHistory ? "none" : "";
+      viewHistory.style.display = isHistory ? "" : "none";
+      tabButtons.forEach(function (b) {
+        b.classList.toggle("is-active", b.getAttribute("data-view") === viewName);
+      });
+      if (isHistory) loadHistory();
+    }
+
+    tabButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activateView(btn.getAttribute("data-view") || "members");
+      });
+    });
+
+    historyFilterButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activeHistoryFilter = btn.getAttribute("data-history-filter") || "all";
+        historyFilterButtons.forEach(function (b) {
+          b.classList.toggle("is-active", b === btn);
+        });
+        renderHistory();
+      });
+    });
+
+    var historyRefreshBtn = document.getElementById("historyRefreshBtn");
+    if (historyRefreshBtn) {
+      historyRefreshBtn.addEventListener("click", function () { loadHistory(); });
+    }
 
     tgicRequireAdminAccess().then(function (ok) {
       if (!ok) return;
