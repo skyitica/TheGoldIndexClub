@@ -23,7 +23,11 @@ const TGIC_CONFIG = {
   // Admin access: you MUST list at least one email here. Sign in with that account on /login, then open /admin.
   // If this array is empty, /admin is disabled for everyone (safe default). Use lowercase emails.
   // The email must match what Supabase stores (same Google account you use at login).
-  ADMIN_ALLOWED_EMAILS: ["dante.s.king06@gmail.com"],
+  ADMIN_ALLOWED_EMAILS: [
+    "dante.s.king06@gmail.com",
+    "thegoldindexclub@gmail.com",
+    "lordsndlovu@gmail.com",
+  ],
 
   // Admin password is NOT stored here. Set on the server only:
   // Vercel → Project → Settings → Environment Variables:
